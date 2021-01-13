@@ -1,0 +1,79 @@
+#include "window.h"
+
+namespace sputter { namespace render {
+    bool Window::m_isInitialized = false;
+    
+    Window::Window(const std::string& windowTitle)
+        : Window(windowTitle, kDefaultWindowWidth, kDefaultWindowHeight)
+    {}
+
+    Window::Window(const std::string& windowTitle, uint32_t w, uint32_t h)
+    {
+        if (glfwInit())
+        {
+            m_isInitialized = true;
+        }
+        else
+        {
+            // TODO: log something, throw an exception
+        }
+
+		// No antialiasing
+		glfwWindowHint(GLFW_SAMPLES, 1);
+
+        // OpenGL 3.3
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+
+        // To make MacOS happy; should not be needed
+		glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); 
+
+        // We don't want the old OpenGL 
+		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); 
+
+        m_window = glfwCreateWindow(w, h, windowTitle.c_str(), nullptr, nullptr);
+        if (!m_window)
+        {
+            // TODO: log something, throw an exception
+        }
+
+        glfwMakeContextCurrent(m_window);
+
+        if (!glewInit())
+        {
+            // TODO: log something, throw an exception
+        }
+    }
+
+    Window::~Window()
+    {
+        glfwTerminate();
+    }
+
+    void Window::EnableInputs()
+    {
+        glfwSetInputMode(m_window, GLFW_STICKY_KEYS, GL_TRUE);
+    }
+
+    bool Window::GetKeyState(uint32_t keyCode)
+    {
+        return glfwGetKey(m_window, keyCode) == GLFW_PRESS;
+    }
+
+    void Window::Clear()
+    {
+        glClear(GL_COLOR_BUFFER_BIT);
+    }
+
+    void Window::Tick()
+    {
+        glfwSwapBuffers(m_window);
+        glfwPollEvents();
+    }
+
+    bool Window::ShouldClose()
+    {
+        return static_cast<bool>(glfwWindowShouldClose(m_window));
+    }
+}}
+
