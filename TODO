@@ -1,0 +1,13 @@
+Currently working on: asset loader!
+- Loads resources from a directory root
+-- Uses relative path to identify those resources hierarchically
+-- Resources may be: png images, wav files... probably other things too
+
+- Surfaces resources into *easily usable* data formats
+-- Images to uint8*, etc.
+
+- RENDERING library converts to textures
+
+Sprites can create from uint8*s (wrap these in some ImageData struct or something)
+- SpriteRegistry tracks all created sprites, can report batches for rendering
+
