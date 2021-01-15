@@ -22,5 +22,6 @@ find_package(GLFW REQUIRED FATAL_ERROR)
 #find_package(GLM REQUIRED FATAL_ERROR)
 
 find_package(glog 0.4.0 REQUIRED)
+find_package(PNG 1.6 REQUIRED)
 
 add_subdirectory(src)
