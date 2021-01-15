@@ -1,4 +1,8 @@
 #include "window.h"
+#include <glog/logging.h>
+#include <sputter/system/system.h>
+
+#include <stdexcept>
 
 namespace sputter { namespace render {
     bool Window::m_isInitialized = false;
@@ -15,7 +19,7 @@ namespace sputter { namespace render {
         }
         else
         {
-            // TODO: log something, throw an exception
+            system::LogAndFail("glfwInit() failed");
         }
 
 		// No antialiasing
@@ -34,14 +38,14 @@ namespace sputter { namespace render {
         m_window = glfwCreateWindow(w, h, windowTitle.c_str(), nullptr, nullptr);
         if (!m_window)
         {
-            // TODO: log something, throw an exception
+            system::LogAndFail("Failed to create main window.");
         }
 
         glfwMakeContextCurrent(m_window);
 
-        if (!glewInit())
+        if (glewInit())
         {
-            // TODO: log something, throw an exception
+            system::LogAndFail("glewInit() failed.");
         }
     }
 

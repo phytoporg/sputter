@@ -21,4 +21,6 @@ find_package(GLEW REQUIRED FATAL_ERROR)
 find_package(GLFW REQUIRED FATAL_ERROR)
 #find_package(GLM REQUIRED FATAL_ERROR)
 
+find_package(glog 0.4.0 REQUIRED)
+
 add_subdirectory(src)

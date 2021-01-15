@@ -7,5 +7,6 @@ include_directories(
 target_link_libraries(${TARGETNAME}
     sputter 
     glfw 
+    glog
     ${GLEW_LIBRARIES}
     ${OPENGL_LIBRARIES})

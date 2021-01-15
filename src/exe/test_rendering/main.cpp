@@ -1,9 +1,11 @@
 #include <sputter/render/window.h>
+#include <sputter/system/system.h>
 
 using namespace sputter;
 
-int main()
+int main(int argc, char** argv)
 {
+    system::InitializeLogging(argv[0]);
     render::Window window("Test window");
 
     window.EnableInputs();
