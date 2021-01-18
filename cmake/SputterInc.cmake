@@ -11,4 +11,6 @@ target_link_libraries(${TARGETNAME}
     glog
     png
     ${GLEW_LIBRARIES}
-    ${OPENGL_LIBRARIES})
+    ${OPENGL_LIBRARIES}
+    stdc++fs) # LINUX -- appears to be necessary for now, see
+              # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=90050

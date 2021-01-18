@@ -1,4 +1,4 @@
-#include <sputter/assets/pngreader.h>
+#include "pngreader.h"
 #include <sputter/system/system.h>
 
 #include <cstdlib>
@@ -46,6 +46,7 @@ namespace sputter { namespace assets {
 
         if (setjmp(png_jmpbuf(pPng)))
         {
+            LOG(WARNING) << "setjmp failed" << imagePath;
             png_destroy_read_struct(&pPng, nullptr, nullptr);
             fclose(fp);
             return false;
@@ -74,16 +75,19 @@ namespace sputter { namespace assets {
         pData->BitDepth = bitDepth;
 
         uint32_t stride = png_get_rowbytes(pPng, pInfo);
-        ImageData->pBytes = new uint8[stride * height];
+        pData->pBytes = new uint8_t[stride * height];
 
         png_bytepp rowPointers = png_get_rows(pPng, pInfo);
         for (int i = 0; i < height; ++i)
         {
             // Swap the ordering to appease OpenGL
-            memcpy(pData->pBytes + (stride * (height - 1 - i)), rowPointers[i]);
+            memcpy(
+                pData->pBytes + (stride * (height - 1 - i)),
+                rowPointers[i],
+                stride);
         }
 
-        png_destroy_read_struct(pPng, pInfo, nullptr);
+        png_destroy_read_struct(&pPng, &pInfo, nullptr);
 
         fclose(fp);
 

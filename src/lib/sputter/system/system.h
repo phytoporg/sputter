@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <glog/logging.h>
 
 namespace sputter { namespace system {
     // Initialize the logging system. programName is this executable name,

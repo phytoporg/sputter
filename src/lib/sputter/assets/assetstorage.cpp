@@ -3,66 +3,65 @@
 #include <filesystem>
 #include <sputter/system/system.h>
 
-// Helper functions
-namespace
-{
-    bool 
-    InitializeAssetMap(
-        const std::string& rootPath,
-        std::map<std::string, AssetStorageEntry>& assetMap
-        )
+namespace sputter { namespace assets {
+    AssetStorage::AssetStorage(const std::string& rootPathStr)
     {
-        namespace filesystem = fs;
-        if (!fs::exists(rootPath) || !fs::is_directory(rootPath))
+        namespace fs = std::filesystem;
+
+        const fs::path RootPath(rootPathStr);
+        if (!fs::exists(RootPath) || !fs::is_directory(RootPath))
         {
-            LOG(ERROR) << "Invalid asset storage root path " << rootPath;
-            return false;
+            system::LogAndFail("Invalid asset storage root path.");
         }
 
-        for (fs::path& currentPath : fs::recursive_directory_iterator(rootPath))
+        for (auto dirEntry : fs::recursive_directory_iterator(RootPath))
         {
-            if (fs::is_directory(currentPath))
+            const fs::path CurrentPath = dirEntry.path();
+            if (fs::is_directory(CurrentPath))
             {
                 continue;
             };
 
             // We only support .png files at the moment for image assets
-            if (currentPath.extension == ".png")
+            if (CurrentPath.extension() == ".png")
             {
                 PngReader reader;
 
-                const std::string& currentPathString = currentPath.string();
-                spData = std::make_shared<ImageData>();
-                if (reader.ReadImage(currentPathString, spData.get()))
+                const std::string& relativePathString = 
+                    CurrentPath.string().substr(rootPathStr.length() + 1);
+                auto spData = std::make_shared<ImageData>();
+                if (reader.ReadImage(CurrentPath.string(), spData.get()))
                 {
                     LOG(INFO) << "Asset loader: loaded " 
-                              << currentPathString;
+                              << relativePathString;
 
-                    m_assetMap.insert({currentPathString, spData});
+                    m_assetMap.insert({
+                        relativePathString,
+                        {CurrentPath.stem().string(), spData}
+                        });
                 }
                 else
                 {
                     LOG(WARNING) << "Asset loader: failed to load " 
-                                 << currentPath.string();
+                                 << CurrentPath.string();
                 }
             }
         }
-
-        return true;
     }
-}
 
-namespace sputter { namespace assets {
-    AssetStorage::AssetStorage(const std::string& rootPath)
+    std::shared_ptr<AssetData> 
+    AssetStorage::FindFirstByName(const std::string& assetName) const
     {
-        if (!InitializeAssetMap(rootPath, m_assetMap))
+        for (auto& mapPair : m_assetMap)
         {
-            LogAndFail("Failed to initialize asset map in asset storage.");
+            const AssetStorageEntry& storageEntry = mapPair.second;
+            LOG(INFO) << storageEntry.Name;
+            if (assetName == storageEntry.Name)
+            {
+                return storageEntry.spAssetData;
+            }
         }
-    }
 
-    AssetData* AssetStorage::FindFirstByName(const std::string& assetName)
-    {
-        return nullptr;
+        return std::shared_ptr<AssetData>(nullptr);
     }
 }}

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "assetdata.h"
+#include <cstdint>
 
 namespace sputter { namespace assets {
     struct ImageData : public AssetData

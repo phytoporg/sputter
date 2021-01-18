@@ -1,6 +1,6 @@
 #pragma once
 
-#include "imagedata.h"
+#include "assetdata.h"
 #include <string>
 #include <memory>
 #include <map>
@@ -22,7 +22,8 @@ namespace sputter { namespace assets {
         //
         // This is an O(n) search over assets, terminating the search as soon
         // as a match is found.
-        AssetData* FindFirstByName(const std::string& assetName);
+        std::shared_ptr<AssetData> 
+        FindFirstByName(const std::string& assetName) const;
 
     private:
         struct AssetStorageEntry
@@ -31,6 +32,7 @@ namespace sputter { namespace assets {
             std::shared_ptr<AssetData> spAssetData;
         };
 
+        // Key is the full relative path
         std::map<std::string, AssetStorageEntry> m_assetMap;
     };
 }}
