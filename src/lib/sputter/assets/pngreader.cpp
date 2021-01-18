@@ -70,6 +70,7 @@ namespace sputter { namespace assets {
             pPng, pInfo,
             &width, &height, &bitDepth, &colorType, &interfaceType,
             nullptr, nullptr);
+        pData->HasAlpha = (colorType & PNG_COLOR_MASK_ALPHA);
         pData->Width = width;
         pData->Height = height;
         pData->BitDepth = bitDepth;

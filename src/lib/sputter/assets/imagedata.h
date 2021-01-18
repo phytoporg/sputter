@@ -11,6 +11,7 @@ namespace sputter { namespace assets {
             return IMAGE_ASSET;
         }
 
+        bool     HasAlpha;
         uint32_t Width;
         uint32_t Height;
         uint32_t BitDepth;
