@@ -53,7 +53,14 @@ namespace sputter { namespace render {
     TexturePtr 
     TextureStorage::FindTextureByName(const std::string& textureName) const
     {
-        // TODO
-        return std::shared_ptr<Texture>(nullptr);
+        for (const TexturePtr& spTexture : m_storageVector)
+        {
+            if (spTexture->GetName() == textureName)
+            {
+                return spTexture;
+            }
+        }
+
+        return nullptr;
     }
 }}

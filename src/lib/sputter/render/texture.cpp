@@ -18,4 +18,14 @@ namespace sputter { namespace render {
     {
         glBindTexture(GL_TEXTURE_2D, 0);
     }
+
+    const std::string& Texture::GetName() const
+    {
+        return m_name;
+    }
+
+    const uint32_t Texture::GetId() const
+    {
+        return m_id;
+    }
 }}

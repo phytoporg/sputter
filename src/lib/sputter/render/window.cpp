@@ -1,4 +1,5 @@
 #include "window.h"
+#include <GL/gl.h>
 #include <glog/logging.h>
 #include <sputter/system/system.h>
 
@@ -47,6 +48,9 @@ namespace sputter { namespace render {
         {
             system::LogAndFail("glewInit() failed.");
         }
+
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS);
     }
 
     Window::~Window()

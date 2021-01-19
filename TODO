@@ -1,13 +1,13 @@
-Currently working on: asset loader!
-- Loads resources from a directory root
--- Uses relative path to identify those resources hierarchically
--- Resources may be: png images, wav files... probably other things too
+Currently working on sprite batches!
+- SpriteBatch can have sprites added to it
+- VBO and index buffers get populated
+- Currently unsure if things are initializing properly, and no draw call is ever made.
+-- Is Flush() the right place for that? Or do we want some kind of batch renderer?
+-- Draw() instead of Flush()
 
-- Surfaces resources into *easily usable* data formats
--- Images to uint8*, etc.
+Gonna have to include shaders in the asset pipeline as well, most likely.
+-- Need generic sprite shader, should be pretty straightforward
+-- Process transforms on the CPU for now
 
-- RENDERING library converts to textures
-
-Sprites can create from uint8*s (wrap these in some ImageData struct or something)
-- SpriteRegistry tracks all created sprites, can report batches for rendering
-
+^Once this is all working, CPU-side may need some adjustments for fixed-point math.
+- Sprite positions and such should be fixed point, rendering logic converts to floating point.
