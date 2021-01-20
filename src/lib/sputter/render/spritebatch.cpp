@@ -1,4 +1,7 @@
 #include "spritebatch.h"
+
+#include <GL/gl.h>
+
 #include <sputter/system/system.h>
 
 namespace sputter { namespace render {
@@ -23,6 +26,17 @@ namespace sputter { namespace render {
 		    m_verticesVector.data(),
 			GL_STATIC_DRAW);
 
+        // Position (3 floats)
+        glEnableVertexAttribArray(0);
+		glVertexAttribPointer(
+            0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
+
+        // TexCoord (2 floats)
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(
+            1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat),
+            (GLvoid*)(3 * sizeof(GLfloat)));
+
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_idxId);
 		glBufferData(
 			GL_ELEMENT_ARRAY_BUFFER,
@@ -30,16 +44,16 @@ namespace sputter { namespace render {
 			m_indicesVector.data(),
 			GL_STATIC_DRAW);
 
-        // Position (3 floats)
-		glVertexAttribPointer(
-            0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
-        glEnableVertexAttribArray(0);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+    }
 
-        // TexCoord (2 floats)
-        glVertexAttribPointer(
-            1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat),
-            (GLvoid*)(3 * sizeof(GLfloat)));
-        glEnableVertexAttribArray(1);
+    SpriteBatch::~SpriteBatch()
+    {
+        glDeleteBuffers(1, &m_vaoId);
+        glDeleteBuffers(1, &m_vboId);
+        glDeleteBuffers(1, &m_idxId);
     }
 
     void SpriteBatch::Reset()
@@ -100,8 +114,21 @@ namespace sputter { namespace render {
         return true;
     }
 
-    void SpriteBatch::Flush()
+    void SpriteBatch::Draw()
     {
-        // TODO: Actually draw stuff!
+        glBindVertexArray(m_vaoId);
+        glBindBuffer(GL_ARRAY_BUFFER, m_vboId);
+        m_spTexture->Bind();
+
+	    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_idxId);	
+		glDrawElements(
+            GL_TRIANGLES,
+            m_indicesVector.size(),
+            GL_UNSIGNED_INT,
+            nullptr);
+
+	    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);	
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
     }
 }}

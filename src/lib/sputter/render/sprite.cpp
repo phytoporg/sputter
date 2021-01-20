@@ -9,7 +9,7 @@ namespace sputter { namespace render {
         : m_spTexture(spTexture), m_size(w, h), m_position(x, y)
     {}
 
-    void SetPosition(float x, float y)
+    void Sprite::SetPosition(float x, float y)
     {
         m_position = glm::vec2(x, y);
     }

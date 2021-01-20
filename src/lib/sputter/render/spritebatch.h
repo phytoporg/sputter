@@ -1,6 +1,7 @@
 #pragma once
 
 #include "texture.h"
+#include "sprite.h"
 #include <glm/glm.hpp>
 #include <vector>
 
@@ -10,6 +11,7 @@ namespace sputter { namespace render {
     public:
         // TODO: shader param here as well
         SpriteBatch(TexturePtr spTexture, uint32_t maxSpriteCount);
+        ~SpriteBatch();
 
         // Clear sprite data
         void Reset();
@@ -17,8 +19,8 @@ namespace sputter { namespace render {
         // Fails if the added sprite is not compatible with this batch
         bool AddSprite(const Sprite& sprite);
 
-        // Upload data to GPU
-        void Flush();
+        // Upload data to GPU & render
+        void Draw();
 
     private:
         const uint32_t m_maxSpriteCount;
@@ -31,8 +33,8 @@ namespace sputter { namespace render {
 
         struct SpriteVertex
         {
-            glm::vec3f Position;
-            glm::vec2f TextureCoordinate;
+            glm::vec3 Position;
+            glm::vec2 TextureCoordinate;
         };
 
         std::vector<SpriteVertex> m_verticesVector;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include "texture.h"
 
 namespace sputter { namespace render {
     class Sprite
