@@ -5,7 +5,7 @@ include_directories(
     ${GLEW_INCLUDE_DIRS}
     ${OPENGL_INCLUDE_DIRS}
     ${PNG_INCLUDE_DIRS}
-    ${GLM_INCLUDE_DIRS})
+    ${GLM_INCLUDE_DIR})
 target_link_libraries(${TARGETNAME}
     sputter 
     glfw 

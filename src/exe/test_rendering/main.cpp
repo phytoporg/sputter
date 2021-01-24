@@ -2,11 +2,17 @@
 #include <sputter/assets/assetstorage.h>
 
 #include <sputter/render/window.h>
+#include <sputter/render/spritebatch.h>
+#include <sputter/render/sprite.h>
+#include <sputter/render/spriteshader.h>
 #include <sputter/render/texturestorage.h>
 
 #include <sputter/system/system.h>
 
 #include <iostream>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 using namespace sputter;
 
@@ -63,13 +69,32 @@ int main(int argc, char** argv)
         return -1;
     }
     
-    // now to like... draw something?
+    // create sprite
+    render::Sprite sprite(spTexture, 64, 32);
+    
+    // create sprite batch
+    render::SpriteBatch spriteBatch(spTexture, 1);
+    
+    // create shader
+    render::SpriteShader spriteShader;
+
+    glm::mat4 orthoMatrix = glm::ortho(0.0f, 640.0f, 0.0f, 480.0f);
+    spriteShader.SetUniformProjMatrix(orthoMatrix);
+
+    glm::mat4 identity(1.0f);
+    spriteShader.SetUniformModelMatrix(identity);
 
     window.EnableInputs();
     while (!window.ShouldClose() && !window.GetKeyState(GLFW_KEY_ESCAPE))
     {
         window.Clear();
         window.Tick();
+
+        spriteShader.Use();
+
+        spriteBatch.Reset();
+        spriteBatch.AddSprite(sprite);
+        spriteBatch.Draw();
     }
 
     return 0;
