@@ -70,7 +70,7 @@ int main(int argc, char** argv)
     }
     
     // create sprite
-    render::Sprite sprite(spTexture, 512, 512, 10.f, 10.f);
+    render::Sprite sprite(spTexture, 350, 350, 100.f, 100.f);
     
     // create sprite batch
     render::SpriteBatch spriteBatch(spTexture, 1);
