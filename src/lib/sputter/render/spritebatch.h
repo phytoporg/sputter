@@ -2,6 +2,7 @@
 
 #include "texture.h"
 #include "sprite.h"
+#include "spriteshader.h"
 #include <glm/glm.hpp>
 #include <vector>
 
@@ -20,7 +21,7 @@ namespace sputter { namespace render {
         bool AddSprite(const Sprite& sprite);
 
         // Upload data to GPU & render
-        void Draw();
+        void Draw(SpriteShader* pShader);
 
     private:
         const uint32_t m_maxSpriteCount;

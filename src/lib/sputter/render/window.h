@@ -25,11 +25,17 @@ namespace sputter { namespace render {
             void Clear();
             void Tick();
 
+            uint32_t GetWidth() const;
+            uint32_t GetHeight() const;
+
             bool ShouldClose();
 
         private:
             static bool m_isInitialized;
             GLFWwindow* m_window;
+
+            uint32_t m_width;
+            uint32_t m_height;
     };
 }}
 

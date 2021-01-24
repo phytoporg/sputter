@@ -10,11 +10,14 @@ namespace sputter { namespace render {
           m_spTexture(spTexture),
           m_maxSpriteCount(maxSpriteCount)
     {
-        m_verticesVector.reserve(maxSpriteCount);
-        m_indicesVector.reserve(maxSpriteCount);
+        // 4 verts per quad
+        m_verticesVector.reserve(maxSpriteCount * 4);
 
-        glGenBuffers(1, &m_vboId);
+        // 6 indices per quad to identify two triangles
+        m_indicesVector.reserve(maxSpriteCount * 6);
+
         glGenVertexArrays(1, &m_vaoId);
+        glGenBuffers(1, &m_vboId);
         glGenBuffers(1, &m_idxId);
 
 		glBindVertexArray(m_vaoId);
@@ -24,25 +27,32 @@ namespace sputter { namespace render {
 			GL_ARRAY_BUFFER,
 			sizeof(m_verticesVector[0]) * maxSpriteCount * 4,
 		    m_verticesVector.data(),
-			GL_STATIC_DRAW);
+			GL_DYNAMIC_DRAW);
 
         // Position (3 floats)
-        glEnableVertexAttribArray(0);
 		glVertexAttribPointer(
-            0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)0);
+            0, 3,
+            GL_FLOAT,
+            GL_FALSE,
+            sizeof(SpriteVertex),
+            (GLvoid*)0);
+        glEnableVertexAttribArray(0);
 
         // TexCoord (2 floats)
-        glEnableVertexAttribArray(1);
         glVertexAttribPointer(
-            1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat),
-            (GLvoid*)(3 * sizeof(GLfloat)));
+            1, 2,
+            GL_FLOAT,
+            GL_FALSE,
+            sizeof(SpriteVertex),
+            reinterpret_cast<void*>(offsetof(SpriteVertex, TextureCoordinate)));
+        glEnableVertexAttribArray(1);
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_idxId);
 		glBufferData(
 			GL_ELEMENT_ARRAY_BUFFER,
 			sizeof(m_indicesVector[0]) * 6 * maxSpriteCount,
 			m_indicesVector.data(),
-			GL_STATIC_DRAW);
+			GL_DYNAMIC_DRAW);
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -89,7 +99,7 @@ namespace sputter { namespace render {
 
         const size_t InitialIndex = m_verticesVector.size();
 
-        const glm::vec3 UlPos = glm::vec3(glm::vec2(SpritePos), 0.0f);
+        const glm::vec3 UlPos = glm::vec3(glm::vec2(SpritePos), 1.0f);
         m_verticesVector.push_back({ UlPos, glm::vec2(0.0f, 0.0f) });
 
         const glm::vec3 UrPos = UlPos + glm::vec3(SpriteSize.x, 0.0f, 0.0f);
@@ -101,23 +111,37 @@ namespace sputter { namespace render {
         const glm::vec3 LlPos = UlPos + glm::vec3(0.0f, SpriteSize.y, 0.0f);
         m_verticesVector.push_back({ LlPos, glm::vec2(0.0f, 1.0f) });
 
-        // First triangle (ul, ur, ll)
-        m_indicesVector.push_back(InitialIndex);
+        // First triangle (ul, ur, lr)
         m_indicesVector.push_back(InitialIndex + 1);
+        m_indicesVector.push_back(InitialIndex   );
         m_indicesVector.push_back(InitialIndex + 3);
 
-        // Second triangle (ur, lr, ll)
+        // Second triangle (ul, lr, ll)
         m_indicesVector.push_back(InitialIndex + 1);
-        m_indicesVector.push_back(InitialIndex + 2);
         m_indicesVector.push_back(InitialIndex + 3);
+        m_indicesVector.push_back(InitialIndex + 2);
 
         return true;
     }
 
-    void SpriteBatch::Draw()
+    void SpriteBatch::Draw(SpriteShader* pShader)
     {
+	    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_idxId);	
+		glBufferData(
+			GL_ELEMENT_ARRAY_BUFFER,
+			sizeof(m_indicesVector[0]) * m_indicesVector.size(),
+			m_indicesVector.data(),
+			GL_DYNAMIC_DRAW);
+
         glBindVertexArray(m_vaoId);
         glBindBuffer(GL_ARRAY_BUFFER, m_vboId);
+		glBufferData(
+			GL_ARRAY_BUFFER,
+			sizeof(m_verticesVector[0]) * m_verticesVector.size(),
+		    m_verticesVector.data(),
+			GL_DYNAMIC_DRAW);
+
+        pShader->SetUniformTextureId(0);
         m_spTexture->Bind();
 
 	    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_idxId);	

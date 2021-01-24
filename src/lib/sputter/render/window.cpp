@@ -13,6 +13,7 @@ namespace sputter { namespace render {
     {}
 
     Window::Window(const std::string& windowTitle, uint32_t w, uint32_t h)
+        : m_width(w), m_height(h)
     {
         if (glfwInit())
         {
@@ -75,8 +76,18 @@ namespace sputter { namespace render {
 
     void Window::Tick()
     {
-        glfwSwapBuffers(m_window);
         glfwPollEvents();
+        glfwSwapBuffers(m_window);
+    }
+    
+    uint32_t Window::GetWidth() const
+    {
+        return m_width;
+    }
+
+    uint32_t Window::GetHeight() const
+    {
+        return m_height;
     }
 
     bool Window::ShouldClose()

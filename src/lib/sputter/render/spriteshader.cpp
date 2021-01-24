@@ -10,8 +10,8 @@
 
 namespace {
     const char* VertexShaderSource   = R"(
-        #version 330 core
-        // <vec2 position, vec2 texCoords>
+        #version 430
+        // <vec3 position, vec2 texCoords>
         layout (location = 0) in vec3 vertex; 
         layout (location = 1) in vec2 texCoords; 
 
@@ -27,16 +27,16 @@ namespace {
         })";
 
     const char* FragmentShaderSource = R"(
-        #version 330 core
+        #version 430
         in vec2 TexCoords;
         out vec4 color;
 
         uniform sampler2D image;
-        uniform vec3 spriteColor;
 
         void main()
         {    
-            color = vec4(spriteColor, 1.0) * texture(image, TexCoords);
+            //color = texture(image, TexCoords);
+            color = vec4(1.0, 0.0, 0.0, 1.0);
         })";
 }
 
@@ -123,7 +123,8 @@ namespace sputter { namespace render {
         glDetachShader(m_programId, m_fragmentShaderId);
 
         m_uniformModelId = glGetUniformLocation(m_programId, "model");
-        m_uniformProjId = glGetUniformLocation(m_programId, "projection");
+        m_uniformProjId  = glGetUniformLocation(m_programId, "projection");
+        m_uniformTexId   = glGetUniformLocation(m_programId, "image");
     }
 
     SpriteShader::~SpriteShader()
@@ -141,6 +142,11 @@ namespace sputter { namespace render {
     void SpriteShader::SetUniformProjMatrix(const glm::mat4& m)
     {
         glUniformMatrix4fv(m_uniformProjId, 1, GL_FALSE, glm::value_ptr(m));
+    }
+
+    void SpriteShader::SetUniformTextureId(int32_t textureId)
+    {
+        glUniform1i(m_uniformTexId, 0);
     }
 
     void SpriteShader::Use() const
