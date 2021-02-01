@@ -1,6 +1,7 @@
 #include "texturestorage.h"
 #include <sputter/system/system.h>
 #include <GL/gl.h>
+#include <GL/glu.h>
 
 namespace sputter { namespace render {
     bool 
@@ -9,7 +10,8 @@ namespace sputter { namespace render {
         const std::string& textureName
         )
     {
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        glActiveTexture(GL_TEXTURE0);
+        glEnable(GL_TEXTURE_2D);
 
         GLuint textureId;
         glGenTextures(1, &textureId);
@@ -21,20 +23,22 @@ namespace sputter { namespace render {
         // Scale linearly when image is smaller than texture
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); 
 
-        glTexImage2D(
-            GL_TEXTURE_2D, 0, imageData.HasAlpha ? 4 : 3,
-            imageData.Width, imageData.Height, 
-            0, 
-            imageData.HasAlpha ? GL_RGBA : GL_RGB,
-            GL_UNSIGNED_BYTE,
-            imageData.pBytes);
+        glPixelStorei(GL_PACK_ALIGNMENT, 1); 
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1); 
 
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glEnable(GL_TEXTURE_2D);
-        glShadeModel(GL_FLAT);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+
+        glTexImage2D(
+            GL_TEXTURE_2D, 0, imageData.HasAlpha ? GL_RGBA : GL_RGB,
+            imageData.Width, imageData.Height, 
+            0, 
+            imageData.HasAlpha ? GL_RGBA : GL_RGB,
+            GL_UNSIGNED_BYTE,
+            imageData.pBytes);
 
         if (!FindTextureByName(textureName))
         {

@@ -12,9 +12,9 @@ namespace sputter { namespace assets {
         }
 
         bool     HasAlpha;
-        uint32_t Width;
-        uint32_t Height;
-        uint32_t BitDepth;
+        int32_t  Width;
+        int32_t  Height;
+        int32_t  BitDepth;
         uint8_t* pBytes;
     };
 }}

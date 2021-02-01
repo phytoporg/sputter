@@ -126,6 +126,9 @@ namespace sputter { namespace render {
 
     void SpriteBatch::Draw(SpriteShader* pShader)
     {
+        glActiveTexture(GL_TEXTURE0);
+        glEnable(GL_TEXTURE_2D);
+
 	    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_idxId);	
 		glBufferData(
 			GL_ELEMENT_ARRAY_BUFFER,
@@ -143,6 +146,7 @@ namespace sputter { namespace render {
 
         pShader->SetUniformTextureId(0);
         m_spTexture->Bind();
+        //glBindSampler();
 
 	    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_idxId);	
 		glDrawElements(
@@ -151,6 +155,7 @@ namespace sputter { namespace render {
             GL_UNSIGNED_INT,
             nullptr);
 
+        m_spTexture->Unbind();
 	    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);	
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
