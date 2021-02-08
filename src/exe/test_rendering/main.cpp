@@ -11,6 +11,7 @@
 #include <sputter/physics/rigidbody2d.h>
 
 #include <sputter/system/system.h>
+#include <sputter/system/time.h>
 
 #include <iostream>
 
@@ -97,12 +98,16 @@ int main(int argc, char** argv)
     // create shader
     render::SpriteShader spriteShader;
     window.EnableInputs();
+
+    const uint32_t DesiredFps  = 60;
+    const uint32_t FrameStepMs = 1000 / DesiredFps;
+    const float DeltaTime = 1.0f / static_cast<float>(DesiredFps);
+    uint32_t nextTick = system::GetTickMilliseconds() + FrameStepMs;
     while (!window.ShouldClose() && !window.GetKeyState(GLFW_KEY_ESCAPE))
     {
         window.Clear();
 
-        float deltaTime = 1.0f; // TODO:COMPUTE THIS
-        rigidBodySubsystem.Tick(deltaTime);
+        rigidBodySubsystem.Tick(DeltaTime);
 
         // TODO: This function ought to be able to take a vector
         sprite.SetPosition( 
@@ -121,6 +126,13 @@ int main(int argc, char** argv)
         spriteBatch.Draw(&spriteShader);
 
         window.Tick();
+
+        const uint32_t TimeMs = system::GetTickMilliseconds();
+        if (TimeMs < nextTick)
+        {
+            system::SleepMs(nextTick - TimeMs);
+        }
+        nextTick = TimeMs + FrameStepMs;
     }
 
     rigidBodySubsystem.ReleaseComponent(pMainRigidBody);

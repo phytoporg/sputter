@@ -40,7 +40,6 @@ namespace sputter { namespace physics {
 
             if (m_isGravityEnabled)
             {
-                // TODO: operator+ on Vector
                 an += m_gravity;
             }
 
