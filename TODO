@@ -1,13 +1,21 @@
-Currently working on sprite batches!
-- SpriteBatch can have sprites added to it
-- VBO and index buffers get populated
-- Currently unsure if things are initializing properly, and no draw call is ever made.
--- Is Flush() the right place for that? Or do we want some kind of batch renderer?
--- Draw() instead of Flush()
+Sprite animation!
+- SpriteAnimationAtlas class
+-- Stores atlas texture reference
+-- Stores one or more named AnimationSequence classes
 
-Gonna have to include shaders in the asset pipeline as well, most likely.
--- Need generic sprite shader, should be pretty straightforward
--- Process transforms on the CPU for now
+- SpriteAnimationSequence class
+-- Array of SpriteAnimationFrame objects
+-- AnimationFrame = 4 UV coords, maybe don't need a whole other class/struct
 
-^Once this is all working, CPU-side may need some adjustments for fixed-point math.
-- Sprite positions and such should be fixed point, rendering logic converts to floating point.
+- ISpriteAnimationTimer (or maybe an abstract class?
+-- Ifc for mapping of timeline-to-sequence frame #
+-- We can start with LinearSpriteAnimationTimer
+-- Ifc:
+--- SetPlayration(float to playrate) <-- optional, default is 1.0f
+--- Tick(dt) <-- ITickable?
+--- GetCurrentFrameNumber()
+-- ^In the future, may also contain metadata for events
+
+- Integration with SpriteBatch?
+-- Sprite exposes UVs, defaults to assuming entire texture
+-- Can optionally attach sequence & timer to sprite, informs UV fetches
