@@ -47,7 +47,7 @@ namespace sputter { namespace math {
         return returnValue;
     }
 
-    Vector2D& operator+=(const Vector2D& other)
+    Vector2D& Vector2D::operator+=(const Vector2D& other)
     {
         this->m_x += other.m_x;
         this->m_y += other.m_y;

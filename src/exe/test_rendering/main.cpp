@@ -7,6 +7,9 @@
 #include <sputter/render/texturestorage.h>
 #include <sputter/render/window.h>
 
+#include <sputter/physics/rigidbodysubsystem.h>
+#include <sputter/physics/rigidbody2d.h>
+
 #include <sputter/system/system.h>
 
 #include <iostream>
@@ -68,6 +71,14 @@ int main(int argc, char** argv)
         LOG(ERROR) << "Couldnt find the texture we just added.";
         return -1;
     }
+
+    physics::RigidBodySubsystemSettings rigidBodySettings;
+    rigidBodySettings.MaxRigidBodies = 5;
+
+    physics::RigidBodySubsystem rigidBodySubsystem(rigidBodySettings);
+    physics::RigidBody2D* pMainRigidBody = rigidBodySubsystem.CreateComponent();
+
+    pMainRigidBody->Position.Set(350.0f, 350.0f);
     
     // create sprite
     render::Sprite sprite(spTexture, 350, 350, 100.f, 100.f);
@@ -90,6 +101,14 @@ int main(int argc, char** argv)
     {
         window.Clear();
 
+        float deltaTime = 1.0f; // TODO:COMPUTE THIS
+        rigidBodySubsystem.Tick(deltaTime);
+
+        // TODO: This function ought to be able to take a vector
+        sprite.SetPosition( 
+            pMainRigidBody->Position.GetX(),
+            pMainRigidBody->Position.GetY());
+
         spriteShader.Use();
 
         spriteShader.SetUniformProjMatrix(orthoMatrix);
@@ -103,6 +122,8 @@ int main(int argc, char** argv)
 
         window.Tick();
     }
+
+    rigidBodySubsystem.ReleaseComponent(pMainRigidBody);
 
     return 0;
 }

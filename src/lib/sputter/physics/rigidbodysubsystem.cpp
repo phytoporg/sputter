@@ -10,7 +10,6 @@ namespace sputter { namespace physics {
         : m_isGravityEnabled(settings.IsGravityEnabled),
           m_gravity(settings.Gravity),
           m_maxRigidBodies(settings.MaxRigidBodies),
-          m_validRigidBodyVector(settings.MaxRigidBodies, false),
           m_rigidBodyCount(0)
     {
         m_rigidBodies.reserve(m_maxRigidBodies);
@@ -68,10 +67,11 @@ namespace sputter { namespace physics {
 
         const size_t BadIndex = static_cast<size_t>(-1);
         size_t nextIndex = BadIndex;
-        for (nextIndex = 0; nextIndex < m_validRigidBodyVector.size(); ++nextIndex)
+        for (size_t i = 0; i < m_validRigidBodyVector.size(); ++i)
         {
-            if (!m_validRigidBodyVector[nextIndex])
+            if (!m_validRigidBodyVector[i])
             {
+                nextIndex = i;
                 break;
             }
         }
@@ -80,7 +80,7 @@ namespace sputter { namespace physics {
         ++m_rigidBodyCount;
         if (nextIndex == BadIndex)
         {
-            m_rigidBodies.emplace_back();
+            m_rigidBodies.push_back(RigidBody2D());
             m_validRigidBodyVector.push_back(true);
             return &m_rigidBodies.back();
         }
