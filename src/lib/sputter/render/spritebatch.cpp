@@ -5,6 +5,10 @@
 #include <sputter/system/system.h>
 
 namespace sputter { namespace render {
+    SpriteBatch::SpriteBatch(uint32_t maxSpriteCount)
+        : SpriteBatch(nullptr, maxSpriteCount)
+    {}
+
     SpriteBatch::SpriteBatch(TexturePtr spTexture, uint32_t maxSpriteCount)
         : m_vaoId(0), m_vboId(0),
           m_spTexture(spTexture),
@@ -146,7 +150,6 @@ namespace sputter { namespace render {
 
         pShader->SetUniformTextureId(0);
         m_spTexture->Bind();
-        //glBindSampler();
 
 	    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_idxId);	
 		glDrawElements(
@@ -159,5 +162,15 @@ namespace sputter { namespace render {
 	    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);	
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
+    }
+
+    void SpriteBatch::SetTexturePtr(TexturePtr spTexture)
+    {
+        m_spTexture = spTexture;
+    }
+
+    TexturePtr SpriteBatch::GetTexturePtr()
+    {
+        return m_spTexture;
     }
 }}

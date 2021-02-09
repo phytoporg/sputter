@@ -11,6 +11,7 @@ namespace sputter { namespace render {
     {
     public:
         // TODO: shader param here as well
+        SpriteBatch(uint32_t maxSpriteCount);
         SpriteBatch(TexturePtr spTexture, uint32_t maxSpriteCount);
         ~SpriteBatch();
 
@@ -22,6 +23,9 @@ namespace sputter { namespace render {
 
         // Upload data to GPU & render
         void Draw(SpriteShader* pShader);
+
+        void SetTexturePtr(TexturePtr spTexture);
+        TexturePtr GetTexturePtr();
 
     private:
         const uint32_t m_maxSpriteCount;

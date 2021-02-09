@@ -1,6 +1,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <sputter/math/vector2d.h>
 #include "texture.h"
 
 namespace sputter { namespace render {
@@ -9,11 +10,16 @@ namespace sputter { namespace render {
     public:
         // TODO (philjo 1/18/2021): should use fixed point floats here and 
         // convert to glm at rendering stages.
+        Sprite();
         Sprite(TexturePtr spTexture, float w, float h);
         Sprite(TexturePtr spTexture, float w, float h, float x, float y);
 
+        void SetDimensions(float w, float h);
+
+        void SetPosition(const math::Vector2D& position);
         void SetPosition(float x, float y);
 
+        void SetTexturePtr(TexturePtr spTexture);
         TexturePtr GetTexturePtr() const;
 
         glm::vec2 GetPosition() const;
@@ -23,8 +29,6 @@ namespace sputter { namespace render {
         // rotation, scale
 
     private:
-        Sprite() = delete;
-
         glm::vec2 m_position;
         glm::vec2 m_size;
 

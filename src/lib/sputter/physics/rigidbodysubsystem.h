@@ -5,6 +5,7 @@
 #include "rigidbody2d.h"
 
 #include <sputter/core/subsystem.h>
+#include <sputter/game/subsystemtype.h>
 #include <sputter/math/vector2d.h>
 
 namespace sputter { namespace physics {
@@ -18,6 +19,9 @@ namespace sputter { namespace physics {
     class RigidBodySubsystem : public core::ISubsystem<RigidBody2D>
     {
     public:
+        static const game::SubsystemType SubsystemId =
+            game::SubsystemType::TYPE_RIGIDBODY;
+
         RigidBodySubsystem(const RigidBodySubsystemSettings& settings);
 
         // Begin ISubsystem

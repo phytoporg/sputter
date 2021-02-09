@@ -33,7 +33,6 @@ namespace sputter { namespace physics {
 
             RigidBody2D& rigidBody = m_rigidBodies[i];
             
-            // TODO: operator* on Vector
             const math::Vector2D xn = rigidBody.Position;
             const math::Vector2D vn = rigidBody.Velocity;
             math::Vector2D an = rigidBody.Acceleration;

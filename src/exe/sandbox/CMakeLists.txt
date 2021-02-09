@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.8 FATAL_ERROR)
 
-set(TARGETNAME test_rendering)
+set(TARGETNAME sandbox)
 
 file(GLOB SOURCES *.cpp)
 add_executable(${TARGETNAME} ${SOURCES})

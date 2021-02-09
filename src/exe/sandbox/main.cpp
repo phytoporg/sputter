@@ -1,9 +1,8 @@
 #include <sputter/assets/imagedata.h>
 #include <sputter/assets/assetstorage.h>
 
-#include <sputter/render/spritebatch.h>
+#include <sputter/render/spritesubsystem.h>
 #include <sputter/render/sprite.h>
-#include <sputter/render/spriteshader.h>
 #include <sputter/render/texturestorage.h>
 #include <sputter/render/window.h>
 
@@ -14,9 +13,6 @@
 #include <sputter/system/time.h>
 
 #include <iostream>
-
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 
 using namespace sputter;
 
@@ -80,23 +76,13 @@ int main(int argc, char** argv)
     physics::RigidBody2D* pMainRigidBody = rigidBodySubsystem.CreateComponent();
 
     pMainRigidBody->Position.Set(350.0f, 350.0f);
-    
-    // create sprite
-    render::Sprite sprite(spTexture, 350, 350, 100.f, 100.f);
-    
-    // create sprite batch
-    render::SpriteBatch spriteBatch(spTexture, 1);
 
-	glm::mat4 orthoMatrix =
-		glm::ortho(
-            0.0f, 
-            static_cast<float>(window.GetWidth()),
-            static_cast<float>(window.GetHeight()),
-            0.0f,
-            -1.0f, 1.0f);
-
-    // create shader
-    render::SpriteShader spriteShader;
+    render::SpriteSubsystem spriteSubsystem(window, 10 /* max sprites */);
+    render::Sprite* pSprite = spriteSubsystem.CreateComponent();
+    pSprite->SetPosition(pMainRigidBody->Position);
+    pSprite->SetTexturePtr(spTexture);
+    pSprite->SetDimensions(50.0f, 50.0f);
+    
     window.EnableInputs();
 
     const uint32_t DesiredFps  = 60;
@@ -109,21 +95,9 @@ int main(int argc, char** argv)
 
         rigidBodySubsystem.Tick(DeltaTime);
 
-        // TODO: This function ought to be able to take a vector
-        sprite.SetPosition( 
-            pMainRigidBody->Position.GetX(),
-            pMainRigidBody->Position.GetY());
+        pSprite->SetPosition(pMainRigidBody->Position);
 
-        spriteShader.Use();
-
-        spriteShader.SetUniformProjMatrix(orthoMatrix);
-
-        glm::mat4 identity(1.0f);
-        spriteShader.SetUniformModelMatrix(identity);
-
-        spriteBatch.Reset();
-        spriteBatch.AddSprite(sprite);
-        spriteBatch.Draw(&spriteShader);
+        spriteSubsystem.Draw();
 
         window.Tick();
 
