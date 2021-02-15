@@ -1,4 +1,4 @@
-#pragma
+#pragma once
 
 // Fixed-point 2-dimensional vector
 
@@ -16,8 +16,8 @@ namespace sputter { namespace math {
         FixedPoint GetY() const;
 
         // Mutators
-        void Set(FixedPoint x, FixedPoint y);
         void Set(const FPVector2D& other);
+        void Set(FixedPoint x, FixedPoint y);
         void Set(FixedPoint v[2]);
 
         void SetX(FixedPoint x);
@@ -32,16 +32,8 @@ namespace sputter { namespace math {
 
         // TODO: Everything else
     private:
-        union
-        {
-            FixedPoint m_data[2];
-
-            struct 
-            {
-                FixedPoint m_x;
-                FixedPoint m_y;
-            };
-        };
+        FixedPoint m_x;
+        FixedPoint m_y;
     };
 
     FPVector2D operator*(FixedPoint scalar, const FPVector2D& other);

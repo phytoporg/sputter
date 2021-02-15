@@ -1,6 +1,7 @@
 #pragma once
 
-#include <sputter/math/vector2d.h>
+#include <sputter/math/fixedpoint.h>
+#include <sputter/math/fpvector2d.h>
 #include <sputter/game/subsystemtype.h>
 
 namespace sputter { namespace physics {
@@ -9,10 +10,10 @@ namespace sputter { namespace physics {
         static const game::SubsystemType ComponentId =
             game::SubsystemType::TYPE_RIGIDBODY;
 
-        math::Vector2D Position;
-        math::Vector2D Velocity;
-        math::Vector2D Acceleration;
+        math::FPVector2D Position;
+        math::FPVector2D Velocity;
+        math::FPVector2D Acceleration;
 
-        float Mass;
+        math::FixedPoint Mass;
     };
 }}

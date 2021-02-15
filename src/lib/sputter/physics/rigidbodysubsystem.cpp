@@ -16,7 +16,7 @@ namespace sputter { namespace physics {
         m_validRigidBodyVector.reserve(m_maxRigidBodies);
     }
 
-    void RigidBodySubsystem::Tick(float dt)
+    void RigidBodySubsystem::Tick(math::FixedPoint dt)
     {
         // TODO(philjo 2/7/2021):
         // Simplifying the stable and self-starting terms for verlet integration
@@ -33,16 +33,16 @@ namespace sputter { namespace physics {
 
             RigidBody2D& rigidBody = m_rigidBodies[i];
             
-            const math::Vector2D xn = rigidBody.Position;
-            const math::Vector2D vn = rigidBody.Velocity;
-            math::Vector2D an = rigidBody.Acceleration;
+            const math::FPVector2D xn = rigidBody.Position;
+            const math::FPVector2D vn = rigidBody.Velocity;
+            math::FPVector2D an = rigidBody.Acceleration;
 
             if (m_isGravityEnabled)
             {
                 an += m_gravity;
             }
 
-            rigidBody.Position = xn + vn * dt + 0.5f * an * dt * dt;
+            rigidBody.Position = xn + vn * dt + an * dt * dt * math::FPOneHalf;
             rigidBody.Velocity = vn + an * dt;
         }
     }

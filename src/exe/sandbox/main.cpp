@@ -75,7 +75,8 @@ int main(int argc, char** argv)
     physics::RigidBodySubsystem rigidBodySubsystem(rigidBodySettings);
     physics::RigidBody2D* pMainRigidBody = rigidBodySubsystem.CreateComponent();
 
-    pMainRigidBody->Position.Set(350.0f, 350.0f);
+    const math::FixedPoint FPThreeFifty(350);
+    pMainRigidBody->Position.Set(FPThreeFifty, FPThreeFifty);
 
     render::SpriteSubsystem spriteSubsystem(window, 10 /* max sprites */);
     render::Sprite* pSprite = spriteSubsystem.CreateComponent();
@@ -85,10 +86,11 @@ int main(int argc, char** argv)
     
     window.EnableInputs();
 
-    const uint32_t DesiredFps  = 60;
-    const uint32_t FrameStepMs = 1000 / DesiredFps;
-    const float DeltaTime = 1.0f / static_cast<float>(DesiredFps);
-    uint32_t nextTick = system::GetTickMilliseconds() + FrameStepMs;
+    const math::FixedPoint DesiredFps  = math::FPSixty;
+    const math::FixedPoint FrameStepMs = math::FixedPoint(1000) / DesiredFps;
+    const math::FixedPoint DeltaTime = math::FPOne / DesiredFps;
+    uint32_t nextTick = 
+        system::GetTickMilliseconds() + static_cast<uint32_t>(FrameStepMs);
     while (!window.ShouldClose() && !window.GetKeyState(GLFW_KEY_ESCAPE))
     {
         window.Clear();
@@ -106,7 +108,7 @@ int main(int argc, char** argv)
         {
             system::SleepMs(nextTick - TimeMs);
         }
-        nextTick = TimeMs + FrameStepMs;
+        nextTick = TimeMs + static_cast<uint32_t>(FrameStepMs);
     }
 
     rigidBodySubsystem.ReleaseComponent(pMainRigidBody);

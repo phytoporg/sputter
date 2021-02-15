@@ -19,7 +19,7 @@ namespace sputter { namespace render {
         m_spritesValidArray.reserve(maxSpriteCount);
     }
 
-    void SpriteSubsystem::Tick(float dt)
+    void SpriteSubsystem::Tick(math::FixedPoint dt)
     {
         // NOOP?
     }

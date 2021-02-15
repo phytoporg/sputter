@@ -36,12 +36,12 @@ namespace sputter { namespace math {
         m_y = v[1];
     }
 
-    FPVector2D operator+(const FPVector2D& other) const
+    FPVector2D FPVector2D::operator+(const FPVector2D& other) const
     {
         return FPVector2D(m_x + other.m_x, m_y + other.m_y);
     }
 
-    FPVector2D operator+=(const FPVector2D& other)
+    FPVector2D FPVector2D::operator+=(const FPVector2D& other)
     {
         m_x += other.m_x;
         m_y += other.m_y;
@@ -49,7 +49,7 @@ namespace sputter { namespace math {
         return *this;
     }
 
-    FPVector2D operator*(FixedPoint scalar) const
+    FPVector2D FPVector2D::operator*(FixedPoint scalar) const
     {
         return FPVector2D(m_x * scalar, m_y * scalar);
     }

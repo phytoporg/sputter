@@ -1,6 +1,5 @@
 #include "sprite.h"
 
-// TODO(phijo 2/7/2021): Clean up the mixture of glm/math::Vector here
 namespace sputter { namespace render {
     Sprite::Sprite()
         : Sprite(nullptr, 0.0f, 0.0f, 0.0f, 0.0f)
@@ -19,9 +18,11 @@ namespace sputter { namespace render {
         m_size = glm::vec2(w, h);
     }
 
-    void Sprite::SetPosition(const math::Vector2D& position)
+    void Sprite::SetPosition(const math::FPVector2D& position)
     {
-        m_position = glm::vec2(position.GetX(), position.GetY());
+        m_position = glm::vec2(
+            static_cast<float>(position.GetX()),
+            static_cast<float>(position.GetY()));
     }
 
     void Sprite::SetPosition(float x, float y)

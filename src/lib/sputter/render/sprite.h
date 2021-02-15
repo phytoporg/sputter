@@ -1,7 +1,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
-#include <sputter/math/vector2d.h>
+#include <sputter/math/fpvector2d.h>
 #include "texture.h"
 
 namespace sputter { namespace render {
@@ -16,7 +16,7 @@ namespace sputter { namespace render {
 
         void SetDimensions(float w, float h);
 
-        void SetPosition(const math::Vector2D& position);
+        void SetPosition(const math::FPVector2D& position);
         void SetPosition(float x, float y);
 
         void SetTexturePtr(TexturePtr spTexture);

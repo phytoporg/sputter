@@ -13,7 +13,7 @@ namespace sputter { namespace render {
         // TODO: settings?
         SpriteSubsystem(Window& window, size_t maxSpriteCount);
 
-        virtual void Tick(float dt) override;
+        virtual void Tick(math::FixedPoint dt) override;
 
         virtual Sprite* CreateComponent() override;
         virtual void ReleaseComponent(Sprite* pSprite) override;

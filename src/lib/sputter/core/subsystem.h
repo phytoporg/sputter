@@ -1,5 +1,7 @@
 #pragma once
 
+#include <sputter/math/fixedpoint.h>
+
 // A Subsystem object in Sputter manages the lifetime of a particular kind of
 // component related to the subsystem and is responsible for updating those
 // components on each tick.
@@ -9,7 +11,7 @@ namespace sputter { namespace core {
     class ISubsystem
     {
     public:
-        virtual void Tick(float dt) = 0;
+        virtual void Tick(math::FixedPoint dt) = 0;
 
         virtual ComponentType* CreateComponent() = 0;
         virtual void ReleaseComponent(ComponentType* pComponent) = 0;
