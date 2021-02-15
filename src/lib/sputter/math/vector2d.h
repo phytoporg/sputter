@@ -1,5 +1,7 @@
 #pragma once
 
+// TODO: deprecate this!
+
 namespace sputter { namespace math {
     class Vector2D
     {
