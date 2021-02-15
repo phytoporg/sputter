@@ -75,14 +75,14 @@ int main(int argc, char** argv)
     physics::RigidBodySubsystem rigidBodySubsystem(rigidBodySettings);
     physics::RigidBody2D* pMainRigidBody = rigidBodySubsystem.CreateComponent();
 
-    const math::FixedPoint FPThreeFifty(350);
-    pMainRigidBody->Position.Set(FPThreeFifty, FPThreeFifty);
+    const math::FixedPoint FPTwenty(20);
+    pMainRigidBody->Position.Set(FPTwenty, FPTwenty);
 
     render::SpriteSubsystem spriteSubsystem(window, 10 /* max sprites */);
     render::Sprite* pSprite = spriteSubsystem.CreateComponent();
     pSprite->SetPosition(pMainRigidBody->Position);
     pSprite->SetTexturePtr(spTexture);
-    pSprite->SetDimensions(50.0f, 50.0f);
+    pSprite->SetDimensions(100.0f, 100.0f);
     
     window.EnableInputs();
 

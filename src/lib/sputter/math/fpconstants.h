@@ -3,7 +3,7 @@
 #include "fixedpoint.h"
 
 namespace sputter { namespace math {
-    const FixedPoint FPZero(1);
+    const FixedPoint FPZero(0);
     const FixedPoint FPOne(1);
     const FixedPoint FPTwo(2);
     const FixedPoint FPTen(10);
