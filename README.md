@@ -15,8 +15,8 @@ make
 ### Running test program
 
 ```
-$ ./src/exe/test_rendering/test_rendering
-Usage: ./src/exe/test_rendering/test_rendering <asset_path> <test image asset>
+$ ./src/exe/sandbox/sandbox
+Usage: ./src/exe/sandbox/sandbox <asset_path> <test image asset>
 ```
 Point to an `asset` directory. 
 Sputter will recursively load all textures in that directory.
