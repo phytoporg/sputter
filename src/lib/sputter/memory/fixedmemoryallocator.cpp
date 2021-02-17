@@ -11,7 +11,7 @@ namespace sputter { namespace memory {
             m_regionSize(regionSize) 
     {}
 
-    bool ReserveNext(
+    bool FixedMemoryAllocator::ReserveNext(
         const std::string& allocatorName, 
         size_t size,
         FixedMemoryAllocator* pOut)
@@ -27,5 +27,10 @@ namespace sputter { namespace memory {
         m_pNext += size;
 
         return true;
+    }
+
+    uint8_t* FixedMemoryAllocator::GetBase()
+    {
+        return m_pBase;
     }
 }}
