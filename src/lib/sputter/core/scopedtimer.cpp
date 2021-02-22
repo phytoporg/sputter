@@ -4,12 +4,12 @@
 
 namespace sputter { namespace core {
     ScopedTimer::ScopedTimer(uint32_t* pElapsedMs)
-        : m_startTime(GetTickMilliseconds()),
+        : m_startTime(system::GetTickMilliseconds()),
           m_pElapsedMs(pElapsedMs)
     {}
 
     ScopedTimer::~ScopedTimer()
     {
-        *m_pElapsedMs = GetTickMilliseconds() - m_startTime;
+        *m_pElapsedMs = system::GetTickMilliseconds() - m_startTime;
     }
 }}
