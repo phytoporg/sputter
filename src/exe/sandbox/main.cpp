@@ -55,10 +55,7 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    LOG(INFO) << "Found asset " << argv[2] << "!" << std::endl;
-
     render::Window window("Test window");
-
     render::TextureStorage textureStorage;
     if (!textureStorage.AddTexture(*pImageData, argv[2]))
     {
@@ -73,7 +70,7 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    memory::ReservedRegion stateRegion(0x10000);
+    memory::ReservedRegion stateRegion(0x1000);
     memory::FixedMemoryAllocator allocator(
         "GameState",
         stateRegion.GetRegionBase(),

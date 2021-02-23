@@ -7,11 +7,12 @@ namespace sputter { namespace memory {
     class FixedMemoryAllocator
     {
     public:
+        FixedMemoryAllocator(const std::string& allocatorName);
+
         FixedMemoryAllocator(
             const std::string& allocatorName,
             uint8_t* pBase,
-            size_t regionSize
-            );
+            size_t regionSize);
 
         template <typename T, typename... Args>
         T* Create(Args&&... args) 

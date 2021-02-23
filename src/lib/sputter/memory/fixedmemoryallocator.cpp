@@ -1,6 +1,13 @@
 #include "fixedmemoryallocator.h"
 
 namespace sputter { namespace memory {
+    FixedMemoryAllocator::FixedMemoryAllocator(const std::string& allocatorName)
+        : m_allocatorName(allocatorName),
+        m_pBase(nullptr),
+        m_pNext(nullptr),
+        m_regionSize(0)
+    {}
+
     FixedMemoryAllocator::FixedMemoryAllocator(
         const std::string& allocatorName,
         uint8_t* pBase,

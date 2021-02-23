@@ -3,6 +3,10 @@
 #include <sputter/system/system.h>
 #include <sputter/memory/fixedmemoryallocator.h>
 
+// 
+#include <iostream>
+// 
+
 namespace sputter { namespace containers {
     template<typename T>
     class FixedMemoryVector
@@ -13,7 +17,8 @@ namespace sputter { namespace containers {
             memory::FixedMemoryAllocator& allocator)
             : m_size(0),
               m_capacity(capacity),
-              m_data(nullptr)
+              m_data(nullptr),
+              m_allocator("FixedMemoryVector")
         {
             if (!allocator.ReserveNext("vector", capacity * sizeof(T), &m_allocator))
             {
@@ -39,7 +44,7 @@ namespace sputter { namespace containers {
             ++m_size;
         }
 
-        typename<typename Args...>
+        template<typename ...Args>
         void Emplace(Args&&... args)
         {
             if (m_size + 1 > m_capacity)
@@ -47,29 +52,28 @@ namespace sputter { namespace containers {
                 LOG(WARNING) << "FMV::Add() - out of bounds";
             }
 
-            // Am I doing this right???
-            new (m_data + m_size + 1) T(std::forward<Args>(args...));
+            new (m_data + m_size) T(std::forward<Args>(args)...);
             ++m_size;
         }
 
         const T& Get(size_t index) const
         {
-            return m_data[i];
+            return m_data[index];
         }
 
         T& Get(size_t index)
         {
-            return m_data[i];
+            return m_data[index];
         }
 
         const T& operator[](size_t index) const
         {
-            return m_data[i];
+            return m_data[index];
         }
 
         T& operator[](size_t index)
         {
-            return m_data[i];
+            return m_data[index];
         }
 
         void Clear()
@@ -106,10 +110,10 @@ namespace sputter { namespace containers {
     private:
         FixedMemoryVector() = delete;
 
-        T*                   m_data;
-        size_t               m_size;
-        size_t               m_capacity;
+        T*                           m_data;
+        size_t                       m_size;
+        size_t                       m_capacity;
 
-        FixedMemoryAllocator m_allocator;
+        memory::FixedMemoryAllocator m_allocator;
     };
 }}
