@@ -4,6 +4,7 @@ Small game engine
 ## Building
 
 ### Dependencies
+- `GLEW`
 - `GLFW 3.*`
 - `Google Log 0.4.*`
 
