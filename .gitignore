@@ -34,6 +34,7 @@
 # vim
 *.swp
 *.swo
+*~
 
 # cmake
 build/
