@@ -9,6 +9,14 @@ namespace sputter { namespace render {
         const std::string& textureName
         )
     {
+        // Check to see if dimensions are a power of two.
+        if (__builtin_popcount(imageData.Width) != 1 || __builtin_popcount(imageData.Height) != 1)
+        {
+            // Not catastrophic, but may result in unexpected behaviors. Currently there are no use cases
+            // where this is valid, but just keep a warning in case that ever changes.
+            LOG(WARNING) << "Texture named '" << textureName << "' has dimensions which are not powers of two.";
+        }
+
         glActiveTexture(GL_TEXTURE0);
         glEnable(GL_TEXTURE_2D);
 
