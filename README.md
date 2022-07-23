@@ -7,6 +7,7 @@ Small game engine
 - `GLEW`
 - `GLFW 3.*`
 - `Google Log 0.4.*`
+- `GTest`
 - `zlib`
 - `libpng`
 
