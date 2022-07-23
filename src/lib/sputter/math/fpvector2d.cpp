@@ -56,6 +56,6 @@ namespace sputter { namespace math {
 
     FPVector2D operator*(FixedPoint scalar, const FPVector2D& other)
     {
-        return scalar * other;
+        return other * scalar;
     }
 }}

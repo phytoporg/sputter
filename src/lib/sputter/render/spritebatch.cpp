@@ -1,6 +1,5 @@
 #include "spritebatch.h"
-
-#include <GL/gl.h>
+#include "render.h"
 
 #include <sputter/system/system.h>
 
@@ -12,7 +11,7 @@ namespace sputter { namespace render {
     SpriteBatch::SpriteBatch(TexturePtr spTexture, uint32_t maxSpriteCount)
         : m_vaoId(0), m_vboId(0),
           m_spTexture(spTexture),
-          m_maxSpriteCount(maxSpriteCount)
+          m_maxSpriteCount(static_cast<size_t>(maxSpriteCount)) // TODO: Decide on a type!
     {
         // 4 verts per quad
         m_verticesVector.reserve(maxSpriteCount * 4);
@@ -24,17 +23,17 @@ namespace sputter { namespace render {
         glGenBuffers(1, &m_vboId);
         glGenBuffers(1, &m_idxId);
 
-		glBindVertexArray(m_vaoId);
+        glBindVertexArray(m_vaoId);
 
-		glBindBuffer(GL_ARRAY_BUFFER, m_vboId);
-		glBufferData(
-			GL_ARRAY_BUFFER,
-			sizeof(m_verticesVector[0]) * maxSpriteCount * 4,
-		    m_verticesVector.data(),
-			GL_DYNAMIC_DRAW);
+        glBindBuffer(GL_ARRAY_BUFFER, m_vboId);
+        glBufferData(
+            GL_ARRAY_BUFFER,
+            sizeof(m_verticesVector[0]) * maxSpriteCount * 4,
+            m_verticesVector.data(),
+            GL_DYNAMIC_DRAW);
 
         // Position (3 floats)
-		glVertexAttribPointer(
+        glVertexAttribPointer(
             0, 3,
             GL_FLOAT,
             GL_FALSE,
@@ -51,15 +50,15 @@ namespace sputter { namespace render {
             reinterpret_cast<void*>(offsetof(SpriteVertex, TextureCoordinate)));
         glEnableVertexAttribArray(1);
 
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_idxId);
-		glBufferData(
-			GL_ELEMENT_ARRAY_BUFFER,
-			sizeof(m_indicesVector[0]) * 6 * maxSpriteCount,
-			m_indicesVector.data(),
-			GL_DYNAMIC_DRAW);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_idxId);
+        glBufferData(
+            GL_ELEMENT_ARRAY_BUFFER,
+            sizeof(m_indicesVector[0]) * 6 * maxSpriteCount,
+            m_indicesVector.data(),
+            GL_DYNAMIC_DRAW);
 
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
     }
 
@@ -101,7 +100,7 @@ namespace sputter { namespace render {
         const glm::vec2 SpritePos = sprite.GetPosition();
         const glm::vec2 SpriteSize = sprite.GetSize();
 
-        const size_t InitialIndex = m_verticesVector.size();
+        const uint32_t InitialIndex = static_cast<uint32_t>(m_verticesVector.size());
 
         const glm::vec3 UlPos = glm::vec3(glm::vec2(SpritePos), 1.0f);
         m_verticesVector.push_back({ UlPos, glm::vec2(0.0f, 0.0f) });
@@ -133,33 +132,33 @@ namespace sputter { namespace render {
         glActiveTexture(GL_TEXTURE0);
         glEnable(GL_TEXTURE_2D);
 
-	    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_idxId);	
-		glBufferData(
-			GL_ELEMENT_ARRAY_BUFFER,
-			sizeof(m_indicesVector[0]) * m_indicesVector.size(),
-			m_indicesVector.data(),
-			GL_DYNAMIC_DRAW);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_idxId); 
+        glBufferData(
+            GL_ELEMENT_ARRAY_BUFFER,
+            sizeof(m_indicesVector[0]) * m_indicesVector.size(),
+            m_indicesVector.data(),
+            GL_DYNAMIC_DRAW);
 
         glBindVertexArray(m_vaoId);
         glBindBuffer(GL_ARRAY_BUFFER, m_vboId);
-		glBufferData(
-			GL_ARRAY_BUFFER,
-			sizeof(m_verticesVector[0]) * m_verticesVector.size(),
-		    m_verticesVector.data(),
-			GL_DYNAMIC_DRAW);
+        glBufferData(
+            GL_ARRAY_BUFFER,
+            sizeof(m_verticesVector[0]) * m_verticesVector.size(),
+            m_verticesVector.data(),
+            GL_DYNAMIC_DRAW);
 
         pShader->SetUniformTextureId(0);
         m_spTexture->Bind();
 
-	    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_idxId);	
-		glDrawElements(
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_idxId); 
+        glDrawElements(
             GL_TRIANGLES,
-            m_indicesVector.size(),
+            static_cast<GLsizei>(m_indicesVector.size()),
             GL_UNSIGNED_INT,
             nullptr);
 
         m_spTexture->Unbind();
-	    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);	
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);   
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
     }

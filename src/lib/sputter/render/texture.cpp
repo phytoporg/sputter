@@ -1,6 +1,5 @@
 #include "texture.h"
-
-#include <GL/gl.h>
+#include "render.h"
 
 namespace sputter { namespace render { 
     Texture::~Texture()

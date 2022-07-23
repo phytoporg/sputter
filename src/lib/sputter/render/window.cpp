@@ -1,6 +1,5 @@
 #include "window.h"
-#include <GL/gl.h>
-#include <glog/logging.h>
+#include "render.h"
 #include <sputter/system/system.h>
 
 #include <stdexcept>

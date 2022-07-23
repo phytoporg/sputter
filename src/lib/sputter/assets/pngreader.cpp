@@ -12,7 +12,6 @@
 namespace sputter { namespace assets {
     bool PngReader::ReadImage(const std::string& imagePath, ImageData* pData)
     {
-        int comp;
         pData->pBytes = 
             stbi_load(
                 imagePath.c_str(),

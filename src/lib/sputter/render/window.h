@@ -3,10 +3,10 @@
 
 #pragma once
 
+#include "render.h"
 #include <string>
 
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
+struct GLFWwindow;
 
 namespace sputter { namespace render {
     const uint32_t kDefaultWindowWidth  = 1024;

@@ -26,7 +26,7 @@ namespace sputter { namespace render {
 
         Window&             m_window;
 
-        size_t              m_spriteCount;;
+        size_t              m_spriteCount;
         size_t              m_maxSpriteCount;
 
         std::vector<Sprite> m_sprites;

@@ -1,8 +1,7 @@
 #include "spriteshader.h"
+#include "render.h"
 
 #include <vector>
-
-#include <GL/gl.h>
 
 #include <glm/gtc/type_ptr.hpp>
 

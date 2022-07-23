@@ -1,7 +1,6 @@
 #include "texturestorage.h"
+#include "render.h"
 #include <sputter/system/system.h>
-#include <GL/gl.h>
-#include <GL/glu.h>
 
 namespace sputter { namespace render {
     bool 
