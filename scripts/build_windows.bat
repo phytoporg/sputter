@@ -1,4 +1,5 @@
 setlocal
+@echo off
 
 REM TODO: set up a more robust system than this. For now, it'll do!
 
@@ -10,7 +11,7 @@ REM similar environment, which I personally find pretty cumbersome.
 set MY_GLEW_ROOT=%LIBS_ROOT%\glew-2.1.0
 set GLEW_INCLUDE_DIR=%MY_GLEW_ROOT%\include
 set GLEW_STATIC_LIBRARY=%MY_GLEW_ROOT%\lib\Release\x64\glew32.lib
-set GLEW_VERBOSE=1
+set GLEW_VERBOSE=0
 
 set MY_GLFW_ROOT=%LIBS_ROOT%\glfw-3.3.8
 set GLFW_INCLUDE_DIR=%MY_GLFW_ROOT%\include
