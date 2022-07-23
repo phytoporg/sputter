@@ -4,7 +4,7 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/src/lib
     ${GLFW_INCLUDE_DIR}
     ${GLOG_INCLUDE_DIR}
-    ${PNG_INCLUDE_DIRS}
+    ${PNG_INCLUDE_DIR}
     ${GLEW_INCLUDE_DIRS}
     ${OPENGL_INCLUDE_DIRS}
     ${GLM_INCLUDE_DIR})

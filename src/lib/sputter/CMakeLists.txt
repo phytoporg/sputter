@@ -8,6 +8,8 @@ include_directories(
     ${GLEW_INCLUDE_DIR}
     ${GLFW_INCLUDE_DIR})
 
+message(ERROR ${PNG_INCLUDE_DIR})
+
 file(GLOB SOURCES 
     *.cpp 
     render/*.cpp 

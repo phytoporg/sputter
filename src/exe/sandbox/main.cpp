@@ -1,3 +1,6 @@
+// TODO: Find a better place for this. Shouldn't have to define this in the specific game project.
+#define NOMINMAX
+
 #include "sandboxgame.h"
 
 #include <sputter/assets/imagedata.h>

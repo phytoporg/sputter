@@ -6,11 +6,16 @@ file(GLOB SOURCES *.cpp)
 add_executable(${TARGETNAME} ${SOURCES})
 
 include_directories(${GTEST_INCLUDE_DIR})
+
+if(LINUX)
+    set(ADDITIONAL_LIBRARIES pthread)
+endif()
+
 target_link_libraries(
     ${TARGETNAME}
     ${GTEST_LIBRARY}
     ${GTEST_MAIN_LIBRARY}
-    pthread)
+    ${ADDITIONAL_LIBRARIES})
 include(${PROJECT_SOURCE_DIR}/cmake/SputterInc.cmake)
 
 add_test(NAME ${TARGETNAME} COMMAND ${TARGETNAME})
