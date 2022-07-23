@@ -2,6 +2,23 @@
 #include "render.h"
 #include <sputter/system/system.h>
 
+// Probably belongs in a more visible spot, but this isn't yet needed anywhere else.
+namespace {
+    static bool IsIntegerPowerOfTwo(int integer)
+    {
+        // Any power-of-two integer has a single set bit in its binary representation, so ANDing
+        // with its decrement will always produce zero. This test only works if the integer 
+        // being tested is greater than one to begin with. Since 2^0 == 1, we'll consider that
+        // case separately.
+
+        // i.e.
+        // Power of two: 1000 & 0111 = 0000
+        // Not a power of two: 1010 & 1001 = 1000 <-- More than one bit
+
+        return integer == 1 || (integer > 1 && ((integer - 1) & integer) == 0);
+    }
+}
+
 namespace sputter { namespace render {
     bool 
     TextureStorage::AddTexture(
@@ -10,7 +27,7 @@ namespace sputter { namespace render {
         )
     {
         // Check to see if dimensions are a power of two.
-        if (__builtin_popcount(imageData.Width) != 1 || __builtin_popcount(imageData.Height) != 1)
+        if (IsIntegerPowerOfTwo(imageData.Width) || IsIntegerPowerOfTwo(imageData.Height))
         {
             // Not catastrophic, but may result in unexpected behaviors. Currently there are no use cases
             // where this is valid, but just keep a warning in case that ever changes.
