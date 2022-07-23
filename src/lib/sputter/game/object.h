@@ -21,7 +21,7 @@ namespace sputter { namespace game {
         }
 
         template<typename ComponentType>
-        void SetComponentByType(ComponenType* pComponent)
+        void SetComponentByType(ComponentType* pComponent)
         {
             m_components[ComponentType::ComponentId] = pComponent;
         }

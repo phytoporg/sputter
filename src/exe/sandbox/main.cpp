@@ -1,3 +1,5 @@
+#include "sandboxgame.h"
+
 #include <sputter/assets/imagedata.h>
 #include <sputter/assets/assetstorage.h>
 
@@ -8,6 +10,8 @@
 
 #include <sputter/physics/rigidbodysubsystem.h>
 #include <sputter/physics/rigidbody2d.h>
+
+#include <sputter/memory/reservedregion.h>
 
 #include <sputter/system/system.h>
 #include <sputter/system/time.h>
@@ -51,10 +55,7 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    LOG(INFO) << "Found asset " << argv[2] << "!" << std::endl;
-
     render::Window window("Test window");
-
     render::TextureStorage textureStorage;
     if (!textureStorage.AddTexture(*pImageData, argv[2]))
     {
@@ -69,21 +70,15 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    physics::RigidBodySubsystemSettings rigidBodySettings;
-    rigidBodySettings.MaxRigidBodies = 5;
+    memory::ReservedRegion stateRegion(0x1000);
+    memory::FixedMemoryAllocator allocator(
+        "GameState",
+        stateRegion.GetRegionBase(),
+        stateRegion.GetRegionSize());
+    SandboxGame game(&window, spTexture, allocator);
 
-    physics::RigidBodySubsystem rigidBodySubsystem(rigidBodySettings);
-    physics::RigidBody2D* pMainRigidBody = rigidBodySubsystem.CreateComponent();
+    game.StartGame();
 
-    const math::FixedPoint FPTwenty(20);
-    pMainRigidBody->Position.Set(FPTwenty, FPTwenty);
-
-    render::SpriteSubsystem spriteSubsystem(window, 10 /* max sprites */);
-    render::Sprite* pSprite = spriteSubsystem.CreateComponent();
-    pSprite->SetPosition(pMainRigidBody->Position);
-    pSprite->SetTexturePtr(spTexture);
-    pSprite->SetDimensions(100.0f, 100.0f);
-    
     window.EnableInputs();
 
     const math::FixedPoint DesiredFps  = math::FPSixty;
@@ -95,11 +90,8 @@ int main(int argc, char** argv)
     {
         window.Clear();
 
-        rigidBodySubsystem.Tick(DeltaTime);
-
-        pSprite->SetPosition(pMainRigidBody->Position);
-
-        spriteSubsystem.Draw();
+        game.Tick(DeltaTime);
+        game.Draw();
 
         window.Tick();
 
@@ -110,8 +102,6 @@ int main(int argc, char** argv)
         }
         nextTick = TimeMs + static_cast<uint32_t>(FrameStepMs);
     }
-
-    rigidBodySubsystem.ReleaseComponent(pMainRigidBody);
 
     return 0;
 }

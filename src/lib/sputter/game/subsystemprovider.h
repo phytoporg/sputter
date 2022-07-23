@@ -16,7 +16,7 @@ namespace sputter { namespace game {
         template<typename S>
         S* GetSubsystemByType()
         {
-            return reinterpret_cast<S*>(m_subsystem[S::SubsystemId]);
+            return reinterpret_cast<S*>(m_subsystems[S::SubsystemId]);
         }
 
     private:

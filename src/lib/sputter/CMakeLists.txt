@@ -14,5 +14,9 @@ file(GLOB SOURCES
     system/*.cpp 
     assets/*.cpp 
     physics/*.cpp
-    math/*.cpp)
+    math/*.cpp
+    memory/*.cpp
+    game/*.cpp
+    core/*.cpp
+    containers/*.cpp)
 add_library(sputter ${SOURCES})
