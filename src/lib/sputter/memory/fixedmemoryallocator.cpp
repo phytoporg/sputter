@@ -23,7 +23,7 @@ namespace sputter { namespace memory {
         size_t size,
         FixedMemoryAllocator* pOut)
     {
-        if ((m_pNext + size) > (m_pBase + size))
+        if ((m_pNext + size) > (m_pBase + m_regionSize))
         {
             LOG(WARNING) << "ReserveNext FMA - Out of memory: "
                          << allocatorName;

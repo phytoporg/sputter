@@ -124,7 +124,7 @@ namespace sputter { namespace containers {
             if (newSize < m_size)
             {
                 // Shrink
-                for (size_t i = newSize - 1; i < m_size; ++i)
+                for (size_t i = m_size - 1; i > newSize; --i)
                 {
                     m_data[i].~T();
                 }
@@ -132,7 +132,7 @@ namespace sputter { namespace containers {
             else if (newSize > m_size)
             {
                 // In growth case, call default constructors
-                for (size_t i = m_size; i < newSize; ++i)
+                for (size_t i = m_size - 1; i < newSize; ++i)
                 {
                     m_data[i] = T();
                 }

@@ -1,5 +1,8 @@
 #include <iostream>
 #include <string>
+#include <array>
+#include <algorithm>
+#include <stdexcept>
 #include <cstdio>
 
 #include <gtest/gtest.h>
@@ -8,19 +11,36 @@
 
 struct BasicConstructorTestClass
 {
-    BasicConstructorTestClass()
-        : String("default")
-    {}
-
     BasicConstructorTestClass(const std::string& s)
-        : String(s)
+    {
+        if (s.length() > StringStorage.max_size())
+        {
+            throw std::runtime_error("s is too large in BasicConstructorTestClass()");
+        }
+
+        std::fill(std::begin(StringStorage), std::end(StringStorage), 0);
+        for (size_t i = 0; i < s.length(); ++i)
+        {
+            StringStorage[i] = s[i];
+        }
+        Length = s.length();
+    }
+
+    BasicConstructorTestClass()
+        : BasicConstructorTestClass("default")
     {}
 
-    std::string String;
+    std::string String()
+    {
+        return std::string(&StringStorage[0], &StringStorage[Length]);
+    }
+
+    std::array<char, 0x10> StringStorage;
+    size_t Length;
 };
 
 using namespace sputter;
-memory::ReservedRegion reservedRegion(0x1000);
+memory::ReservedRegion reservedRegion(0x2000);
 
 TEST(create_vector, containers_test)
 {
@@ -54,7 +74,7 @@ TEST(emplace_one_entry, containers_test)
     const std::string TestStringValue("foo");
     vector.Emplace(TestStringValue);
     EXPECT_EQ(1, vector.Size());
-    EXPECT_EQ(TestStringValue, vector[0].String);
+    EXPECT_EQ(TestStringValue, vector[0].String());
 }
 
 TEST(add_one_entry, containers_test)
@@ -68,7 +88,7 @@ TEST(add_one_entry, containers_test)
     const std::string TestStringValue("foo");
     vector.Add(BasicConstructorTestClass(TestStringValue));
     EXPECT_EQ(1, vector.Size());
-    EXPECT_EQ(TestStringValue, vector[0].String);
+    EXPECT_EQ(TestStringValue, vector[0].String());
 }
 
 TEST(emplace_ten_entries, containers_test)
@@ -89,7 +109,7 @@ TEST(emplace_ten_entries, containers_test)
 
     for (int i = 0; i < 10; ++i)
     {
-        const int x = atoi(vector[i].String.c_str());
+        const int x = atoi(vector[i].String().c_str());
         EXPECT_EQ(x, i);
     }
 }
@@ -112,7 +132,7 @@ TEST(add_ten_entries, containers_test)
 
     for (int i = 0; i < 10; ++i)
     {
-        const int x = atoi(vector[i].String.c_str());
+        const int x = atoi(vector[i].String().c_str());
         EXPECT_EQ(x, i);
     }
 }
@@ -159,7 +179,7 @@ TEST(add_then_remove, containers_test)
     bool foundValue = false;
     for (size_t i = 0; i < vector.Size(); ++i)
     {
-        if (vector[i].String == "5")
+        if (vector[i].String() == "5")
         {
             foundValue = true;
         }
@@ -168,8 +188,6 @@ TEST(add_then_remove, containers_test)
     EXPECT_EQ(foundValue, false);
 }
 
-/*
- * TODO: This isn't passing yet!
 TEST(resize, containers_test)
 {
     memory::FixedMemoryAllocator allocator(
@@ -178,7 +196,7 @@ TEST(resize, containers_test)
         reservedRegion.GetRegionSize());
     containers::FixedMemoryVector<BasicConstructorTestClass> vector(11, allocator);
 
-    for (size_t i = 0; i < 11; ++i)
+    for (size_t i = 0; i < 10; ++i)
     {
         const std::string TestStringValue(std::to_string(i));
         vector.Add(BasicConstructorTestClass(TestStringValue));
@@ -192,9 +210,8 @@ TEST(resize, containers_test)
 
     for (size_t i = 5; i < vector.Size(); ++i)
     {
-        std::cerr << i << std::endl;
-        EXPECT_EQ(vector[i].String, "default");
+       EXPECT_EQ(vector[i].String(), "default");
     }
-}*/
+}
 
 // TODO: New stuff -- Iterators
