@@ -70,7 +70,7 @@ namespace sputter { namespace containers {
         {
             if (m_size + 1 > m_capacity)
             {
-                system::LogAndFail("FMV::Add() - out of bounds");
+                system::LogAndFail("FMV::Emplace() - out of bounds");
             }
 
             new (m_data + m_size) T(std::forward<Args>(args)...);
