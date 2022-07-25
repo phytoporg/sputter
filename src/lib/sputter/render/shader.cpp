@@ -2,9 +2,9 @@
 #include "render.h"
 
 #include <cassert>
-#include <ifstream>
+#include <fstream>
 #include <iostream>
-#include <stringstream>
+#include <sstream>
 
 #include <sputter/system/system.h>
 
@@ -43,9 +43,13 @@ void Shader::Load(const std::string& vertexShaderFilePath, const std::string& fr
         return;
     }
 
-    CompileVertexShader(vertexShaderSource);
-    CompileFragmentShader(fragmentShaderSource);
-    if (LinkShaders())
+    const uint32_t vertexShaderHandle = CompileVertexShader(vertexShaderSource);
+    if (!vertexShaderHandle) { return;  }
+
+    const uint32_t fragmentShaderHandle = CompileFragmentShader(fragmentShaderSource);
+    if (!fragmentShaderHandle) { return; }
+
+    if (LinkShaders(vertexShaderHandle, fragmentShaderHandle))
     {
         PopulateAttributes();
         PopulateUniforms();
@@ -65,16 +69,18 @@ void Shader::Unbind()
 uint32_t Shader::GetAttribute(const std::string& name) const
 {
     // TODO
+    return kInvalidHandleValue;
 }
 
 uint32_t Shader::GetUniform(const std::string& name) const
 {
     // TODO
+    return kInvalidHandleValue;
 }
 
 uint32_t Shader::GetHandle() const
 {
-    // TODO
+    return m_handle;
 }
 
 std::string Shader::ReadFile(const std::string& filePath)
@@ -218,7 +224,7 @@ void Shader::PopulateUniforms()
                 // build the name;
 
                 char uniformArrayElementName[256];
-                uniformName.erase(std::begin(uniformName), leftBracketIndex, std::end(uniformName));
+                uniformName.erase(std::begin(uniformName) + leftBracketIndex, std::end(uniformName));
                 uint32_t uniformIndex = 0;
                 uint32_t uniformLocation = 0;
 
