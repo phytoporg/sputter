@@ -58,23 +58,35 @@ void Shader::Load(const std::string& vertexShaderFilePath, const std::string& fr
 
 void Shader::Bind()
 {
-    // TODO
+    glUseProgram(m_handle);
 }
 
 void Shader::Unbind()
 {
-    // TODO
+    glUseProgram(0);
 }
 
 uint32_t Shader::GetAttribute(const std::string& name) const
 {
-    // TODO
+    auto it = std::find_if(std::begin(m_attributes), std::end(m_attributes),
+        [&name](const ShaderAttribute& attribute) { return  name == attribute.Name; });
+    if (it != std::end(m_attributes))
+    {
+        return it->Location;
+    }
+
     return kInvalidHandleValue;
 }
 
 uint32_t Shader::GetUniform(const std::string& name) const
 {
-    // TODO
+    auto it = std::find_if(std::begin(m_uniforms), std::end(m_uniforms),
+        [&name](const ShaderUniform& uniform) { return  name == uniform.Name; });
+    if (it != std::end(m_uniforms))
+    {
+        return it->Location;
+    }
+
     return kInvalidHandleValue;
 }
 
