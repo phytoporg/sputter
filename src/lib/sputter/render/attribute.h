@@ -64,4 +64,27 @@ namespace sputter { namespace render {
         glBufferData(GL_ARRAY_BUFFER, size * m_count, inputArray, GL_STREAM_DRAW);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
+
+    template<typename T>
+    void Attribute<T>::Set(std::vector<T>& input)
+    {
+        Set(input.data(), static_cast<uint32_t>(input.size()));
+    }
+
+    template<typename T>
+    void Attribute<T>::BindTo(uint32_t slot)
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, m_handle);
+        glEnableVertexAttribArray(slot);
+        SetAttributePointer(slot);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+
+    template<typename T>
+    void Attribute<T>::UnbindFrom(uint32_t slot)
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, m_handle);
+        glDisableVertexAttribArray(slot);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
 } }
