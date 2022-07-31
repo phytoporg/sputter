@@ -1,6 +1,7 @@
 #include "time.h"
 
 #include <unistd.h>
+#include <cstdint>
 #include <ctime>
 #include <cerrno>
 
