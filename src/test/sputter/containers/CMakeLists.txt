@@ -7,7 +7,7 @@ add_executable(${TARGETNAME} ${SOURCES})
 
 include_directories(${GTEST_INCLUDE_DIR})
 
-if(LINUX)
+if(UNIX)
     set(ADDITIONAL_LIBRARIES pthread)
 endif()
 
