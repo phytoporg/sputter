@@ -11,9 +11,16 @@ Small game engine
 - `zlib`
 - `libpng`
 
+In Debian:
 ```
-cmake -S .
-make
+libglew-dev libglfw3-dev libgoogle-glog-dev googletest libgtest-dev libglm-dev
+```
+
+To build, execute from the source tree root:
+```
+mkdir build
+cmake -S . -Bbuild
+cmake --build build -- -j8
 ```
 
 ### Running test program
