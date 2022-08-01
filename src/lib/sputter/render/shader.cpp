@@ -1,6 +1,7 @@
 #include "shader.h"
 #include "render.h"
 
+#include <algorithm>
 #include <cassert>
 #include <fstream>
 #include <iostream>
