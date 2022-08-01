@@ -26,10 +26,12 @@ void IndexBuffer::Set(const std::vector<uint32_t>& data)
     Set(data.data(), static_cast<uint32_t>(data.size()));
 }
 
-uint32_t IndexBuffer::Count() const {
+uint32_t IndexBuffer::Count() const 
+{
     return m_count;    
 }
 
-uint32_t IndexBuffer::GetHandle() const {
+uint32_t IndexBuffer::GetHandle() const 
+{
     return m_handle;
 }
