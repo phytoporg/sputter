@@ -1,5 +1,7 @@
 #include "texturestorage.h"
 #include "render.h"
+
+#include <sputter/assets/imagedata.h>
 #include <sputter/system/system.h>
 
 // Probably belongs in a more visible spot, but this isn't yet needed anywhere else.
@@ -66,7 +68,20 @@ namespace sputter { namespace render {
 
         if (!FindTextureByName(textureName))
         {
-            m_storageVector.emplace_back(new Texture(textureName, textureId));
+            Texture* pTexture = 
+                new Texture(
+                    textureName,
+                     textureId,
+                     imageData.Width,
+                     imageData.Height,
+                     imageData.HasAlpha ? 4 : 3);
+            if (!pTexture)
+            {
+                LOG(ERROR) << "Failed to allocate new texture. OOM?";
+                return false;
+            }
+                     
+            m_storageVector.emplace_back(pTexture);
             LOG(INFO) << "Added texture to storage: " << textureName;
             return true;
         }

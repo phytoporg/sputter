@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <memory>
 #include <string>
 
 namespace sputter { namespace render {
@@ -27,11 +28,13 @@ namespace sputter { namespace render {
     class Shader
     {
     public:
-        Shader(); // Do we want to allow empty shader objects?
-        Shader(const std::string& vertexShaderFilePath, const std::string& fragmentShaderFilePath);
+        Shader(
+            uint32_t programHandle,
+            const std::vector<ShaderAttribute>& attributes,
+            const std::vector<ShaderUniform>& uniforms,
+            const std::string& name
+            );
         ~Shader();
-
-        void Load(const std::string& vertexShaderFilePath, const std::string& fragmentShaderFilePath);
 
         void Bind();
         void Unbind();
@@ -40,28 +43,25 @@ namespace sputter { namespace render {
         uint32_t GetUniform(const std::string& name) const;
         uint32_t GetHandle() const;
 
+        const std::string& GetName() const;
+
+        static const uint32_t kInvalidHandleValue;
+
     private:
+        // No empty shaders
+        Shader() = delete;
+
         // Don't copy shader objects, as they referencing GPU resources.
         Shader(const Shader& other) = delete;
         Shader& operator=(const Shader& other) = delete;
-
-        // TODO: this likely belongs in the asset pipeline, but plopping here for now for expediency.
-        std::string ReadFile(const std::string& filePath);
-
-        // Returns shader handle, or 0 if compilation failed.
-        uint32_t CompileVertexShader(const std::string& shaderText);
-        uint32_t CompileFragmentShader(const std::string& shaderText);
-
-        bool LinkShaders(uint32_t vertexShaderHandle, uint32_t fragmentShaderHandle);
-
-        void PopulateAttributes();
-        void PopulateUniforms();
 
         // Maps are overkill, just use linear lookups.
         std::vector<ShaderAttribute> m_attributes;
         std::vector<ShaderUniform>   m_uniforms;
 
-        static const uint32_t kInvalidHandleValue;
+        std::string m_name;
         uint32_t m_handle = kInvalidHandleValue;
     };
+
+    using ShaderPtr = std::shared_ptr<Shader>;
 }}

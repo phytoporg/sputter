@@ -5,13 +5,13 @@ namespace sputter { namespace render {
     Texture::~Texture()
     {
         Unbind();
-        glDeleteTextures(1, &m_id);
+        glDeleteTextures(1, &m_handle);
     }
 
     void Texture::Bind()
     {
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, m_id);
+        glBindTexture(GL_TEXTURE_2D, m_handle);
     }
 
     void Texture::Unbind()
@@ -24,8 +24,8 @@ namespace sputter { namespace render {
         return m_name;
     }
 
-    const uint32_t Texture::GetId() const
+    const uint32_t Texture::GetHandle() const
     {
-        return m_id;
+        return m_handle;
     }
 }}

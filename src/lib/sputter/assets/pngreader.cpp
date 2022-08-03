@@ -1,4 +1,5 @@
 #include "pngreader.h"
+#include "imagedata.h"
 #include <sputter/system/system.h>
 
 #include <cstdlib>

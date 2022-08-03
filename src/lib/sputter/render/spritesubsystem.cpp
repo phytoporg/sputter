@@ -1,5 +1,8 @@
 #include "spritesubsystem.h"
 
+#include "window.h"
+#include "shader.h"
+
 #include <sputter/system/system.h>
 
 #include <glm/glm.hpp>
@@ -9,11 +12,12 @@
 // the rigidbody subsystem. Subsystem component lifetime management might 
 // benefit from generalization?? We'll see after we implement a few more.
 namespace sputter { namespace render {
-    SpriteSubsystem::SpriteSubsystem(Window& window, size_t maxSpriteCount)
+    SpriteSubsystem::SpriteSubsystem(Window& window, Shader* pSpriteShader, size_t maxSpriteCount)
         : m_window(window),
           m_maxSpriteCount(maxSpriteCount),
           m_spriteBatch(maxSpriteCount),
-          m_spriteCount(0)
+          m_spriteCount(0),
+          m_pSpriteShader(pSpriteShader)
     {
         m_sprites.reserve(maxSpriteCount);
         m_spritesValidArray.reserve(maxSpriteCount);
@@ -83,10 +87,13 @@ namespace sputter { namespace render {
                 0.0f,
                 -1.0f, 1.0f);
 
-        m_spriteShader.Use();
-        m_spriteShader.SetUniformProjMatrix(OrthoMatrix);
-        glm::mat4 identity(1.0f);
-        m_spriteShader.SetUniformModelMatrix(identity);
+        m_pSpriteShader->Bind();
+        const uint32_t uniformProjMatrixHandle = m_pSpriteShader->GetUniform("projection");
+        Uniform<glm::mat4>::Set(uniformProjMatrixHandle, OrthoMatrix);
+
+        const uint32_t uniformModelMatrixHandle = m_pSpriteShader->GetUniform("model");
+        const glm::mat4 Identity(1.0f);
+        Uniform<glm::mat4>::Set(uniformModelMatrixHandle, Identity);
 
         m_spriteBatch.Reset();
 
@@ -102,6 +109,6 @@ namespace sputter { namespace render {
             m_spriteBatch.AddSprite(m_sprites[i]);
         }
 
-        m_spriteBatch.Draw(&m_spriteShader);
+        m_spriteBatch.Draw(m_pSpriteShader);
     }
 }}

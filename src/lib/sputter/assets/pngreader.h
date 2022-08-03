@@ -1,9 +1,10 @@
 #pragma once
 
-#include "imagedata.h"
 #include <string>
 
 namespace sputter { namespace assets {
+    struct ImageData;
+
     class PngReader
     {
     public:

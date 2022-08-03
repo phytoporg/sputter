@@ -1,7 +1,29 @@
 #include "assetstorage.h"
+
+#include "imagedata.h"
 #include "pngreader.h"
+
+#include "textdata.h"
+#include "textfilereader.h"
+
+#include <algorithm>
 #include <filesystem>
+#include <string>
+
 #include <sputter/system/system.h>
+
+namespace 
+{
+    bool IsTextFileExtension(const std::string& extension)
+    {
+        static const std::vector<std::string> TextFileExtensions = {
+            ".vert", ".frag", ".glsl"
+        };
+
+        const auto it = std::find(std::cbegin(TextFileExtensions), std::cend(TextFileExtensions), extension);
+        return it != std::end(TextFileExtensions);
+    }
+}
 
 namespace sputter { namespace assets {
     AssetStorage::AssetStorage(const std::string& rootPathStr)
@@ -31,6 +53,29 @@ namespace sputter { namespace assets {
                     CurrentPath.string().substr(rootPathStr.length() + 1);
                 auto spData = std::make_shared<ImageData>();
                 if (reader.ReadImage(CurrentPath.string(), spData.get()))
+                {
+                    LOG(INFO) << "Asset loader: loaded " 
+                              << relativePathString;
+
+                    m_assetMap.insert({
+                        relativePathString,
+                        {CurrentPath.stem().string(), spData}
+                        });
+                }
+                else
+                {
+                    LOG(WARNING) << "Asset loader: failed to load " 
+                                 << CurrentPath.string();
+                }
+            }
+            else if (IsTextFileExtension(CurrentPath.extension()))
+            {
+                TextFileReader reader;
+
+                const std::string& relativePathString = 
+                    CurrentPath.string().substr(rootPathStr.length() + 1);
+                auto spData = std::make_shared<TextData>();
+                if (reader.ReadTextFile(CurrentPath.string(), spData.get()))
                 {
                     LOG(INFO) << "Asset loader: loaded " 
                               << relativePathString;

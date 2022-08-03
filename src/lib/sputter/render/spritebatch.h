@@ -2,11 +2,12 @@
 
 #include "texture.h"
 #include "sprite.h"
-#include "spriteshader.h"
 #include <glm/glm.hpp>
 #include <vector>
 
 namespace sputter { namespace render {
+    class Shader;
+
     class SpriteBatch
     {
     public:
@@ -22,7 +23,7 @@ namespace sputter { namespace render {
         bool AddSprite(const Sprite& sprite);
 
         // Upload data to GPU & render
-        void Draw(SpriteShader* pShader);
+        void Draw(Shader* pShader);
 
         void SetTexturePtr(TexturePtr spTexture);
         TexturePtr GetTexturePtr();

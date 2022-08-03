@@ -1,11 +1,11 @@
 #pragma once
 
 namespace sputter { namespace assets {
-    enum AssetDataType
+    enum class AssetDataType
     {
         INVALID = 0,
         IMAGE_ASSET,
-        // TODO: audio assets, fonts, etc.
+        TEXT_ASSET,
         MAX_ASSET_DATA_TYPE
     };
 

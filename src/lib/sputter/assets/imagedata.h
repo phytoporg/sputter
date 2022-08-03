@@ -6,9 +6,9 @@
 namespace sputter { namespace assets {
     struct ImageData : public AssetData
     {
-        virtual AssetDataType GetType() const 
+        virtual AssetDataType GetType() const override
         {
-            return IMAGE_ASSET;
+            return AssetDataType::IMAGE_ASSET;
         }
 
         bool     HasAlpha;

@@ -1,17 +1,18 @@
 #pragma once
 
 #include <sputter/core/subsystem.h>
-#include "spriteshader.h"
 #include "spritebatch.h"
 #include "sprite.h"
-#include "window.h"
+#include "uniform.h"
 
 namespace sputter { namespace render {
+    class Window;
+    class Shader;
+
     class SpriteSubsystem : core::ISubsystem<Sprite>
     {
     public:
-        // TODO: settings?
-        SpriteSubsystem(Window& window, size_t maxSpriteCount);
+        SpriteSubsystem(Window& window, Shader* pSpriteShader, size_t maxSpriteCount);
 
         virtual void Tick(math::FixedPoint dt) override;
 
@@ -32,7 +33,7 @@ namespace sputter { namespace render {
         std::vector<Sprite> m_sprites;
         std::vector<bool>   m_spritesValidArray;
 
-        SpriteShader        m_spriteShader;
+        Shader*             m_pSpriteShader;
 
         // TODO(philjo 2/7/2021): support for multiple batches-- can start with
         // hardcoding according to basic texture needs, then maybe an LRU for

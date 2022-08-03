@@ -6,11 +6,16 @@
 
 #include <sputter/physics/rigidbody2d.h>
 
+#include <sputter/assets/assetstorage.h>
+
 #include <sputter/render/window.h>
 #include <sputter/render/spritesubsystem.h>
+#include <sputter/render/shaderstorage.h>
 #include <sputter/render/texture.h>
 
 #include <sputter/math/fixedpoint.h>
+
+#include <string>
 
 #include "gamestate.h"
 
@@ -19,7 +24,7 @@ class SandboxGame : public sputter::game::Game
 public:
     SandboxGame(
         sputter::render::Window* pWindow,
-        sputter::render::TexturePtr spTexture,
+        const std::string& assetStoragePath,
         sputter::memory::FixedMemoryAllocator allocator);
     virtual ~SandboxGame();
 
@@ -39,13 +44,16 @@ private:
     SandboxGame() = delete;
     SandboxGame(const SandboxGame& other) = delete;
 
-    sputter::physics::RigidBody2D*   m_pMainRigidBody;
+    sputter::physics::RigidBody2D*    m_pMainRigidBody;
 
-    sputter::render::SpriteSubsystem m_spriteSubsystem;
-    sputter::render::Sprite*         m_pSprite;
+    sputter::render::ShaderStorage    m_shaderStorage;
+    sputter::render::SpriteSubsystem* m_pSpriteSubsystem;
+    sputter::render::Sprite*          m_pSprite;
 
-    sputter::render::TexturePtr      m_spTexture;
+    sputter::render::TexturePtr       m_spTexture;
 
-    GameState*                       m_pGameState;
+    sputter::assets::AssetStorage     m_assetStorage;
+
+    GameState*                        m_pGameState;
 };
 

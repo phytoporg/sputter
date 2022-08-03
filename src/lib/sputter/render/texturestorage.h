@@ -1,12 +1,15 @@
 #pragma once
 
-#include <sputter/assets/imagedata.h>
-
 #include "texture.h"
 
 #include <string>
 #include <cstdint>
 #include <vector>
+
+namespace sputter { namespace assets {
+    // Forward declarations
+    struct ImageData;
+}}
 
 namespace sputter { namespace render {
     class TextureStorage

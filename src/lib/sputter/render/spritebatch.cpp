@@ -1,5 +1,7 @@
 #include "spritebatch.h"
 #include "render.h"
+#include "shader.h"
+#include "uniform.h"
 
 #include <sputter/system/system.h>
 
@@ -127,7 +129,7 @@ namespace sputter { namespace render {
         return true;
     }
 
-    void SpriteBatch::Draw(SpriteShader* pShader)
+    void SpriteBatch::Draw(Shader* pShader)
     {
         glActiveTexture(GL_TEXTURE0);
         glEnable(GL_TEXTURE_2D);
@@ -147,7 +149,8 @@ namespace sputter { namespace render {
             m_verticesVector.data(),
             GL_DYNAMIC_DRAW);
 
-        pShader->SetUniformTextureId(0);
+        const uint32_t UniformTextureHandle = pShader->GetUniform("image");
+        Uniform<int>::Set(UniformTextureHandle, 0);
         m_spTexture->Bind();
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_idxId); 
