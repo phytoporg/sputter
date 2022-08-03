@@ -1,21 +1,6 @@
-Sprite animation!
-- SpriteAnimationAtlas class
--- Stores atlas texture reference
--- Stores one or more named AnimationSequence classes
-
-- SpriteAnimationSequence class
--- Array of SpriteAnimationFrame objects
--- AnimationFrame = 4 UV coords, maybe don't need a whole other class/struct
-
-- ISpriteAnimationTimer (or maybe an abstract class?
--- Ifc for mapping of timeline-to-sequence frame #
--- We can start with LinearSpriteAnimationTimer
--- Ifc:
---- SetPlayration(float to playrate) <-- optional, default is 1.0f
---- Tick(dt) <-- ITickable?
---- GetCurrentFrameNumber()
--- ^In the future, may also contain metadata for events
-
-- Integration with SpriteBatch?
--- Sprite exposes UVs, defaults to assuming entire texture
--- Can optionally attach sequence & timer to sprite, informs UV fetches
+Next high-level goal: Start prototyping gameplay
+* Characters - procedural cubes
+* "Ball" - procedural cube
+* Swipe FX
+* Collision
+* Cleaner ECS setup
