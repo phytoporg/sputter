@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #include <sputter/game/object.h>
 #include <sputter/math/fpvector2d.h>
 
@@ -9,11 +11,6 @@
 // Forward declarations
 namespace sputter 
 { 
-    namespace game 
-    {
-        class SubsystemProvider;
-    }
-
     namespace physics 
     {
         class RigidBody2D;
@@ -22,23 +19,27 @@ namespace sputter
     namespace render 
     {
         class Sprite;
-        class TextureStorage;
     }
 }
 
 class TestObject : sputter::game::Object
 {
 public:
-    TestObject(sputter::game::SubsystemProvider* pProvider);
+    TestObject(
+        sputter::assets::AssetStorageProvider* pStorageProvider,
+        sputter::game::SubsystemProvider* pSubsystemProvider
+        );
 
     virtual void Tick(sputter::math::FixedPoint deltaTime) override;
 
     void Initialize(
-        const sputter::math::FPVector2D& initialPosition,
-        sputter::render::TexturePtr spTexture
+        const sputter::math::FPVector2D& initialPosition
         );
 
 private:
     sputter::physics::RigidBody2D*   m_pRigidBodyComponent;
     sputter::render::Sprite*         m_pSpriteComponent;
+
+    static const std::string         kShipImageAssetName;
+    static const std::string         kShipTextureName;
 };

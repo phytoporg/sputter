@@ -1,17 +1,25 @@
 #pragma once
 
 #include "subsystemtype.h"
-#include "subsystemprovider.h"
 
+#include <sputter/game/subsystemprovider.h>
 #include <sputter/math/fixedpoint.h>
 
 #include <array>
 
+namespace sputter { namespace assets {
+    class AssetStorageProvider;
+}}
+
 namespace sputter { namespace game {
+    class SubsystemProvider;
+
     class Object
     {
     public:
-        Object(SubsystemProvider* pProvider);
+        Object(
+            sputter::assets::AssetStorageProvider* pAssetProvider,
+            SubsystemProvider* pSubsystemProvider);
 
         virtual void Tick(math::FixedPoint deltaTime) = 0;
 
@@ -43,7 +51,8 @@ namespace sputter { namespace game {
 
 
     protected:
-        sputter::game::SubsystemProvider* m_pSubsystemProvider;
+        sputter::game::SubsystemProvider*      m_pSubsystemProvider;
+        sputter::assets::AssetStorageProvider* m_pAssetStorageProvider;
 
     private:
         Object() = delete;

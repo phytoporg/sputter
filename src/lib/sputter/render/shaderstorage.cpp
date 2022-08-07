@@ -8,6 +8,14 @@
 
 using namespace sputter::render;
 
+ShaderStorage::~ShaderStorage()
+{
+    while (!m_storageVector.empty())
+    {
+        ReleaseResource(m_storageVector.front().get());
+    }
+}
+
 bool
 ShaderStorage::AddShader(
     const assets::TextData& vertexText,
@@ -15,14 +23,6 @@ ShaderStorage::AddShader(
     const std::string& shaderName
     )
 {
-    const auto it = std::find_if(std::begin(m_storageVector), std::end(m_storageVector),
-        [&shaderName](const ShaderPtr& spShader) { return spShader->GetName() == shaderName; });
-    if (it != std::end(m_storageVector))
-    {
-        LOG(WARNING) << "Attempted to add duplicate shader: " << shaderName;
-        return false;
-    }
-     
     const std::string vertexShaderSource = vertexText.TextStream.str();
     if (vertexShaderSource.empty())
     {
@@ -60,7 +60,12 @@ ShaderStorage::AddShader(
         return false;
     }
 
-    m_storageVector.emplace_back(pShader);
+    if (!AddResource(pShader))
+    {
+        delete pShader;
+        return false;
+    }
+    
     return true;
 }
 
@@ -231,4 +236,35 @@ std::vector<ShaderUniform> ShaderStorage::PopulateUniforms(uint32_t programHandl
 
     glUseProgram(0);
     return uniforms;
+}
+
+bool ShaderStorage::AddResource(Shader* pShader)
+{
+    if (!pShader) { return false; }
+
+    if (FindShaderByName(pShader->GetName()))
+    {
+        LOG(WARNING) << "Attempted to add duplicate shader: " << pShader->GetName();
+        return false;
+    }
+     
+    m_storageVector.emplace_back(pShader);
+    return true;
+}
+
+bool ShaderStorage::ReleaseResource(Shader* pShader)
+{        
+    auto it = std::find_if(
+        std::begin(m_storageVector),
+        std::end(m_storageVector),
+        [pShader](const ShaderPtr& spShader) { return spShader.get() == pShader; });
+    if (it != std::end(m_storageVector))
+    {
+        m_storageVector.erase(it);
+        return true;
+    }
+        
+    LOG(WARNING) << "Failed to remove shader " << pShader->GetName() 
+                 << " from storage: could not locate in storage.";
+    return false;
 }

@@ -1,9 +1,14 @@
 #include "object.h"
 
-namespace sputter { namespace game {
-    Object::Object(SubsystemProvider* pProvider)
-    : m_pSubsystemProvider(pProvider)
-    {
-        m_components.fill(nullptr);
-    }
-}}
+#include <sputter/assets/assetstorageprovider.h>
+
+using namespace sputter::game;
+
+Object::Object(
+    sputter::assets::AssetStorageProvider* pAssetProvider,
+    SubsystemProvider* pSubsystemProvider)
+: m_pAssetStorageProvider(pAssetProvider),
+  m_pSubsystemProvider(pSubsystemProvider)
+{
+    m_components.fill(nullptr);
+}

@@ -9,10 +9,12 @@
 #include <sputter/physics/rigidbody2d.h>
 
 #include <sputter/assets/assetstorage.h>
+#include <sputter/assets/assetstorageprovider.h>
 
 #include <sputter/render/window.h>
 #include <sputter/render/spritesubsystem.h>
 #include <sputter/render/shaderstorage.h>
+#include <sputter/render/texturestorage.h>
 #include <sputter/render/texture.h>
 
 #include <sputter/math/fixedpoint.h>
@@ -53,9 +55,10 @@ private:
     sputter::render::Sprite*              m_pSprite;
     sputter::render::Window*              m_pWindow;
 
+    sputter::assets::AssetStorageProvider m_storageProvider;
     sputter::game::SubsystemProvider      m_subsystemProvider;
 
-    sputter::render::TexturePtr           m_spTexture;
+    sputter::render::TextureStorage       m_textureStorage;
 
     sputter::assets::AssetStorage         m_assetStorage;
 

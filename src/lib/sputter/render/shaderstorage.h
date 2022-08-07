@@ -5,15 +5,23 @@
 #include <vector>
 #include <cstdint>
 
+#include <sputter/assets/resourcestorage.h>
+#include <sputter/assets/resourcestoragetype.h>
+
 // Forward declarations
 namespace sputter { namespace assets {
     struct TextData;
 }}
 
 namespace sputter { namespace render {
-    class ShaderStorage
+    class ShaderStorage : public sputter::assets::IResourceStorage<Shader>
     {
     public:
+        static const assets::ResourceStorageType StorageTypeId =
+            assets::ResourceStorageType::TYPE_SHADER;
+
+        ~ShaderStorage();
+
         bool
         AddShader(
             const assets::TextData& vertexText,
@@ -26,6 +34,10 @@ namespace sputter { namespace render {
     private:
         uint32_t CompileVertexShader(const std::string& source);
         uint32_t CompileFragmentShader(const std::string& source);
+
+        // IResourceStorage
+        virtual bool AddResource(Shader* pTexture) override;
+        virtual bool ReleaseResource(Shader* pTexture) override;
 
         // TODO:
         // LinkShaders

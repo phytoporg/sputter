@@ -5,6 +5,11 @@
 
 namespace sputter 
 {
+    namespace assets 
+    {
+        class AssetStorageProvider;
+    }
+
     namespace game 
     {
         class SubsystemProvider;
@@ -13,7 +18,10 @@ namespace sputter
 
 struct GameState
 {
-    GameState(sputter::game::SubsystemProvider* pSubsystemProvider);
+    GameState(
+        sputter::assets::AssetStorageProvider* pStorageProvider,
+        sputter::game::SubsystemProvider* pSubsystemProvider
+        );
 
     TestObject   MainShip;
 };

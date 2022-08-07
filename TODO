@@ -1,8 +1,5 @@
 Next high-level goal: Start prototyping gameplay
-* Cleaner ECS setup - use Object class + subsystem provider
--- Getting there. Need cleaner asset story.
--- AssetStorageProvider class, provides access to specific storage objects and 
-   general asset storage. Plumb that through and we'll be in good shape, I hope.
+* Cleaner ECS setup - use Object class + subsystem, asset providers
 * Characters - procedural cubes
 * "Ball" - procedural cube
 * Swipe FX

@@ -26,45 +26,13 @@ SandboxGame::SandboxGame(
     : m_pGameState(nullptr),
       m_pSprite(nullptr),
       m_assetStorage(assetStoragePath),
-      m_pWindow(pWindow)
+      m_pWindow(pWindow),
+      m_storageProvider(&m_assetStorage)
 {
-    const std::string ShipAssetName = "ship";
-    auto spImageAsset = m_assetStorage.FindFirstByName(ShipAssetName);
-    if (!spImageAsset)
-    {
-        LOG(ERROR) << "Could not find ship texture asset" << std::endl;
-        return;
-    }
-
-    if (spImageAsset->GetType() != assets::AssetDataType::IMAGE_ASSET)
-    {
-        LOG(ERROR) << "Asset is not the correct type" << std::endl;
-        return;
-    }
-
-    auto pImageData = dynamic_cast<assets::ImageData*>(spImageAsset.get());
-    if (!pImageData->pBytes)
-    {
-        LOG(ERROR) << "No bytes!" << std::endl;
-        return;
-    }
-
-    render::TextureStorage textureStorage;
-    if (!textureStorage.AddTexture(*pImageData, ShipAssetName))
-    {
-        LOG(ERROR) << "Failed to add texture.";
-        return;
-    }
-
-    if (!(m_spTexture = textureStorage.FindTextureByName(ShipAssetName)))
-    {
-        LOG(ERROR) << "Couldnt find the texture we just added.";
-        return;
-    }
-
     physics::RigidBodySubsystemSettings rigidBodySubsystemSettings;
     rigidBodySubsystemSettings.MaxRigidBodies = 5;
-    m_pRigidbodySubsystem = allocator.Create<sputter::physics::RigidBodySubsystem>(rigidBodySubsystemSettings);
+    m_pRigidbodySubsystem = 
+        allocator.Create<sputter::physics::RigidBodySubsystem>(rigidBodySubsystemSettings);
 
     sputter::render::SpriteSubsystemSettings spriteSubsystemSettings;
     m_pSpriteSubsystem = new sputter::render::SpriteSubsystem(
@@ -75,7 +43,10 @@ SandboxGame::SandboxGame(
     m_subsystemProvider.AddSubsystem(m_pRigidbodySubsystem);
     m_subsystemProvider.AddSubsystem(m_pSpriteSubsystem);
 
-    m_pGameState = allocator.Create<GameState>(&m_subsystemProvider);
+    m_storageProvider.AddResourceStorageByType(&m_textureStorage);
+    m_storageProvider.AddResourceStorageByType(&m_shaderStorage);
+
+    m_pGameState = allocator.Create<GameState>(&m_storageProvider, &m_subsystemProvider);
 }
 
 SandboxGame::~SandboxGame() {}
@@ -104,7 +75,7 @@ bool SandboxGame::StartGame()
 {
     const sputter::math::FixedPoint FPTwenty(20);
     const sputter::math::FPVector2D ShipStartPosition(FPTwenty, FPTwenty);
-    m_pGameState->MainShip.Initialize(ShipStartPosition, m_spTexture);
+    m_pGameState->MainShip.Initialize(ShipStartPosition);
 
     return true;
 }
