@@ -5,6 +5,7 @@ namespace sputter { namespace game {
     {
         TYPE_INVALID = 0,
         TYPE_RIGIDBODY,
+        TYPE_SPRITE,
         TYPE_MAX
     };
 }}

@@ -1,114 +1,128 @@
 #include "spritesubsystem.h"
 
-#include "window.h"
 #include "shader.h"
+#include "shaderstorage.h"
 
 #include <sputter/system/system.h>
 
+#include <sputter/assets/assetstorage.h>
+#include <sputter/assets/textdata.h>
+
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+
+using namespace sputter::render;
 
 // TODO(philjo 2/7/2021): Most of this implementation is ripped straight from
 // the rigidbody subsystem. Subsystem component lifetime management might 
 // benefit from generalization?? We'll see after we implement a few more.
-namespace sputter { namespace render {
-    SpriteSubsystem::SpriteSubsystem(Window& window, Shader* pSpriteShader, size_t maxSpriteCount)
-        : m_window(window),
-          m_maxSpriteCount(maxSpriteCount),
-          m_spriteBatch(maxSpriteCount),
-          m_spriteCount(0),
-          m_pSpriteShader(pSpriteShader)
+SpriteSubsystem::SpriteSubsystem(
+    sputter::assets::AssetStorage* pAssetStorage,
+    ShaderStorage* pShaderStorage,
+    const SpriteSubsystemSettings& settings)
+    : m_maxSpriteCount(settings.MaxSpriteCount),
+      m_spriteBatch(m_maxSpriteCount),
+      m_spriteCount(0)
+{
+    m_sprites.reserve(m_maxSpriteCount);
+    m_spritesValidArray.reserve(m_maxSpriteCount);
+
+    auto spSpriteVertexShader = pAssetStorage->FindFirstByName(settings.SpriteVertexShaderName);
+    auto pSpriteVertexShader = dynamic_cast<assets::TextData*>(spSpriteVertexShader.get());
+
+    auto spSpriteFragmentShader = pAssetStorage->FindFirstByName(settings.SpriteFragmentShaderName);
+    auto pSpriteFragmentShader = dynamic_cast<assets::TextData*>(spSpriteFragmentShader.get());
+    if (!pShaderStorage->AddShader(*pSpriteVertexShader, *pSpriteFragmentShader, "sprite_shader"))
     {
-        m_sprites.reserve(maxSpriteCount);
-        m_spritesValidArray.reserve(maxSpriteCount);
+        LOG(ERROR) << "Could not add sprite shader to storage.";
+        return;
     }
 
-    void SpriteSubsystem::Tick(math::FixedPoint dt)
+    render::ShaderPtr spShader = pShaderStorage->FindShaderByName("sprite_shader");
+    if (!spShader)
     {
-        // NOOP?
+        LOG(ERROR) << "Failed to find sprite_shader in shader storage";
+        return;
     }
 
-    Sprite* SpriteSubsystem::CreateComponent()
+    m_pSpriteShader = spShader.get();
+}
+
+void SpriteSubsystem::Tick(math::FixedPoint dt)
+{
+    // NOOP?
+}
+
+Sprite* SpriteSubsystem::CreateComponent()
+{
+    if (m_spriteCount >= m_maxSpriteCount)
     {
-        if (m_spriteCount >= m_maxSpriteCount)
-        {
-            system::LogAndFail(
-                "Reached the max number of sprites: " +
-                std::to_string(m_maxSpriteCount));
-        }
+        system::LogAndFail(
+            "Reached the max number of sprites: " +
+            std::to_string(m_maxSpriteCount));
+    }
 
-        const size_t BadIndex = static_cast<size_t>(-1);
-        size_t nextIndex = BadIndex;
-        for (size_t i = 0; i < m_spritesValidArray.size(); ++i)
+    const size_t BadIndex = static_cast<size_t>(-1);
+    size_t nextIndex = BadIndex;
+    for (size_t i = 0; i < m_spritesValidArray.size(); ++i)
+    {
+        if (!m_spritesValidArray[i])
         {
-            if (!m_spritesValidArray[i])
-            {
-                nextIndex = i;
-                break;
-            }
-        }
-
-        ++m_spriteCount;
-        if (nextIndex == BadIndex)
-        {
-            m_sprites.emplace_back();
-            m_spritesValidArray.push_back(true);
-            return &m_sprites.back();
-        }
-        else
-        {
-            m_spritesValidArray[nextIndex] = true;
-            return &m_sprites[nextIndex];
+            nextIndex = i;
+            break;
         }
     }
 
-    void SpriteSubsystem::ReleaseComponent(Sprite* pSprite)
+    ++m_spriteCount;
+    if (nextIndex == BadIndex)
     {
-        const size_t Index =
-            static_cast<size_t>(pSprite - m_sprites.data());
-        if (Index >= m_sprites.size())
-        {
-            system::LogAndFail(
-                "SpriteSubsystem::ReleaseComponent: bad pointer arg");
-        }
+        m_sprites.emplace_back();
+        m_spritesValidArray.push_back(true);
+        return &m_sprites.back();
+    }
+    else
+    {
+        m_spritesValidArray[nextIndex] = true;
+        return &m_sprites[nextIndex];
+    }
+}
 
-        m_spritesValidArray[Index] = false;
-        m_spriteCount--;
+void SpriteSubsystem::ReleaseComponent(Sprite* pSprite)
+{
+    const size_t Index =
+        static_cast<size_t>(pSprite - m_sprites.data());
+    if (Index >= m_sprites.size())
+    {
+        system::LogAndFail(
+            "SpriteSubsystem::ReleaseComponent: bad pointer arg");
     }
 
-    void SpriteSubsystem::Draw()
+    m_spritesValidArray[Index] = false;
+    m_spriteCount--;
+}
+
+void SpriteSubsystem::Draw(const glm::mat4& projMatrix)
+{
+    m_pSpriteShader->Bind();
+    const uint32_t uniformProjMatrixHandle = m_pSpriteShader->GetUniform("projection");
+    Uniform<glm::mat4>::Set(uniformProjMatrixHandle, projMatrix);
+
+    const uint32_t uniformModelMatrixHandle = m_pSpriteShader->GetUniform("model");
+    const glm::mat4 Identity(1.0f);
+    Uniform<glm::mat4>::Set(uniformModelMatrixHandle, Identity);
+
+    m_spriteBatch.Reset();
+
+    for (size_t i = 0; i < m_sprites.size(); ++i)
     {
-        // TODO: This belongs in a camera?
-        static const glm::mat4 OrthoMatrix =
-            glm::ortho(
-                0.0f, 
-                static_cast<float>(m_window.GetWidth()),
-                static_cast<float>(m_window.GetHeight()),
-                0.0f,
-                -1.0f, 1.0f);
+        if (!m_spritesValidArray[i]) { continue; }
 
-        m_pSpriteShader->Bind();
-        const uint32_t uniformProjMatrixHandle = m_pSpriteShader->GetUniform("projection");
-        Uniform<glm::mat4>::Set(uniformProjMatrixHandle, OrthoMatrix);
-
-        const uint32_t uniformModelMatrixHandle = m_pSpriteShader->GetUniform("model");
-        const glm::mat4 Identity(1.0f);
-        Uniform<glm::mat4>::Set(uniformModelMatrixHandle, Identity);
-
-        m_spriteBatch.Reset();
-
-        for (size_t i = 0; i < m_sprites.size(); ++i)
+        if (!m_spriteBatch.GetTexturePtr())
         {
-            if (!m_spritesValidArray[i]) { continue; }
-
-            if (!m_spriteBatch.GetTexturePtr())
-            {
-                m_spriteBatch.SetTexturePtr(m_sprites[i].GetTexturePtr());
-            }
-
-            m_spriteBatch.AddSprite(m_sprites[i]);
+            m_spriteBatch.SetTexturePtr(m_sprites[i].GetTexturePtr());
         }
 
-        m_spriteBatch.Draw(m_pSpriteShader);
+        m_spriteBatch.AddSprite(m_sprites[i]);
     }
-}}
+
+    m_spriteBatch.Draw(m_pSpriteShader);
+}

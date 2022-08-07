@@ -3,6 +3,7 @@
 #include <sputter/memory/fixedmemoryallocator.h>
 
 #include <sputter/game/game.h>
+#include <sputter/game/subsystemprovider.h>
 
 #include <sputter/physics/rigidbody2d.h>
 
@@ -49,6 +50,9 @@ private:
     sputter::render::ShaderStorage    m_shaderStorage;
     sputter::render::SpriteSubsystem* m_pSpriteSubsystem;
     sputter::render::Sprite*          m_pSprite;
+    sputter::render::Window*          m_pWindow;
+
+    sputter::game::SubsystemProvider  m_subsystemProvider;
 
     sputter::render::TexturePtr       m_spTexture;
 

@@ -5,6 +5,7 @@
 #include "rigidbody2d.h"
 
 #include <sputter/core/subsystem.h>
+// TODO: This should probably be in 'core'?
 #include <sputter/game/subsystemtype.h>
 #include <sputter/math/fpvector2d.h>
 #include <sputter/math/fpconstants.h>

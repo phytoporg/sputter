@@ -10,6 +10,9 @@
 #include "gamestate.h"
 #include "sandboxgame.h"
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
 using namespace sputter;
 
 static const size_t kMaxNumSprites = 10;
@@ -20,7 +23,8 @@ SandboxGame::SandboxGame(
         memory::FixedMemoryAllocator allocator) 
     : m_pGameState(nullptr),
       m_pSprite(nullptr),
-      m_assetStorage(assetStoragePath)
+      m_assetStorage(assetStoragePath),
+      m_pWindow(pWindow)
 {
     physics::RigidBodySubsystemSettings settings;
     settings.MaxRigidBodies = 5;
@@ -28,6 +32,7 @@ SandboxGame::SandboxGame(
     m_pGameState = allocator.Create<GameState>(settings);
 
     // Load up the ship asset
+    // TODO: Create an object instead
     const std::string ShipAssetName = "ship";
     auto spImageAsset = m_assetStorage.FindFirstByName(ShipAssetName);
     if (!spImageAsset)
@@ -62,30 +67,14 @@ SandboxGame::SandboxGame(
         return;
     }
 
-    // Load up the sprite shader
-    auto spSpriteVertexShader = m_assetStorage.FindFirstByName("sprite_vert");
-    auto pSpriteVertexShader = dynamic_cast<assets::TextData*>(spSpriteVertexShader.get());
-
-    auto spSpriteFragmentShader = m_assetStorage.FindFirstByName("sprite_frag");
-    auto pSpriteFragmentShader = dynamic_cast<assets::TextData*>(spSpriteFragmentShader.get());
-    if (!m_shaderStorage.AddShader(*pSpriteVertexShader, *pSpriteFragmentShader, "sprite_shader"))
-    {
-        LOG(ERROR) << "Could not add sprite shader to storage.";
-        return;
-    }
-
-    render::ShaderPtr spShader = m_shaderStorage.FindShaderByName("sprite_shader");
-    if (!spShader)
-    {
-        LOG(ERROR) << "Failed to find sprite_shader in shader storage";
-        return;
-    }
-    
+    sputter::render::SpriteSubsystemSettings spriteSubsystemSettings;
     m_pSpriteSubsystem = new sputter::render::SpriteSubsystem(
-        *pWindow,
-        spShader.get(),
-        kMaxNumSprites
-        );
+        &m_assetStorage,
+        &m_shaderStorage,
+        spriteSubsystemSettings);
+
+    m_subsystemProvider.AddSubsystem(&m_pGameState->RigidBodySubsystem);
+    m_subsystemProvider.AddSubsystem(m_pSpriteSubsystem);
 }
 
 SandboxGame::~SandboxGame() {}
@@ -98,7 +87,16 @@ void SandboxGame::Tick(math::FixedPoint deltaTime)
 
 void SandboxGame::Draw()
 {
-    m_pSpriteSubsystem->Draw();
+    // TODO: This belongs in a camera?
+    static const glm::mat4 OrthoMatrix =
+       glm::ortho(
+           0.0f, 
+           static_cast<float>(m_pWindow->GetWidth()),
+           static_cast<float>(m_pWindow->GetHeight()),
+           0.0f,
+           -1.0f, 1.0f);
+
+    m_pSpriteSubsystem->Draw(OrthoMatrix);
 }
 
 bool SandboxGame::StartGame()

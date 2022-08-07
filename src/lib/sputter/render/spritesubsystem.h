@@ -1,31 +1,57 @@
 #pragma once
 
 #include <sputter/core/subsystem.h>
+// TODO: This should probably be in 'core'?
+#include <sputter/game/subsystemtype.h>
 #include "spritebatch.h"
 #include "sprite.h"
 #include "uniform.h"
 
+#include <string>
+
+namespace sputter { namespace assets {
+    class AssetStorage;
+}}
+
 namespace sputter { namespace render {
-    class Window;
     class Shader;
+    class ShaderStorage;
+
+    struct SpriteSubsystemSettings
+    {
+        SpriteSubsystemSettings() 
+            :  SpriteVertexShaderName("sprite_vert"),
+               SpriteFragmentShaderName("sprite_frag"),
+               MaxSpriteCount(256)
+        {}
+
+        std::string SpriteVertexShaderName;
+        std::string SpriteFragmentShaderName;
+        size_t      MaxSpriteCount;
+    };
 
     class SpriteSubsystem : core::ISubsystem<Sprite>
     {
     public:
-        SpriteSubsystem(Window& window, Shader* pSpriteShader, size_t maxSpriteCount);
+        static const game::SubsystemType SubsystemId =
+            game::SubsystemType::TYPE_SPRITE;
+
+        SpriteSubsystem(
+            sputter::assets::AssetStorage* pAssetStorage,
+            ShaderStorage* pShaderStorage,
+            const SpriteSubsystemSettings& settings
+            );
 
         virtual void Tick(math::FixedPoint dt) override;
 
         virtual Sprite* CreateComponent() override;
         virtual void ReleaseComponent(Sprite* pSprite) override;
 
-        void Draw();
+        void Draw(const glm::mat4& projMatrix);
 
     private:
         SpriteSubsystem() = delete;
         SpriteSubsystem(const SpriteSubsystem& other) = delete;
-
-        Window&             m_window;
 
         size_t              m_spriteCount;
         size_t              m_maxSpriteCount;
