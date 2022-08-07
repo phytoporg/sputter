@@ -1,10 +1,19 @@
 #pragma once
 
 #include <sputter/physics/rigidbodysubsystem.h>
+#include "testobject.h"
+
+namespace sputter 
+{
+    namespace game 
+    {
+        class SubsystemProvider;
+    }
+}
 
 struct GameState
 {
-    GameState(const sputter::physics::RigidBodySubsystemSettings& settings);
+    GameState(sputter::game::SubsystemProvider* pSubsystemProvider);
 
-    sputter::physics::RigidBodySubsystem RigidBodySubsystem;
+    TestObject   MainShip;
 };

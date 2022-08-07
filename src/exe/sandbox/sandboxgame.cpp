@@ -4,6 +4,8 @@
 #include <sputter/render/texturestorage.h>
 #include <sputter/render/shader.h>
 
+#include <sputter/math/fpvector2d.h>
+
 #include <sputter/assets/imagedata.h>
 #include <sputter/assets/textdata.h>
 
@@ -26,13 +28,6 @@ SandboxGame::SandboxGame(
       m_assetStorage(assetStoragePath),
       m_pWindow(pWindow)
 {
-    physics::RigidBodySubsystemSettings settings;
-    settings.MaxRigidBodies = 5;
-
-    m_pGameState = allocator.Create<GameState>(settings);
-
-    // Load up the ship asset
-    // TODO: Create an object instead
     const std::string ShipAssetName = "ship";
     auto spImageAsset = m_assetStorage.FindFirstByName(ShipAssetName);
     if (!spImageAsset)
@@ -67,22 +62,28 @@ SandboxGame::SandboxGame(
         return;
     }
 
+    physics::RigidBodySubsystemSettings rigidBodySubsystemSettings;
+    rigidBodySubsystemSettings.MaxRigidBodies = 5;
+    m_pRigidbodySubsystem = allocator.Create<sputter::physics::RigidBodySubsystem>(rigidBodySubsystemSettings);
+
     sputter::render::SpriteSubsystemSettings spriteSubsystemSettings;
     m_pSpriteSubsystem = new sputter::render::SpriteSubsystem(
         &m_assetStorage,
         &m_shaderStorage,
         spriteSubsystemSettings);
 
-    m_subsystemProvider.AddSubsystem(&m_pGameState->RigidBodySubsystem);
+    m_subsystemProvider.AddSubsystem(m_pRigidbodySubsystem);
     m_subsystemProvider.AddSubsystem(m_pSpriteSubsystem);
+
+    m_pGameState = allocator.Create<GameState>(&m_subsystemProvider);
 }
 
 SandboxGame::~SandboxGame() {}
 
 void SandboxGame::Tick(math::FixedPoint deltaTime)
 {
-    m_pGameState->RigidBodySubsystem.Tick(deltaTime);
-    m_pSprite->SetPosition(m_pMainRigidBody->Position);
+    m_pRigidbodySubsystem->Tick(deltaTime);
+    m_pGameState->MainShip.Tick(deltaTime);
 }
 
 void SandboxGame::Draw()
@@ -101,15 +102,9 @@ void SandboxGame::Draw()
 
 bool SandboxGame::StartGame()
 {
-    m_pMainRigidBody = m_pGameState->RigidBodySubsystem.CreateComponent();
-
-    const math::FixedPoint FPTwenty(20);
-    m_pMainRigidBody->Position.Set(FPTwenty, FPTwenty);
-
-    m_pSprite = m_pSpriteSubsystem->CreateComponent();
-    m_pSprite->SetPosition(m_pMainRigidBody->Position);
-    m_pSprite->SetTexturePtr(m_spTexture);
-    m_pSprite->SetDimensions(100.0f, 100.0f);
+    const sputter::math::FixedPoint FPTwenty(20);
+    const sputter::math::FPVector2D ShipStartPosition(FPTwenty, FPTwenty);
+    m_pGameState->MainShip.Initialize(ShipStartPosition, m_spTexture);
 
     return true;
 }

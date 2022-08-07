@@ -5,6 +5,7 @@
 #include <sputter/game/game.h>
 #include <sputter/game/subsystemprovider.h>
 
+#include <sputter/physics/rigidbodysubsystem.h>
 #include <sputter/physics/rigidbody2d.h>
 
 #include <sputter/assets/assetstorage.h>
@@ -45,19 +46,19 @@ private:
     SandboxGame() = delete;
     SandboxGame(const SandboxGame& other) = delete;
 
-    sputter::physics::RigidBody2D*    m_pMainRigidBody;
+    sputter::physics::RigidBodySubsystem* m_pRigidbodySubsystem;
 
-    sputter::render::ShaderStorage    m_shaderStorage;
-    sputter::render::SpriteSubsystem* m_pSpriteSubsystem;
-    sputter::render::Sprite*          m_pSprite;
-    sputter::render::Window*          m_pWindow;
+    sputter::render::ShaderStorage        m_shaderStorage;
+    sputter::render::SpriteSubsystem*     m_pSpriteSubsystem;
+    sputter::render::Sprite*              m_pSprite;
+    sputter::render::Window*              m_pWindow;
 
-    sputter::game::SubsystemProvider  m_subsystemProvider;
+    sputter::game::SubsystemProvider      m_subsystemProvider;
 
-    sputter::render::TexturePtr       m_spTexture;
+    sputter::render::TexturePtr           m_spTexture;
 
-    sputter::assets::AssetStorage     m_assetStorage;
+    sputter::assets::AssetStorage         m_assetStorage;
 
-    GameState*                        m_pGameState;
+    GameState*                            m_pGameState;
 };
 

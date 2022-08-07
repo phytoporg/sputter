@@ -2,6 +2,8 @@
 
 #include <sputter/physics/rigidbodysubsystem.h>
 
+#include <sputter/render/spritesubsystem.h>
+
 #include <sputter/game/subsystemprovider.h>
 #include <sputter/system/system.h>
 
@@ -13,14 +15,28 @@ TestObject::TestObject(SubsystemProvider* pProvider)
     CreateAndSetComponentByType<sputter::physics::RigidBodySubsystem>(&m_pRigidBodyComponent);
     if (!m_pRigidBodyComponent)
     {
-        sputter::system::LogAndFail("Failed to find rigid body component in TestObject.");
+        sputter::system::LogAndFail("Failed to create rigid body component in TestObject.");
     }
     
-    // m_pRigidBodyComponent = pProvider->Get
-    // Create a sprite component
+    CreateAndSetComponentByType<sputter::render::SpriteSubsystem>(&m_pSpriteComponent);
+    if (!m_pSpriteComponent)
+    {
+        sputter::system::LogAndFail("Failed to create sprite component in TestObject.");
+    }
 }
 
-void TestObject::Tick(float dt)
+void TestObject::Tick(sputter::math::FixedPoint /*unreferenced*/)
 {
-    // TODO: this, but also use fixed-point math
+    m_pSpriteComponent->SetPosition(m_pRigidBodyComponent->Position);
+}
+
+void TestObject::Initialize(
+    const sputter::math::FPVector2D& initialPosition,
+    sputter::render::TexturePtr spTexture
+    )
+{
+    m_pRigidBodyComponent->Position.Set(initialPosition);
+    m_pSpriteComponent->SetPosition(m_pRigidBodyComponent->Position);
+    m_pSpriteComponent->SetTexturePtr(spTexture);
+    m_pSpriteComponent->SetDimensions(100.0f, 100.0f);
 }

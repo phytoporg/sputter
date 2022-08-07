@@ -3,6 +3,8 @@
 #include "subsystemtype.h"
 #include "subsystemprovider.h"
 
+#include <sputter/math/fixedpoint.h>
+
 #include <array>
 
 namespace sputter { namespace game {
@@ -11,7 +13,7 @@ namespace sputter { namespace game {
     public:
         Object(SubsystemProvider* pProvider);
 
-        virtual void Tick(float dt) = 0;
+        virtual void Tick(math::FixedPoint deltaTime) = 0;
 
         template<typename ComponentType>
         ComponentType* GetComponentByType()

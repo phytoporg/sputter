@@ -2,12 +2,15 @@
 
 #include <glm/glm.hpp>
 #include <sputter/math/fpvector2d.h>
+#include <sputter/game/subsystemtype.h>
 #include "texture.h"
 
 namespace sputter { namespace render {
     class Sprite
     {
     public:
+        static const game::SubsystemType ComponentId = game::SubsystemType::TYPE_SPRITE;
+
         // TODO (philjo 1/18/2021): should use fixed point floats here and 
         // convert to glm at rendering stages.
         Sprite();
