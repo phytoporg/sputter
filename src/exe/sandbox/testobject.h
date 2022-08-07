@@ -2,11 +2,33 @@
 
 #include <sputter/game/object.h>
 
-// TODO: all this biz
-class TestObject : game::Object
+// Forward declarations
+namespace sputter 
+{ 
+    namespace game 
+    {
+        class SubsystemProvider;
+    }
+
+    namespace physics 
+    {
+        class RigidBody2D;
+    }
+
+    namespace render 
+    {
+        class Sprite;
+    }
+}
+
+class TestObject : sputter::game::Object
 {
 public:
-    TestObject(SubsystemProvider* pProvider);
+    TestObject(sputter::game::SubsystemProvider* pProvider);
 
     virtual void Tick(float dt) override;
+
+private:
+    sputter::physics::RigidBody2D*   m_pRigidBodyComponent;
+    sputter::render::Sprite*         m_pSpriteComponent;
 };

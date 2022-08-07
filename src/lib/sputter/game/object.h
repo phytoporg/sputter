@@ -26,6 +26,23 @@ namespace sputter { namespace game {
             m_components[ComponentType::ComponentId] = pComponent;
         }
 
+        template<typename SubsystemType, typename ComponentType>
+        void CreateAndSetComponentByType(ComponentType** ppComponentOut)
+        {
+            auto pSubsystem = m_pSubsystemProvider->GetSubsystemByType<SubsystemType>();
+            ComponentType* pComponent = pSubsystem->CreateComponent();
+            if (ppComponentOut)
+            {
+                *ppComponentOut = pComponent;
+            }
+
+            SetComponentByType(pComponent);
+        }
+
+
+    protected:
+        sputter::game::SubsystemProvider* m_pSubsystemProvider;
+
     private:
         Object() = delete;
         Object(const Object& other) = delete;
