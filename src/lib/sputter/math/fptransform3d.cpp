@@ -11,13 +11,3 @@ FPTransform3D FPTransform3D::Identity()
     static const FPTransform3D identity;
     return identity;
 }
-
-FPMatrix4D FPTransform3D::ToFPMat4D() const
-{
-    // TODO
-}
-
-glm::mat4 FPTransform3D::ToMat4() const;
-{
-    // TODO
-}
