@@ -5,9 +5,6 @@
 #include <sputter/game/object.h>
 #include <sputter/math/fpvector2d.h>
 
-// TODO: Refactor
-#include <sputter/render/texture.h>
-
 // Forward declarations
 namespace sputter 
 { 
