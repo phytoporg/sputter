@@ -1,6 +1,8 @@
 #include "mesh.h"
+#include "uniform.h"
 #include "attribute.h"
 #include "indexbuffer.h"
+#include "draw.h"
 
 #include <vector>
 #include <glm/glm.hpp>
@@ -28,6 +30,10 @@ struct Mesh::PImpl
 
     ShaderPtr              spShader;
 
+    uint32_t               ModelUniformHandle;
+    uint32_t               ViewUniformHandle;
+    uint32_t               ProjUniformHandle;
+
     void CopyTo(Mesh::PImpl& other)
     {
         VertexPositionAttribute = other.VertexPositionAttribute;
@@ -48,6 +54,13 @@ struct Mesh::PImpl
         VertexPositionAttribute.BindTo(0);
         VertexNormalAttribute.BindTo(1);
         VertexTextureCoordinateAttribute.BindTo(2);
+    }
+
+    void UnbindAttributes()
+    {
+        VertexPositionAttribute.UnbindFrom(0);
+        VertexNormalAttribute.UnbindFrom(1);
+        VertexTextureCoordinateAttribute.UnbindFrom(2);
     }
 };
 
@@ -162,10 +175,55 @@ bool Mesh::SetShader(ShaderPtr spShader)
     }
     
     m_spPimpl->spShader = spShader;
+    m_spPimpl->ModelUniformHandle = spShader->GetUniform("model");
+    if (m_spPimpl->ModelUniformHandle == Shader::kInvalidHandleValue)
+    {
+        LOG(ERROR) << "Could not retrieve expected uniform 'model' from shader '" 
+                   << spShader->GetName() << "'";
+        return false;
+    }
+
+    m_spPimpl->ViewUniformHandle = spShader->GetUniform("view");
+    if (m_spPimpl->ViewUniformHandle == Shader::kInvalidHandleValue)
+    {
+        LOG(ERROR) << "Could not retrieve expected uniform 'view' from shader '" 
+                   << spShader->GetName() << "'";
+        return false;
+    }
+
+    m_spPimpl->ProjUniformHandle = spShader->GetUniform("projection");
+    if (m_spPimpl->ProjUniformHandle == Shader::kInvalidHandleValue)
+    {
+        LOG(ERROR) << "Could not retrieve expected uniform 'projection' from shader '" 
+                   << spShader->GetName() << "'";
+        return false;
+    }
+
     return true;
 }
 
 void Mesh::Draw(const glm::mat4& projMatrix) 
 {
+    if (!m_spPimpl->spShader || 
+         m_spPimpl->ModelUniformHandle == Shader::kInvalidHandleValue ||
+         m_spPimpl->ViewUniformHandle  == Shader::kInvalidHandleValue ||
+         m_spPimpl->ProjUniformHandle  == Shader::kInvalidHandleValue)
+    {
+        LOG(WARNING) << "Attempting to render mesh with an improper or invalid shader.";
+        return;
+    }
 
+    m_spPimpl->BindAttributes();
+    m_spPimpl->spShader->Bind();
+
+    // TODO: Actual model and view matrices
+    static const glm::mat4 Identity = glm::mat4(1.0);
+    Uniform<glm::mat4>::Set(m_spPimpl->ModelUniformHandle, Identity);
+    Uniform<glm::mat4>::Set(m_spPimpl->ViewUniformHandle, Identity);
+    Uniform<glm::mat4>::Set(m_spPimpl->ProjUniformHandle, projMatrix);
+
+    ::Draw(m_spPimpl->IndexBuffer, DrawMode::Triangles);
+
+    m_spPimpl->spShader->Unbind();
+    m_spPimpl->UnbindAttributes();
 }

@@ -35,6 +35,7 @@ public:
 private:
     static const std::string       kCubeVertexShaderAssetName;
     static const std::string       kCubeFragmentShaderAssetName;
+    static const std::string       kCubeShaderName;
 
     sputter::render::Mesh*                   m_pMeshComponent;
     std::shared_ptr<sputter::render::Shader> m_spShader;

@@ -2,6 +2,7 @@
 
 #include <sputter/physics/rigidbodysubsystem.h>
 #include "testobject.h"
+#include "charactercube.h"
 
 namespace sputter 
 {
@@ -23,5 +24,6 @@ struct GameState
         sputter::game::SubsystemProvider* pSubsystemProvider
         );
 
-    TestObject   MainShip;
+    TestObject    MainShip;
+    CharacterCube MainCube;
 };

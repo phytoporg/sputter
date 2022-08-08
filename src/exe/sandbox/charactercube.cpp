@@ -12,6 +12,7 @@ using namespace sputter::math;
 
 const std::string CharacterCube::kCubeVertexShaderAssetName = "cube_vert";
 const std::string CharacterCube::kCubeFragmentShaderAssetName = "cube_frag";
+const std::string CharacterCube::kCubeShaderName = "cube_shader";
 
 CharacterCube::CharacterCube(
     AssetStorageProvider* pStorageProvider,
@@ -25,6 +26,20 @@ CharacterCube::CharacterCube(
     }
 
     auto pShaderStorage = pStorageProvider->GetStorageByType<ShaderStorage>();
+    if (!pShaderStorage->AddShaderFromShaderAssetNames(
+        pStorageProvider->GetGeneralStorage(),
+        kCubeVertexShaderAssetName,
+        kCubeFragmentShaderAssetName,
+        kCubeShaderName))
+    {
+        sputter::system::LogAndFail("Failed to add shader for character cube.");
+    }
+
+    m_spShader = pShaderStorage->FindShaderByName(kCubeShaderName);
+    if (!m_spShader)
+    {
+        sputter::system::LogAndFail("Failed to retrieve shader for character cube.");
+    }
 }
 
 void CharacterCube::Tick(FixedPoint deltaTime)
@@ -115,8 +130,10 @@ void CharacterCube::Initialize(
     };
 
     const uint32_t NumVertices = sizeof(VertexPositions) / sizeof(VertexPositions[0]); 
+    const uint32_t NumIndices = sizeof(VertexIndices) / sizeof(VertexIndices[0]); 
     m_pMeshComponent->SetPositions(VertexPositions, NumVertices);
     m_pMeshComponent->SetNormals(VertexNormals, NumVertices);
     m_pMeshComponent->SetTextureCoordinates(VertexUVs, NumVertices);
-    m_pMeshComponent->SetShader(nullptr/*TODO*/);
+    m_pMeshComponent->SetIndices(VertexIndices, NumIndices);
+    m_pMeshComponent->SetShader(m_spShader);
 }

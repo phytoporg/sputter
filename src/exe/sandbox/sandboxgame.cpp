@@ -1,5 +1,6 @@
 #include <sputter/physics/rigidbodysubsystem.h>
 
+#include <sputter/render/meshsubsystem.h>
 #include <sputter/render/shaderstorage.h>
 #include <sputter/render/texturestorage.h>
 #include <sputter/render/shader.h>
@@ -40,8 +41,15 @@ SandboxGame::SandboxGame(
         &m_shaderStorage,
         spriteSubsystemSettings);
 
+    sputter::render::MeshSubsystemSettings meshSubsystemSettings;
+    meshSubsystemSettings.MaxVertexCount = 8;
+    m_pMeshSubsystem = new sputter::render::MeshSubsystem(
+        meshSubsystemSettings
+    );
+
     m_subsystemProvider.AddSubsystem(m_pRigidbodySubsystem);
     m_subsystemProvider.AddSubsystem(m_pSpriteSubsystem);
+    m_subsystemProvider.AddSubsystem(m_pMeshSubsystem);
 
     m_storageProvider.AddResourceStorageByType(&m_textureStorage);
     m_storageProvider.AddResourceStorageByType(&m_shaderStorage);
@@ -55,6 +63,7 @@ void SandboxGame::Tick(math::FixedPoint deltaTime)
 {
     m_pRigidbodySubsystem->Tick(deltaTime);
     m_pGameState->MainShip.Tick(deltaTime);
+    m_pGameState->MainCube.Tick(deltaTime);
 }
 
 void SandboxGame::Draw()
@@ -69,13 +78,21 @@ void SandboxGame::Draw()
            -1.0f, 1.0f);
 
     m_pSpriteSubsystem->Draw(OrthoMatrix);
+    m_pMeshSubsystem->Draw(OrthoMatrix);
 }
 
 bool SandboxGame::StartGame()
 {
-    const sputter::math::FixedPoint FPTwenty(20);
-    const sputter::math::FPVector2D ShipStartPosition(FPTwenty, FPTwenty);
+    using namespace sputter::math;
+    const FPVector2D ShipStartPosition(FPTwenty, FPTwenty);
     m_pGameState->MainShip.Initialize(ShipStartPosition);
+
+    const FixedPoint CubeSize(100);
+    const FPVector3D CubeStartPosition(FPThirty, FPThirty, FPZero);
+    m_pGameState->MainCube.Initialize(
+        CubeSize,
+        CubeStartPosition
+        );
 
     return true;
 }

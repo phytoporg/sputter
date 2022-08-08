@@ -3,7 +3,7 @@
 #include "render.h"
 #include <cassert>
 
-using namespace sputter::render;
+using sputter::render::DrawMode;
 
 namespace 
 {
@@ -30,35 +30,36 @@ namespace
         assert(false);
         return lookupTable[0]; // Invalid !
     }
-
 }
 
-void Draw(const IndexBuffer& inBuffer, DrawMode mode)
-{
-    const uint32_t handle = inBuffer.GetHandle();
-    const uint32_t numIndices = inBuffer.Count();
+namespace sputter { namespace render {
+    void Draw(const IndexBuffer& inBuffer, DrawMode mode)
+    {
+        const uint32_t handle = inBuffer.GetHandle();
+        const uint32_t numIndices = inBuffer.Count();
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, handle);
-    glDrawElements(DrawModeToGlEnum(mode), numIndices, GL_UNSIGNED_INT, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-}
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, handle);
+        glDrawElements(DrawModeToGlEnum(mode), numIndices, GL_UNSIGNED_INT, 0);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    }
 
-void Draw(uint32_t vertexCount, DrawMode mode) 
-{
-    glDrawArrays(DrawModeToGlEnum(mode), 0, vertexCount);
-}
+    void Draw(uint32_t vertexCount, DrawMode mode) 
+    {
+        glDrawArrays(DrawModeToGlEnum(mode), 0, vertexCount);
+    }
 
-void DrawInstanced(const IndexBuffer& inBuffer, DrawMode mode, uint32_t instanceCount)
-{
-    const uint32_t handle = inBuffer.GetHandle();
-    const uint32_t numIndices = inBuffer.Count();
+    void DrawInstanced(const IndexBuffer& inBuffer, DrawMode mode, uint32_t instanceCount)
+    {
+        const uint32_t handle = inBuffer.GetHandle();
+        const uint32_t numIndices = inBuffer.Count();
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, handle);
-    glDrawElementsInstanced(DrawModeToGlEnum(mode), numIndices, GL_UNSIGNED_INT, 0, instanceCount);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-}
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, handle);
+        glDrawElementsInstanced(DrawModeToGlEnum(mode), numIndices, GL_UNSIGNED_INT, 0, instanceCount);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    }
 
-void DrawInstanced(uint32_t vertexCount, DrawMode mode, uint32_t instanceCount) 
-{
-    glDrawArraysInstanced(DrawModeToGlEnum(mode), 0, vertexCount, instanceCount);
-}
+    void DrawInstanced(uint32_t vertexCount, DrawMode mode, uint32_t instanceCount) 
+    {
+        glDrawArraysInstanced(DrawModeToGlEnum(mode), 0, vertexCount, instanceCount);
+    }
+}}

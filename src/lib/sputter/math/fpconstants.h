@@ -7,6 +7,8 @@ namespace sputter { namespace math {
     const FixedPoint FPOne(1);
     const FixedPoint FPTwo(2);
     const FixedPoint FPTen(10);
+    const FixedPoint FPTwenty(20);
+    const FixedPoint FPThirty(30);
     const FixedPoint FPSixty(60);
 
     const FixedPoint FPOneHalf(FPOne / FPTwo);
