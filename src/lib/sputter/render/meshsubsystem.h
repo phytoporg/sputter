@@ -14,6 +14,7 @@ namespace sputter { namespace render {
     {
         size_t  MaxMeshCount = 1;
         size_t  MaxVertexCount = 1;
+        size_t  MaxIndexCount = 1;
     };
 
     class MeshSubsystem : public core::ISubsystem<Mesh>
@@ -37,6 +38,7 @@ namespace sputter { namespace render {
 
         size_t              m_maxMeshCount;
         size_t              m_maxVertexCount;
+        size_t              m_maxIndexCount;
 
         std::vector<Mesh>   m_meshes;
     };

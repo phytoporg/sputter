@@ -125,4 +125,5 @@ void SpriteSubsystem::Draw(const glm::mat4& projMatrix)
     }
 
     m_spriteBatch.Draw(m_pSpriteShader);
+    m_pSpriteShader->Unbind();
 }

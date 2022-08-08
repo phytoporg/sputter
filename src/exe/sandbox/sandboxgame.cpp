@@ -75,7 +75,7 @@ void SandboxGame::Draw()
            static_cast<float>(m_pWindow->GetWidth()),
            static_cast<float>(m_pWindow->GetHeight()),
            0.0f,
-           -1.0f, 1.0f);
+           -1000.0f, 1000.0f);
 
     m_pSpriteSubsystem->Draw(OrthoMatrix);
     m_pMeshSubsystem->Draw(OrthoMatrix);
@@ -88,7 +88,7 @@ bool SandboxGame::StartGame()
     m_pGameState->MainShip.Initialize(ShipStartPosition);
 
     const FixedPoint CubeSize(100);
-    const FPVector3D CubeStartPosition(FPThirty, FPThirty, FPZero);
+    const FPVector3D CubeStartPosition(FPThirty * FPTen, FPZero, FPZero);
     m_pGameState->MainCube.Initialize(
         CubeSize,
         CubeStartPosition

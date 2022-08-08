@@ -16,7 +16,7 @@ namespace sputter { namespace render {
             static const sputter::game::SubsystemType ComponentId = 
                 sputter::game::SubsystemType::TYPE_MESH;
 
-            Mesh();
+            Mesh(size_t maxVertexCount, size_t maxIndexCount);
             Mesh(const Mesh& other);
             Mesh& operator=(const Mesh& other);
 

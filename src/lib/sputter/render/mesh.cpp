@@ -1,4 +1,5 @@
 #include "mesh.h"
+#include "render.h"
 #include "uniform.h"
 #include "attribute.h"
 #include "indexbuffer.h"
@@ -26,13 +27,17 @@ struct Mesh::PImpl
     std::vector<glm::vec3> VertexPositions;
     std::vector<glm::vec3> VertexNormals;
     std::vector<glm::vec2> VertexTextureCoordinates;
-    std::vector<int>       VertexIndices;
+    std::vector<uint32_t>  VertexIndices;
 
     ShaderPtr              spShader;
+
+    uint32_t               VAO;
 
     uint32_t               ModelUniformHandle;
     uint32_t               ViewUniformHandle;
     uint32_t               ProjUniformHandle;
+
+    bool                   IsDirty = true;
 
     void CopyTo(Mesh::PImpl& other)
     {
@@ -47,6 +52,8 @@ struct Mesh::PImpl
         VertexIndices = other.VertexIndices;
 
         spShader = other.spShader;
+
+        VAO = other.VAO;
     }
 
     void BindAttributes()
@@ -64,9 +71,31 @@ struct Mesh::PImpl
     }
 };
 
-Mesh::Mesh() 
-    : m_spPimpl(new Mesh::PImpl)
-{}
+Mesh::Mesh(size_t maxVertexCount, size_t maxIndexCount) 
+{
+    uint32_t vao;
+    glGenVertexArrays(1, &vao);
+
+    m_spPimpl = std::make_shared<Mesh::PImpl>();
+    m_spPimpl->VertexPositions.reserve(maxVertexCount);
+    m_spPimpl->VertexPositionAttribute.Set(m_spPimpl->VertexPositions.data(), maxVertexCount);
+    m_spPimpl->VertexPositionAttribute.BindTo(0);
+
+    m_spPimpl->VertexNormals.reserve(maxVertexCount);
+    m_spPimpl->VertexNormalAttribute.Set(m_spPimpl->VertexNormals.data(), maxVertexCount);
+    m_spPimpl->VertexNormalAttribute.BindTo(1);
+
+    m_spPimpl->VertexTextureCoordinates.reserve(maxVertexCount);
+    m_spPimpl->VertexTextureCoordinateAttribute.Set(m_spPimpl->VertexTextureCoordinates.data(), maxVertexCount);
+    m_spPimpl->VertexTextureCoordinateAttribute.BindTo(2);
+
+    m_spPimpl->VertexIndices.reserve(maxIndexCount);
+    m_spPimpl->IndexBuffer.Set(m_spPimpl->VertexIndices.data(), maxIndexCount);
+
+    m_spPimpl->VAO = vao;
+
+    glBindVertexArray(0);
+}
 
 Mesh::Mesh(const Mesh& other)
 {
@@ -79,6 +108,7 @@ Mesh& Mesh::operator=(const Mesh& other)
 {
     m_spPimpl = std::make_shared<Mesh::PImpl>();
     other.m_spPimpl->CopyTo(*m_spPimpl);
+    m_spPimpl->IsDirty = true;
     return *this;
 }
 
@@ -102,6 +132,7 @@ bool Mesh::SetPositions(
     }
 
     m_spPimpl->VertexPositionAttribute.Set(m_spPimpl->VertexPositions);
+    m_spPimpl->IsDirty = true;
     return true;
 }
 
@@ -125,6 +156,7 @@ bool Mesh::SetNormals(
     }
 
     m_spPimpl->VertexNormalAttribute.Set(m_spPimpl->VertexNormals);
+    m_spPimpl->IsDirty = true;
     return true;
 }
 
@@ -144,6 +176,7 @@ bool Mesh::SetTextureCoordinates(const FPVector2D* uvsArray, uint32_t arrayLen)
     }
 
     m_spPimpl->VertexTextureCoordinateAttribute.Set(m_spPimpl->VertexTextureCoordinates);
+    m_spPimpl->IsDirty = true;
     return true;
 }
 
@@ -164,6 +197,7 @@ bool Mesh::SetIndices(
 
     memcpy(m_spPimpl->VertexIndices.data(), indexArray, arrayLen * sizeof(int));
     m_spPimpl->IndexBuffer.Set(m_spPimpl->VertexIndices);
+    m_spPimpl->IsDirty = true;
     return true;
 }
 
@@ -213,7 +247,6 @@ void Mesh::Draw(const glm::mat4& projMatrix)
         return;
     }
 
-    m_spPimpl->BindAttributes();
     m_spPimpl->spShader->Bind();
 
     // TODO: Actual model and view matrices
@@ -222,8 +255,24 @@ void Mesh::Draw(const glm::mat4& projMatrix)
     Uniform<glm::mat4>::Set(m_spPimpl->ViewUniformHandle, Identity);
     Uniform<glm::mat4>::Set(m_spPimpl->ProjUniformHandle, projMatrix);
 
+    glBindVertexArray(m_spPimpl->VAO);
+
+    m_spPimpl->BindAttributes();
+
+    if (m_spPimpl->IsDirty)
+    {
+        // Update buffer objects
+        m_spPimpl->VertexPositionAttribute.Set(m_spPimpl->VertexPositions);
+        m_spPimpl->VertexNormalAttribute.Set(m_spPimpl->VertexNormals);
+        m_spPimpl->VertexTextureCoordinateAttribute.Set(m_spPimpl->VertexTextureCoordinates);
+        m_spPimpl->IndexBuffer.Set(m_spPimpl->VertexIndices);
+        m_spPimpl->IsDirty = false;
+    }
+
     ::Draw(m_spPimpl->IndexBuffer, DrawMode::Triangles);
+    m_spPimpl->UnbindAttributes();
 
     m_spPimpl->spShader->Unbind();
-    m_spPimpl->UnbindAttributes();
+
+    glBindVertexArray(0);
 }

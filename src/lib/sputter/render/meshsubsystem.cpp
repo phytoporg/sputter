@@ -5,7 +5,8 @@ using namespace sputter::render;
 MeshSubsystem::MeshSubsystem(
     const MeshSubsystemSettings& settings
     ) : m_maxMeshCount(settings.MaxMeshCount), 
-        m_maxVertexCount(settings.MaxVertexCount) 
+        m_maxVertexCount(settings.MaxVertexCount),
+        m_maxIndexCount(settings.MaxIndexCount)
 {
     m_meshes.reserve(m_maxMeshCount);
 }
@@ -17,7 +18,7 @@ void MeshSubsystem::Tick(math::FixedPoint dt)
 
 Mesh* MeshSubsystem::CreateComponent() 
 {
-    m_meshes.emplace_back();
+    m_meshes.emplace_back(m_maxVertexCount, m_maxIndexCount);
     return &m_meshes.back();
 }
 

@@ -76,7 +76,7 @@ namespace sputter { namespace render {
         m_count = arrayLength;
         size_t size = sizeof(T);
         glBindBuffer(GL_ARRAY_BUFFER, m_handle);
-        glBufferData(GL_ARRAY_BUFFER, size * m_count, inputArray, GL_STREAM_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, size * m_count, inputArray, GL_STATIC_DRAW);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
 
@@ -90,8 +90,8 @@ namespace sputter { namespace render {
     void Attribute<T>::BindTo(uint32_t slot)
     {
         glBindBuffer(GL_ARRAY_BUFFER, m_handle);
-        glEnableVertexAttribArray(slot);
         SetAttributePointer(slot);
+        glEnableVertexAttribArray(slot);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
 

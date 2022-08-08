@@ -13,8 +13,8 @@ namespace sputter { namespace render {
 
         ~IndexBuffer();
 
-        void Set(const int* inputArray, uint32_t arrayLength);
-        void Set(const std::vector<int>& data);
+        void Set(const uint32_t* inputArray, uint32_t arrayLength);
+        void Set(const std::vector<uint32_t>& data);
 
         uint32_t Count() const;
         uint32_t GetHandle() const;

@@ -57,16 +57,16 @@ void CharacterCube::Initialize(
     // for less error-prone adjustments in placing the origin at the cube's actual center.
     static const FPVector3D VertexPositions[] = {
         // Bottom face
-        FPVector3D(FPZero, FPZero, FPZero),
-        FPVector3D(cubeSize, FPZero, FPZero),
-        FPVector3D(cubeSize, cubeSize, FPZero),
-        FPVector3D(FPZero, cubeSize, FPZero), 
+        FPVector3D(FPZero, FPZero, FPZero) + location,
+        FPVector3D(cubeSize, FPZero, FPZero) + location,
+        FPVector3D(cubeSize, cubeSize, FPZero) + location,
+        FPVector3D(FPZero, cubeSize, FPZero) + location,
 
         // Top face
-        FPVector3D(FPZero, FPZero, cubeSize),
-        FPVector3D(cubeSize, FPZero, cubeSize),
-        FPVector3D(cubeSize, cubeSize, cubeSize),
-        FPVector3D(FPZero, cubeSize, cubeSize), 
+        FPVector3D(FPZero, FPZero, cubeSize) + location,
+        FPVector3D(cubeSize, FPZero, cubeSize) + location,
+        FPVector3D(cubeSize, cubeSize, cubeSize) + location,
+        FPVector3D(FPZero, cubeSize, cubeSize) + location,
     };
 
     static const FixedPoint FPHalfSize = cubeSize / FPTwo;
