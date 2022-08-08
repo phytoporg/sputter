@@ -3,6 +3,7 @@
 // Fixed-point 2-dimensional vector
 
 #include "fixedpoint.h"
+#include <glm/glm.hpp>
 
 namespace sputter { namespace math {
     class FPVector2D
@@ -29,6 +30,9 @@ namespace sputter { namespace math {
 
         // Scalar multiplication
         FPVector2D operator*(FixedPoint scalar) const;
+
+        // Conversions
+        glm::vec2 ToVec2() const;
 
         // TODO: Everything else
     private:

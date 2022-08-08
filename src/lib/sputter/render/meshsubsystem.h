@@ -2,8 +2,12 @@
 
 #include "mesh.h"
 #include <sputter/core/subsystem.h>
+#include <sputter/game/subsystemtype.h>
 #include <sputter/containers/fixedmemoryvector.h>
 #include <sputter/memory/fixedmemoryallocator.h>
+
+#include <vector>
+#include <glm/glm.hpp>
 
 namespace sputter { namespace render {
     struct MeshSubsystemSettings
@@ -15,13 +19,10 @@ namespace sputter { namespace render {
     class MeshSubsystem : public core::ISubsystem<Mesh>
     {
     public:
-        static const game::SubsystemType SubsystemId =
-            game::SubsystemType::TYPE_MESH;
+        static const sputter::game::SubsystemType SubsystemId =
+            sputter::game::SubsystemType::TYPE_MESH;
 
-        MeshSubsystem(
-            sputter::memory::FixedMemoryAllocator& allocator,
-            const MeshSubsystemSettings& settings
-            );
+        MeshSubsystem(const MeshSubsystemSettings& settings);
 
         virtual void Tick(math::FixedPoint dt) override;
 
@@ -34,12 +35,9 @@ namespace sputter { namespace render {
         MeshSubsystem() = delete;
         MeshSubsystem(const MeshSubsystem& other) = delete;
 
-        sputter::memory::FixedMemoryAllocator&       m_allocator;
-
         size_t              m_maxMeshCount;
         size_t              m_maxVertexCount;
 
-        sputter::containers::FixedMemoryVector<Mesh> m_meshes;
-
+        std::vector<Mesh>   m_meshes;
     };
 }}

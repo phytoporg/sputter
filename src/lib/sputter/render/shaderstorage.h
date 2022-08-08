@@ -11,6 +11,7 @@
 // Forward declarations
 namespace sputter { namespace assets {
     struct TextData;
+    class AssetStorage;
 }}
 
 namespace sputter { namespace render {
@@ -21,6 +22,14 @@ namespace sputter { namespace render {
             assets::ResourceStorageType::TYPE_SHADER;
 
         ~ShaderStorage();
+
+        bool 
+        AddShaderFromShaderAssetNames(
+            sputter::assets::AssetStorage* pAssetStorage, 
+            const std::string& vertexShaderAssetName,
+            const std::string& fragmentShaderAssetName,
+            const std::string& shaderName
+            );
 
         bool
         AddShader(

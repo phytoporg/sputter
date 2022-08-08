@@ -1,8 +1,11 @@
 #pragma once
 
 #include "shader.h"
+#include <memory>
+#include <sputter/math/fpvector2d.h>
 #include <sputter/math/fpvector3d.h>
 #include <sputter/containers/fixedmemoryvector.h>
+#include <sputter/game/subsystemtype.h>
 
 namespace sputter { namespace render {
     class Shader;
@@ -10,29 +13,50 @@ namespace sputter { namespace render {
     class Mesh 
     {
         public:
-            Mesh(uint32_t maxVertices);
+            static const sputter::game::SubsystemType ComponentId = 
+                sputter::game::SubsystemType::TYPE_MESH;
 
-            bool SetVertices(
-                const sputter::containers::FixedMemoryVector<sputter::math::FPVector3D>& vertices
+            Mesh();
+            Mesh(const Mesh& other);
+            Mesh& operator=(const Mesh& other);
+
+            bool SetPositions(
+                const sputter::containers::FixedMemoryVector<sputter::math::FPVector3D>& vertexPositions
                 );
+            bool SetPositions(
+                const sputter::math::FPVector3D* positionArray, uint32_t arrayLen
+                );
+
+            bool SetNormals(
+                const sputter::containers::FixedMemoryVector<sputter::math::FPVector3D>& vertexNormals
+                );
+            bool SetNormals(
+                const sputter::math::FPVector3D* normalsArray, uint32_t arrayLen
+                );
+
+            bool SetTextureCoordinates(
+                const sputter::containers::FixedMemoryVector<sputter::math::FPVector2D>& vertexUVs
+                );
+            bool SetTextureCoordinates(
+                const sputter::math::FPVector2D* uvArray, uint32_t arrayLen
+                );
+
             bool SetIndices(
                 const sputter::containers::FixedMemoryVector<int>& indices
                 );
+            bool SetIndices(
+                const int* indicesArray, uint32_t arrayLen
+                );
+
             bool SetShader(ShaderPtr spShader);
 
+            void Draw(const glm::mat4& projMatrix);
+
             // TODO: Some kind of local fixed-point transform
+            // TODO: texture(s)?
 
         private:
-            Mesh() = delete;
-            Mesh(const Mesh& other) = delete;
-            Mesh& operator=(const Mesh& other) = delete;
-
-            // TODO: not this?
-            sputter::containers::FixedMemoryVector<sputter::math::FPVector3D> m_vertices;
-            sputter::containers::FixedMemoryVector<int>                       m_indices;
-
-            uint32_t                                                          m_maxVertices;
-
-            ShaderPtr                                                         m_spShader;
+            struct PImpl;
+            std::shared_ptr<PImpl> m_spPimpl;
     };
 }}

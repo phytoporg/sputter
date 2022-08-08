@@ -11,15 +11,17 @@ using namespace sputter::render;
         glFunc(slot, static_cast<GLsizei>(length), reinterpret_cast<const dType*>(data)); \
     }
 
-template Uniform<int>;
-template Uniform<glm::ivec2>;
-template Uniform<glm::ivec4>;
-template Uniform<float>;
-template Uniform<glm::vec2>;
-template Uniform<glm::vec3>;
-template Uniform<glm::vec4>;
-template Uniform<glm::quat>;
-template Uniform<glm::mat4>;
+// This apparently accomplishes nothing
+// TODO: Make sure MSVC is happy, then this can be removed
+// template Uniform<int>;
+// template Uniform<glm::ivec2>;
+// template Uniform<glm::ivec4>;
+// template Uniform<float>;
+// template Uniform<glm::vec2>;
+// template Uniform<glm::vec3>;
+// template Uniform<glm::vec4>;
+// template Uniform<glm::quat>;
+// template Uniform<glm::mat4>;
 
 UNIFORM_IMPL(glUniform1iv, int, int);
 UNIFORM_IMPL(glUniform2iv, glm::ivec2, int);

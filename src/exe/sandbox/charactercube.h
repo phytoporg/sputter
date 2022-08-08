@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <memory>
 
 #include <sputter/game/object.h>
 #include <sputter/math/fixedpoint.h>
@@ -32,9 +33,9 @@ public:
         );
 
 private:
-    sputter::render::Mesh*         m_pMeshComponent;
-    sputter::render::Shader*       m_pShader;
-
     static const std::string       kCubeVertexShaderAssetName;
     static const std::string       kCubeFragmentShaderAssetName;
+
+    sputter::render::Mesh*                   m_pMeshComponent;
+    std::shared_ptr<sputter::render::Shader> m_spShader;
 };

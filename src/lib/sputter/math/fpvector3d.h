@@ -3,6 +3,7 @@
 // Fixed-point 3-dimensional vector
 
 #include "fixedpoint.h"
+#include <glm/glm.hpp>
 
 namespace sputter { namespace math {
     class FPVector3D
@@ -10,6 +11,7 @@ namespace sputter { namespace math {
     public:
         FPVector3D();
         FPVector3D(FixedPoint x, FixedPoint y, FixedPoint z);
+        FPVector3D(int x, int y, int z);
 
         // Accessors
         FixedPoint GetX() const;
@@ -29,11 +31,22 @@ namespace sputter { namespace math {
         FPVector3D operator+(const FPVector3D& other) const;
         FPVector3D operator+=(const FPVector3D& other);
 
-        // Scalar multiplication
+        // Scalar arithmetic
         FPVector3D operator*(FixedPoint scalar) const;
+        FPVector3D operator/(FixedPoint scalar) const;
+
+        // Unary vector operations, computations
+        FixedPoint Length() const;
+        FPVector3D Normalized() const;
+
+        // Conversions
+        glm::vec3 ToVec3() const;
 
         // TODO: Everything else
     private:
+        FPVector3D(float x, float y, float z) = delete;
+        FPVector3D(double x, double y, double z) = delete;
+
         FixedPoint m_x;
         FixedPoint m_y;
         FixedPoint m_z;

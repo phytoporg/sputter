@@ -1,6 +1,7 @@
 #include "shaderstorage.h"
 #include "render.h"
 
+#include <sputter/assets/assetstorage.h>
 #include <sputter/assets/textdata.h>
 #include <sputter/system/system.h>
 
@@ -14,6 +15,45 @@ ShaderStorage::~ShaderStorage()
     {
         ReleaseResource(m_storageVector.front().get());
     }
+}
+
+bool 
+ShaderStorage::AddShaderFromShaderAssetNames(
+    sputter::assets::AssetStorage* pAssetStorage, 
+    const std::string& vertexShaderAssetName,
+    const std::string& fragmentShaderAssetName,
+    const std::string& shaderName
+    )
+{
+    auto spVertexShaderAsset = pAssetStorage->FindFirstByName(vertexShaderAssetName);
+    if (!spVertexShaderAsset)
+    {
+        LOG(WARNING) << "Failed to find vertex shader asset by name: " << vertexShaderAssetName;
+        return false;
+    }
+
+    auto pVertexShaderTextData = dynamic_cast<sputter::assets::TextData*>(spVertexShaderAsset.get());
+    if (!pVertexShaderTextData)
+    {
+        LOG(ERROR) << "Unexpected asset data type for vertex shader: " << vertexShaderAssetName;
+        return false;
+    }
+    
+    auto spFragmentShaderAsset = pAssetStorage->FindFirstByName(fragmentShaderAssetName);
+    if (!spFragmentShaderAsset)
+    {
+        LOG(WARNING) << "Failed to find fragment shader asset by name: " << fragmentShaderAssetName;
+        return false;
+    }
+
+    auto pFragmentShaderTextData = dynamic_cast<sputter::assets::TextData*>(spFragmentShaderAsset.get());
+    if (!pFragmentShaderTextData)
+    {
+        LOG(ERROR) << "Unexpected asset data type for fragment shader: " << fragmentShaderAssetName;
+        return false;
+    }
+
+    return AddShader(*pVertexShaderTextData, *pFragmentShaderTextData, shaderName);
 }
 
 bool

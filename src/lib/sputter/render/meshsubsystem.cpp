@@ -3,27 +3,22 @@
 using namespace sputter::render;
 
 MeshSubsystem::MeshSubsystem(
-    memory::FixedMemoryAllocator& allocator
     const MeshSubsystemSettings& settings
-    ) : m_meshCount(0),
-        m_maxMeshCount(settings.MaxMeshCount), 
-        m_maxVertexCount(settings.MaxVertexCount), 
-        m_allocator(allocator),
-        m_meshes(m_maxMeshCount, allocator)
-{}
+    ) : m_maxMeshCount(settings.MaxMeshCount), 
+        m_maxVertexCount(settings.MaxVertexCount) 
+{
+    m_meshes.reserve(m_maxMeshCount);
+}
 
 void MeshSubsystem::Tick(math::FixedPoint dt) 
 {
-    for (size_t i = 0; i < m_meshes.size(); ++i)
-    {
-        m_meshes[i].Tick(dt);
-    }
+    // NOOP for now
 }
 
 Mesh* MeshSubsystem::CreateComponent() 
 {
-    m_meshes.Emplace(m_maxVertexCount);
-    return &m_meshes.Back();
+    m_meshes.emplace_back();
+    return &m_meshes.back();
 }
 
 void MeshSubsystem::ReleaseComponent(Mesh* pMesh) 
@@ -32,7 +27,7 @@ void MeshSubsystem::ReleaseComponent(Mesh* pMesh)
     auto indexToRemove = InvalidIndex;
     for (size_t i = 0; i < m_meshes.size(); ++i)
     {
-        if (m_meshes[i] == pMesh)
+        if (&(m_meshes[i]) == pMesh)
         {
             indexToRemove = i;
             break;
@@ -41,11 +36,14 @@ void MeshSubsystem::ReleaseComponent(Mesh* pMesh)
 
     if (indexToRemove != InvalidIndex)
     {
-        m_meshes.Remove(indexToRemove);
+        m_meshes.erase(std::begin(m_meshes) + indexToRemove);
     }
 }
 
 void MeshSubsystem::Draw(const glm::mat4& projMatrix) 
 {
-    // TODO!
+    for (Mesh& mesh : m_meshes)
+    {
+        mesh.Draw(projMatrix);
+    }
 }

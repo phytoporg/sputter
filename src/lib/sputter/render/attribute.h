@@ -9,6 +9,9 @@ namespace sputter { namespace render {
     {
     public:
         Attribute();
+        Attribute(const Attribute& other);
+        Attribute& operator=(const Attribute& other);
+
         ~Attribute();
 
         void SetAttributePointer(uint32_t slot);
@@ -20,12 +23,8 @@ namespace sputter { namespace render {
         uint32_t GetHandle();
 
     protected:
-        uint32_t m_handle;
-        uint32_t m_count;
-
-    private:
-        Attribute(const Attribute& other);
-        Attribute& operator=(const Attribute& other);
+        uint32_t m_handle = 0;
+        uint32_t m_count = 0;
     };
 
     template<typename T>
@@ -33,6 +32,22 @@ namespace sputter { namespace render {
     {
         glGenBuffers(1, &m_handle);
         m_count = 0;
+    }
+
+    template<typename T>
+    Attribute<T>::Attribute(const Attribute<T>& other)
+    {
+        // Copy references to underlying resources
+        m_handle = other.m_handle;
+        m_count = other.m_count;
+    }
+
+    template<typename T>
+    Attribute<T>& Attribute<T>::operator=(const Attribute<T>& other)
+    {
+        m_handle = other.m_handle;
+        m_count = other.m_count;
+        return *this;
     }
 
     template<typename T>

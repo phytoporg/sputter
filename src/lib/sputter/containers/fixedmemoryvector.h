@@ -77,6 +77,16 @@ namespace sputter { namespace containers {
             ++m_size;
         }
 
+        T* Data() 
+        {
+            return m_data;
+        }
+
+        const T* Data() const
+        {
+            return m_data;
+        }
+
         const T& Get(size_t index) const
         {
             return m_data[index];
