@@ -5,6 +5,7 @@
 #include <sputter/game/subsystemtype.h>
 #include "spritebatch.h"
 #include "sprite.h"
+#include "mesh.h"
 #include "uniform.h"
 
 #include <string>
@@ -30,7 +31,7 @@ namespace sputter { namespace render {
         size_t      MaxSpriteCount;
     };
 
-    class SpriteSubsystem : core::ISubsystem<Sprite>
+    class SpriteSubsystem : public core::ISubsystem<Sprite>
     {
     public:
         static const game::SubsystemType SubsystemId =

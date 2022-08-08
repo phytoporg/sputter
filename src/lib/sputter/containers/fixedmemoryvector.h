@@ -97,6 +97,32 @@ namespace sputter { namespace containers {
             return m_data[index];
         }
 
+        FixedMemoryVector<T>& operator=(const FixedMemoryVector<T>& other)
+        {
+            if (Capacity() < other.Size())
+            {
+                system::LogAndFail("FMV::operator=() - Cannot copy other vector, insufficient capacity.");
+            }
+
+            Resize(other.Size());
+            for (size_t i = 0; i < Size(); ++i)
+            {
+                m_data[i] = other[i];
+            }
+
+            return *this;
+        }
+
+        T& Back()
+        {
+            if (m_size == 0)
+            {
+                system::LogAndFail("FMV::Back() - vector is empty.");
+            }
+            
+            return m_data[m_size - 1];
+        }
+
         void Clear()
         {
             for (size_t i = 0; i < m_size; ++i)
