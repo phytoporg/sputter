@@ -13,20 +13,24 @@ namespace sputter { namespace math {
 
         static FPTransform3D Identity();
 
-        void SetLocation(const FPVector3D& location);
+        void SetTranslation(const FPVector3D& translation);
         void SetScale(const FPVector3D& scale);
 
-        FPVector3D GetLocation() const;
+        // Radians, yaw/pitch/roll
+        void SetRotation(const FPVector3D& rotation);
+
+        FPVector3D GetTranslation() const;
+        FPVector3D GetScale() const;
+        FPVector3D GetRotation() const;
 
         // TODO:
-        // void SetRotation(const FPVector3D& rotation);
-        //
         // FPMatrix4D ToFPMat4D() const;
+
         glm::mat4  ToMat4() const;
 
     private:
         // x, y, z
-        FPVector3D m_location;
+        FPVector3D m_translation;
 
         // Scale along x, y, z
         FPVector3D m_scale;

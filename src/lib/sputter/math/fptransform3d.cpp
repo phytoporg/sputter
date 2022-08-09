@@ -1,9 +1,11 @@
 #include "fptransform3d.h"
 
+#include <glm/gtx/euler_angles.hpp>
+
 using namespace sputter::math;
 
 FPTransform3D::FPTransform3D() 
-    : m_location(0, 0, 0), m_scale(1, 1, 1), m_rotation(0, 0, 0)
+    : m_translation(0, 0, 0), m_scale(1, 1, 1), m_rotation(0, 0, 0)
 {}
 
 FPTransform3D FPTransform3D::Identity() 
@@ -12,9 +14,9 @@ FPTransform3D FPTransform3D::Identity()
     return identity;
 }
 
-void FPTransform3D::SetLocation(const FPVector3D& location) 
+void FPTransform3D::SetTranslation(const FPVector3D& translation) 
 {
-    m_location = location;
+    m_translation = translation;
 }
 
 void FPTransform3D::SetScale(const FPVector3D& scale) 
@@ -22,24 +24,37 @@ void FPTransform3D::SetScale(const FPVector3D& scale)
     m_scale = scale;
 }
 
-glm::mat4 FPTransform3D::ToMat4() const 
+void FPTransform3D::SetRotation(const FPVector3D& rotation) 
 {
-    glm::mat4 returnValue(1.0);
-
-    const glm::vec3 scale = m_scale.ToVec3();
-    returnValue[0][0] = scale[0];
-    returnValue[1][1] = scale[1];
-    returnValue[2][2] = scale[2];
-
-    const glm::vec3 location = m_location.ToVec3();
-    returnValue[3] = glm::vec4(location, 1.0f);
-
-    // TODO: Rotation
-
-    return returnValue;
+    m_rotation = rotation;
 }
 
-FPVector3D FPTransform3D::GetLocation() const 
+FPVector3D FPTransform3D::GetTranslation() const 
 {
-    return m_location;
+    return m_translation;
+}
+
+FPVector3D FPTransform3D::GetScale() const 
+{
+    return m_scale;
+}
+
+FPVector3D FPTransform3D::GetRotation() const 
+{
+    return m_rotation;
+}
+
+glm::mat4 FPTransform3D::ToMat4() const 
+{
+    const glm::vec3 rotation    = m_rotation.ToVec3();
+    const glm::vec3 scale       = m_scale.ToVec3();
+    const glm::vec3 translation = m_translation.ToVec3();
+
+    glm::mat4 returnValue = glm::eulerAngleXYZ(rotation.x, rotation.y, rotation.z); 
+    returnValue[0][0] *= scale.x;
+    returnValue[1][1] *= scale.y;
+    returnValue[2][2] *= scale.z;
+    returnValue[3] = glm::vec4(translation, 1.0f);
+
+    return returnValue;
 }

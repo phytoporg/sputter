@@ -52,9 +52,7 @@ void CharacterCube::Tick(FixedPoint deltaTime)
     const FixedPoint JiggleAmplitude = FixedPoint(25);
     const FixedPoint XOffset = JiggleAmplitude * fpm::sin(JiggleFrequency * m_accumulatedTime);
 
-    const FPVector3D CurrentLocation = m_localTransform.GetLocation();
-    m_localTransform.SetLocation(CurrentLocation + FPVector3D(XOffset, FPZero, FPZero));
-
+    m_localTransform.SetRotation(FPVector3D(m_accumulatedTime, m_accumulatedTime, FPZero));
     m_pMeshComponent->SetModelMatrix(m_localTransform.ToMat4());
 }
 
@@ -63,38 +61,37 @@ void CharacterCube::Initialize(
     sputter::math::FPVector3D location
     )
 {
-    m_localTransform.SetLocation(location);
+    m_localTransform.SetTranslation(location);
 
     using namespace sputter::math;
-    // Place cube's lower-left corner at the local origin for now. Need working FP transforms
-    // for less error-prone adjustments in placing the origin at the cube's actual center.
+    // Cube's origin is at the geometric center.
+    const FixedPoint HalfCubeSize = cubeSize / FPTwo;
     static const FPVector3D VertexPositions[] = {
         // Bottom face
-        FPVector3D(FPZero, FPZero, FPZero),
-        FPVector3D(cubeSize, FPZero, FPZero),
-        FPVector3D(cubeSize, cubeSize, FPZero),
-        FPVector3D(FPZero, cubeSize, FPZero),
+        FPVector3D(-HalfCubeSize, -HalfCubeSize, -HalfCubeSize),
+        FPVector3D( HalfCubeSize, -HalfCubeSize, -HalfCubeSize),
+        FPVector3D( HalfCubeSize, -HalfCubeSize,  HalfCubeSize),
+        FPVector3D(-HalfCubeSize, -HalfCubeSize,  HalfCubeSize),
 
         // Top face
-        FPVector3D(FPZero, FPZero, cubeSize),
-        FPVector3D(cubeSize, FPZero, cubeSize),
-        FPVector3D(cubeSize, cubeSize, cubeSize),
-        FPVector3D(FPZero, cubeSize, cubeSize),
+        FPVector3D(-HalfCubeSize,  HalfCubeSize, -HalfCubeSize),
+        FPVector3D( HalfCubeSize,  HalfCubeSize, -HalfCubeSize),
+        FPVector3D( HalfCubeSize,  HalfCubeSize,  HalfCubeSize),
+        FPVector3D(-HalfCubeSize,  HalfCubeSize,  HalfCubeSize),
     };
 
-    static const FixedPoint FPHalfSize = cubeSize / FPTwo;
     static const FPVector3D VertexNormals[] = {
         // Bottom face
-        FPVector3D(-FPHalfSize, -FPHalfSize, -FPHalfSize).Normalized(),
-        FPVector3D( FPHalfSize, -FPHalfSize, -FPHalfSize).Normalized(),
-        FPVector3D( FPHalfSize, -FPHalfSize,  FPHalfSize).Normalized(),
-        FPVector3D(-FPHalfSize, -FPHalfSize,  FPHalfSize).Normalized(), 
+        FPVector3D(-HalfCubeSize, -HalfCubeSize, -HalfCubeSize).Normalized(),
+        FPVector3D( HalfCubeSize, -HalfCubeSize, -HalfCubeSize).Normalized(),
+        FPVector3D( HalfCubeSize, -HalfCubeSize,  HalfCubeSize).Normalized(),
+        FPVector3D(-HalfCubeSize, -HalfCubeSize,  HalfCubeSize).Normalized(), 
 
         // Top face
-        FPVector3D(-FPHalfSize, FPHalfSize, -FPHalfSize).Normalized(),
-        FPVector3D( FPHalfSize, FPHalfSize, -FPHalfSize).Normalized(),
-        FPVector3D( FPHalfSize, FPHalfSize,  FPHalfSize).Normalized(),
-        FPVector3D(-FPHalfSize, FPHalfSize,  FPHalfSize).Normalized(), 
+        FPVector3D(-HalfCubeSize, HalfCubeSize, -HalfCubeSize).Normalized(),
+        FPVector3D( HalfCubeSize, HalfCubeSize, -HalfCubeSize).Normalized(),
+        FPVector3D( HalfCubeSize, HalfCubeSize,  HalfCubeSize).Normalized(),
+        FPVector3D(-HalfCubeSize, HalfCubeSize,  HalfCubeSize).Normalized(), 
     };
 
     // TODO: worry about this when we actually want a texture

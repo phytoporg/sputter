@@ -2,8 +2,10 @@ Next high-level goal: Start prototyping gameplay
 * Cleaner ECS setup - use Object class + subsystem, asset providers [X]
 * Characters - procedural cubes
 ** Procedural meshes + rendering
-* Input component and game controls
+* A little more math - 3D rotations
 * 3D camera
+** Maintaining aspect ratio !
+* Input component and game controls
 * "Ball" - procedural cube
 * Collision
 * Swipe FX
