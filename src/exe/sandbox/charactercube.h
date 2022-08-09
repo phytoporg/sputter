@@ -5,6 +5,7 @@
 
 #include <sputter/game/object.h>
 #include <sputter/math/fixedpoint.h>
+#include <sputter/math/fptransform3d.h>>
 #include <sputter/math/fpvector3d.h>
 
 namespace sputter
@@ -39,4 +40,8 @@ private:
 
     sputter::render::Mesh*                   m_pMeshComponent;
     std::shared_ptr<sputter::render::Shader> m_spShader;
+
+    sputter::math::FPTransform3D             m_localTransform;
+    sputter::math::FixedPoint                m_accumulatedTime;
+    sputter::math::FPVector3D                m_initialLocation;
 };

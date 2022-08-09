@@ -49,6 +49,7 @@ namespace sputter { namespace render {
                 );
 
             bool SetShader(ShaderPtr spShader);
+            void SetModelMatrix(const glm::mat4& modelMatrix);
 
             void Draw(const glm::mat4& projMatrix);
 

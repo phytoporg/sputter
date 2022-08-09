@@ -5,6 +5,8 @@
 #include <sputter/render/meshsubsystem.h>
 #include <sputter/render/shaderstorage.h>
 
+#include <fpm/math.hpp>
+
 using namespace sputter::render;
 using namespace sputter::game;
 using namespace sputter::assets;
@@ -17,7 +19,7 @@ const std::string CharacterCube::kCubeShaderName = "cube_shader";
 CharacterCube::CharacterCube(
     AssetStorageProvider* pStorageProvider,
     SubsystemProvider* pSubsystemProvider
-) : Object(pStorageProvider, pSubsystemProvider)
+) : Object(pStorageProvider, pSubsystemProvider), m_accumulatedTime(FPZero)
 {
     CreateAndSetComponentByType<MeshSubsystem>(&m_pMeshComponent);
     if (!m_pMeshComponent)
@@ -44,7 +46,16 @@ CharacterCube::CharacterCube(
 
 void CharacterCube::Tick(FixedPoint deltaTime)
 {
-    // TODO
+    m_accumulatedTime += deltaTime;
+
+    const FixedPoint JiggleFrequency = FixedPoint(5);
+    const FixedPoint JiggleAmplitude = FixedPoint(25);
+    const FixedPoint XOffset = JiggleAmplitude * fpm::sin(JiggleFrequency * m_accumulatedTime);
+
+    const FPVector3D CurrentLocation = m_localTransform.GetLocation();
+    m_localTransform.SetLocation(CurrentLocation + FPVector3D(XOffset, FPZero, FPZero));
+
+    m_pMeshComponent->SetModelMatrix(m_localTransform.ToMat4());
 }
 
 void CharacterCube::Initialize(
@@ -52,21 +63,23 @@ void CharacterCube::Initialize(
     sputter::math::FPVector3D location
     )
 {
+    m_localTransform.SetLocation(location);
+
     using namespace sputter::math;
     // Place cube's lower-left corner at the local origin for now. Need working FP transforms
     // for less error-prone adjustments in placing the origin at the cube's actual center.
     static const FPVector3D VertexPositions[] = {
         // Bottom face
-        FPVector3D(FPZero, FPZero, FPZero) + location,
-        FPVector3D(cubeSize, FPZero, FPZero) + location,
-        FPVector3D(cubeSize, cubeSize, FPZero) + location,
-        FPVector3D(FPZero, cubeSize, FPZero) + location,
+        FPVector3D(FPZero, FPZero, FPZero),
+        FPVector3D(cubeSize, FPZero, FPZero),
+        FPVector3D(cubeSize, cubeSize, FPZero),
+        FPVector3D(FPZero, cubeSize, FPZero),
 
         // Top face
-        FPVector3D(FPZero, FPZero, cubeSize) + location,
-        FPVector3D(cubeSize, FPZero, cubeSize) + location,
-        FPVector3D(cubeSize, cubeSize, cubeSize) + location,
-        FPVector3D(FPZero, cubeSize, cubeSize) + location,
+        FPVector3D(FPZero, FPZero, cubeSize),
+        FPVector3D(cubeSize, FPZero, cubeSize),
+        FPVector3D(cubeSize, cubeSize, cubeSize),
+        FPVector3D(FPZero, cubeSize, cubeSize),
     };
 
     static const FixedPoint FPHalfSize = cubeSize / FPTwo;
@@ -136,4 +149,5 @@ void CharacterCube::Initialize(
     m_pMeshComponent->SetTextureCoordinates(VertexUVs, NumVertices);
     m_pMeshComponent->SetIndices(VertexIndices, NumIndices);
     m_pMeshComponent->SetShader(m_spShader);
+    m_pMeshComponent->SetModelMatrix(m_localTransform.ToMat4());
 }

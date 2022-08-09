@@ -29,6 +29,8 @@ struct Mesh::PImpl
     std::vector<glm::vec2> VertexTextureCoordinates;
     std::vector<uint32_t>  VertexIndices;
 
+    glm::mat4              ModelMatrix;
+
     ShaderPtr              spShader;
 
     uint32_t               VAO;
@@ -236,6 +238,11 @@ bool Mesh::SetShader(ShaderPtr spShader)
     return true;
 }
 
+void Mesh::SetModelMatrix(const glm::mat4& modelMatrix) 
+{
+    m_spPimpl->ModelMatrix = modelMatrix;
+}
+
 void Mesh::Draw(const glm::mat4& projMatrix) 
 {
     if (!m_spPimpl->spShader || 
@@ -249,9 +256,10 @@ void Mesh::Draw(const glm::mat4& projMatrix)
 
     m_spPimpl->spShader->Bind();
 
-    // TODO: Actual model and view matrices
+    Uniform<glm::mat4>::Set(m_spPimpl->ModelUniformHandle, m_spPimpl->ModelMatrix);
+
+    // TODO: Actual view matrix
     static const glm::mat4 Identity = glm::mat4(1.0);
-    Uniform<glm::mat4>::Set(m_spPimpl->ModelUniformHandle, Identity);
     Uniform<glm::mat4>::Set(m_spPimpl->ViewUniformHandle, Identity);
     Uniform<glm::mat4>::Set(m_spPimpl->ProjUniformHandle, projMatrix);
 
