@@ -4,8 +4,17 @@ Next high-level goal: Start prototyping gameplay
 ** Procedural meshes + rendering
 * A little more math - 3D rotations
 * 3D camera
-** Maintaining aspect ratio !
-* Input component and game controls
-* "Ball" - procedural cube
+* Input subsystem/component and game controls
+** Reasonable association between devices and players. 
+*** Multiple control contexts. Navigating menu vs. in-game?
+**** Must assign controllers to instantiate sensible local game control context.
+**** Network control device for online session.
+*** Keyboard always p1 for now.
+** Raw state (this frame, previous frame) - bit fields
+*** Device-to-bit-index mappings for raw state. Bit indices defined per-game.
+*** i.e. GLFW_GAMEPAD_BUTTON_Y -> SANDBOX_INPUT_JUMP
+** Held, released states (input index corresponds to bitfield index)
+* "Ball" - procedural cube, 3d rigidbody
 * Collision
 * Swipe FX
+* Maintain aspect ratio !
