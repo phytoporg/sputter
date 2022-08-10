@@ -1,6 +1,7 @@
 #pragma once
 
 #include "fixedpoint.h"
+#include "fpvector3d.h"
 
 namespace sputter { namespace math {
     const FixedPoint FPZero(0);

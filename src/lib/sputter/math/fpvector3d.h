@@ -9,6 +9,9 @@ namespace sputter { namespace math {
     class FPVector3D
     {
     public:
+        // Static constant values first
+        static const FPVector3D ZERO;
+
         FPVector3D();
         FPVector3D(FixedPoint x, FixedPoint y, FixedPoint z);
         FPVector3D(int x, int y, int z);

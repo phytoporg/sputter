@@ -88,7 +88,7 @@ bool SandboxGame::StartGame()
     m_pGameState->MainShip.Initialize(ShipStartPosition);
 
     const FixedPoint CubeSize(100);
-    const FPVector3D CubeStartPosition(FixedPoint(150), FixedPoint(100), FPZero);
+    const FPVector3D CubeStartPosition(FixedPoint(600), FixedPoint(400), FPZero);
     m_pGameState->MainCube.Initialize(
         CubeSize,
         CubeStartPosition

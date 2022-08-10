@@ -3,6 +3,8 @@
 
 using namespace sputter::math;
 
+const FPVector3D FPVector3D::ZERO = FPVector3D(0, 0, 0);
+
 FPVector3D::FPVector3D()
     : m_x(0), m_y(0), m_z(0)
 {}

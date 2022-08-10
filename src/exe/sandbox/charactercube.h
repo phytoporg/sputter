@@ -5,7 +5,7 @@
 
 #include <sputter/game/object.h>
 #include <sputter/math/fixedpoint.h>
-#include <sputter/math/fptransform3d.h>>
+#include <sputter/math/fptransform3d.h>
 #include <sputter/math/fpvector3d.h>
 
 namespace sputter
