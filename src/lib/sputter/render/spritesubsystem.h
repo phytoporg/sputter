@@ -48,7 +48,7 @@ namespace sputter { namespace render {
         virtual Sprite* CreateComponent() override;
         virtual void ReleaseComponent(Sprite* pSprite) override;
 
-        void Draw(const glm::mat4& projMatrix);
+        void Draw(const glm::mat4& projMatrix, const glm::mat4& viewMatrix);
 
     private:
         SpriteSubsystem() = delete;

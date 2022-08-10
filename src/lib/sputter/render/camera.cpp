@@ -7,7 +7,7 @@ using namespace sputter::math;
 
 const FPVector3D Camera::kDefaultTranslation = FPVector3D::ZERO;
 const FPVector3D Camera::kDefaultForwardDirection = FPVector3D(0, 0, 1);
-const FPVector3D Camera::kDefaultUpDirection = FPVector3D(0, 1, 0);
+const FPVector3D Camera::kDefaultUpDirection = FPVector3D(0, -1, 0);
 
 Camera::Camera()
     : Camera(kDefaultTranslation, kDefaultForwardDirection, kDefaultUpDirection)
@@ -41,6 +41,6 @@ glm::mat4 Camera::ViewMatrix4d() const
 {
     return glm::lookAt(
         m_translation.ToVec3(),
-        m_forwardDirection.ToVec3(),
+        (m_translation + m_forwardDirection).ToVec3(),
         m_upDirection.ToVec3());
 }

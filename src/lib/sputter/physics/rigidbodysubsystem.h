@@ -15,7 +15,7 @@ namespace sputter { namespace physics {
     {
         size_t           MaxRigidBodies   = 10;
         bool             IsGravityEnabled = true;
-        math::FPVector2D Gravity          = math::FPVector2D(math::FPZero, math::FPTen);
+        math::FPVector2D Gravity          = math::FPVector2D(math::FPZero, -math::FPTen);
     };
 
     class RigidBodySubsystem : public core::ISubsystem<RigidBody2D>

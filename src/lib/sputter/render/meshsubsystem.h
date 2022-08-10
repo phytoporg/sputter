@@ -30,7 +30,7 @@ namespace sputter { namespace render {
         virtual Mesh* CreateComponent() override;
         virtual void ReleaseComponent(Mesh* pMesh) override;
 
-        void Draw(const glm::mat4& projMatrix);
+        void Draw(const glm::mat4& projMatrix, const glm::mat4& viewMatrix);
 
     private:
         MeshSubsystem() = delete;

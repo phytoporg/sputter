@@ -25,7 +25,6 @@ SandboxGame::SandboxGame(
         const std::string& assetStoragePath,
         memory::FixedMemoryAllocator allocator) 
     : m_pGameState(nullptr),
-      m_pSprite(nullptr),
       m_assetStorage(assetStoragePath),
       m_pWindow(pWindow),
       m_storageProvider(&m_assetStorage)
@@ -77,8 +76,9 @@ void SandboxGame::Draw()
            0.0f,
            -1000.0f, 1000.0f);
 
-    m_pSpriteSubsystem->Draw(OrthoMatrix);
-    m_pMeshSubsystem->Draw(OrthoMatrix);
+    const glm::mat4 viewMatrix = m_pGameState->Camera.ViewMatrix4d();
+    m_pSpriteSubsystem->Draw(OrthoMatrix, viewMatrix);
+    m_pMeshSubsystem->Draw(OrthoMatrix, viewMatrix);
 }
 
 bool SandboxGame::StartGame()
@@ -88,11 +88,13 @@ bool SandboxGame::StartGame()
     m_pGameState->MainShip.Initialize(ShipStartPosition);
 
     const FixedPoint CubeSize(100);
-    const FPVector3D CubeStartPosition(FixedPoint(600), FixedPoint(400), FPZero);
+    const FPVector3D CubeStartPosition(FixedPoint(400), FixedPoint(-200), FixedPoint(0));
     m_pGameState->MainCube.Initialize(
         CubeSize,
         CubeStartPosition
         );
+
+    m_pGameState->Camera.Translate(FPVector3D(-150, 200, -200));
 
     return true;
 }

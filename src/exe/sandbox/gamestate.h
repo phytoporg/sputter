@@ -1,6 +1,7 @@
 #pragma once
 
 #include <sputter/physics/rigidbodysubsystem.h>
+#include <sputter/render/camera.h>
 #include "testobject.h"
 #include "charactercube.h"
 
@@ -24,6 +25,7 @@ struct GameState
         sputter::game::SubsystemProvider* pSubsystemProvider
         );
 
-    TestObject    MainShip;
-    CharacterCube MainCube;
+    sputter::render::Camera Camera;
+    TestObject              MainShip;
+    CharacterCube           MainCube;
 };

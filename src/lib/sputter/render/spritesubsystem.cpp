@@ -100,11 +100,14 @@ void SpriteSubsystem::ReleaseComponent(Sprite* pSprite)
     m_spriteCount--;
 }
 
-void SpriteSubsystem::Draw(const glm::mat4& projMatrix)
+void SpriteSubsystem::Draw(const glm::mat4& projMatrix, const glm::mat4& viewMatrix)
 {
     m_pSpriteShader->Bind();
     const uint32_t uniformProjMatrixHandle = m_pSpriteShader->GetUniform("projection");
     Uniform<glm::mat4>::Set(uniformProjMatrixHandle, projMatrix);
+
+    const uint32_t uniformViewMatrixHandle = m_pSpriteShader->GetUniform("view");
+    Uniform<glm::mat4>::Set(uniformViewMatrixHandle, viewMatrix);
 
     const uint32_t uniformModelMatrixHandle = m_pSpriteShader->GetUniform("model");
     const glm::mat4 Identity(1.0f);

@@ -53,7 +53,6 @@ private:
     sputter::render::ShaderStorage        m_shaderStorage;
     sputter::render::SpriteSubsystem*     m_pSpriteSubsystem;
     sputter::render::MeshSubsystem*       m_pMeshSubsystem;
-    sputter::render::Sprite*              m_pSprite;
     sputter::render::Window*              m_pWindow;
 
     sputter::assets::AssetStorageProvider m_storageProvider;

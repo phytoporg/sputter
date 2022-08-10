@@ -41,10 +41,10 @@ void MeshSubsystem::ReleaseComponent(Mesh* pMesh)
     }
 }
 
-void MeshSubsystem::Draw(const glm::mat4& projMatrix) 
+void MeshSubsystem::Draw(const glm::mat4& projMatrix, const glm::mat4& viewMatrix) 
 {
     for (Mesh& mesh : m_meshes)
     {
-        mesh.Draw(projMatrix);
+        mesh.Draw(projMatrix, viewMatrix);
     }
 }

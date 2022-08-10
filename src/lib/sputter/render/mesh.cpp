@@ -243,7 +243,7 @@ void Mesh::SetModelMatrix(const glm::mat4& modelMatrix)
     m_spPimpl->ModelMatrix = modelMatrix;
 }
 
-void Mesh::Draw(const glm::mat4& projMatrix) 
+void Mesh::Draw(const glm::mat4& projMatrix, const glm::mat4& viewMatrix) 
 {
     if (!m_spPimpl->spShader || 
          m_spPimpl->ModelUniformHandle == Shader::kInvalidHandleValue ||
@@ -260,7 +260,7 @@ void Mesh::Draw(const glm::mat4& projMatrix)
 
     // TODO: Actual view matrix
     static const glm::mat4 Identity = glm::mat4(1.0);
-    Uniform<glm::mat4>::Set(m_spPimpl->ViewUniformHandle, Identity);
+    Uniform<glm::mat4>::Set(m_spPimpl->ViewUniformHandle, /*Identity*/ viewMatrix);
     Uniform<glm::mat4>::Set(m_spPimpl->ProjUniformHandle, projMatrix);
 
     glBindVertexArray(m_spPimpl->VAO);
