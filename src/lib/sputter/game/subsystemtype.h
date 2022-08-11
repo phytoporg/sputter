@@ -7,6 +7,7 @@ namespace sputter { namespace game {
         TYPE_RIGIDBODY,
         TYPE_SPRITE,
         TYPE_MESH,
+        TYPE_INPUTSOURCE,
         TYPE_MAX
     };
 }}

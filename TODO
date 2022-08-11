@@ -14,6 +14,9 @@ Next high-level goal: Start prototyping gameplay
 *** Device-to-bit-index mappings for raw state. Bit indices defined per-game.
 *** i.e. GLFW_GAMEPAD_BUTTON_Y -> SANDBOX_INPUT_JUMP
 ** Held, released states (input index corresponds to bitfield index)
+* Some basic ECS cleanup
+** UUIDs, not enums
+** Get rid of Create/ReleaseComponent() calls? Or allow for constructor params.
 * "Ball" - procedural cube, 3d rigidbody
 * Collision
 * Swipe FX
