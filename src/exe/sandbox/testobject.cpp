@@ -21,16 +21,22 @@ TestObject::TestObject(
     SubsystemProvider* pSubsystemProvider)
     : Object(pStorageProvider, pSubsystemProvider)
 {
-    CreateAndSetComponentByType<sputter::physics::RigidBodySubsystem>(&m_pRigidBodyComponent);
-    if (!m_pRigidBodyComponent)
     {
-        sputter::system::LogAndFail("Failed to create rigid body component in TestObject.");
+        sputter::physics::RigidBody2D::InitializationParameters params = {};
+        CreateAndSetComponentByType<sputter::physics::RigidBodySubsystem>(&m_pRigidBodyComponent, params);
+        if (!m_pRigidBodyComponent)
+        {
+            sputter::system::LogAndFail("Failed to create rigid body component in TestObject.");
+        }
     }
     
-    CreateAndSetComponentByType<sputter::render::SpriteSubsystem>(&m_pSpriteComponent);
-    if (!m_pSpriteComponent)
     {
-        sputter::system::LogAndFail("Failed to create sprite component in TestObject.");
+        sputter::render::Sprite::InitializationParameters params = {};
+        CreateAndSetComponentByType<sputter::render::SpriteSubsystem>(&m_pSpriteComponent, params);
+        if (!m_pSpriteComponent)
+        {
+            sputter::system::LogAndFail("Failed to create sprite component in TestObject.");
+        }
     }
 
     sputter::assets::AssetStorage* pStorage = m_pAssetStorageProvider->GetGeneralStorage();

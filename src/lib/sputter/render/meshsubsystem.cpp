@@ -16,7 +16,7 @@ void MeshSubsystem::Tick(math::FixedPoint dt)
     // NOOP for now
 }
 
-Mesh* MeshSubsystem::CreateComponent() 
+Mesh* MeshSubsystem::CreateComponent(const Mesh::InitializationParameters& /*params*/) 
 {
     m_meshes.emplace_back(m_maxVertexCount, m_maxIndexCount);
     return &m_meshes.back();

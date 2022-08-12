@@ -21,10 +21,13 @@ CharacterCube::CharacterCube(
     SubsystemProvider* pSubsystemProvider
 ) : Object(pStorageProvider, pSubsystemProvider), m_accumulatedTime(FPZero)
 {
-    CreateAndSetComponentByType<MeshSubsystem>(&m_pMeshComponent);
-    if (!m_pMeshComponent)
     {
-        sputter::system::LogAndFail("Failed to create mesh component in CharacterCube object.");
+        sputter::render::Mesh::InitializationParameters params = {};
+        CreateAndSetComponentByType<MeshSubsystem>(&m_pMeshComponent, params);
+        if (!m_pMeshComponent)
+        {
+            sputter::system::LogAndFail("Failed to create mesh component in CharacterCube object.");
+        }
     }
 
     auto pShaderStorage = pStorageProvider->GetStorageByType<ShaderStorage>();

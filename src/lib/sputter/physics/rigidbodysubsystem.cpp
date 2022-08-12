@@ -47,7 +47,7 @@ namespace sputter { namespace physics {
         }
     }
 
-    RigidBody2D* RigidBodySubsystem::CreateComponent()
+    RigidBody2D* RigidBodySubsystem::CreateComponent(const RigidBody2D::InitializationParameters& params)
     {
         // NOTE(philjo 2/7/2021): We're passing around raw pointers to these
         // components and assuming they're all stored in m_rigidBodies, so

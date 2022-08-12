@@ -28,7 +28,7 @@ namespace sputter { namespace physics {
 
         // Begin ISubsystem
         virtual void Tick(math::FixedPoint dt) override;
-        virtual RigidBody2D* CreateComponent() override;
+        virtual RigidBody2D* CreateComponent(const RigidBody2D::InitializationParameters& params) override;
         virtual void ReleaseComponent(RigidBody2D* pComponent) override;
         // End ISubsystem
 

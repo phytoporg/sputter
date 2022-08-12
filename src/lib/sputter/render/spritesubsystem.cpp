@@ -52,7 +52,7 @@ void SpriteSubsystem::Tick(math::FixedPoint dt)
     // NOOP?
 }
 
-Sprite* SpriteSubsystem::CreateComponent()
+Sprite* SpriteSubsystem::CreateComponent(const Sprite::InitializationParameters& /*params*/)
 {
     if (m_spriteCount >= m_maxSpriteCount)
     {

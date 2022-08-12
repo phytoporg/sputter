@@ -27,7 +27,7 @@ namespace sputter { namespace render {
 
         virtual void Tick(math::FixedPoint dt) override;
 
-        virtual Mesh* CreateComponent() override;
+        virtual Mesh* CreateComponent(const Mesh::InitializationParameters& params) override;
         virtual void ReleaseComponent(Mesh* pMesh) override;
 
         void Draw(const glm::mat4& projMatrix, const glm::mat4& viewMatrix);

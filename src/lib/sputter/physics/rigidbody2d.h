@@ -10,6 +10,9 @@ namespace sputter { namespace physics {
         static const game::SubsystemType ComponentId =
             game::SubsystemType::TYPE_RIGIDBODY;
 
+        // Yet unused
+        struct InitializationParameters {};
+
         math::FPVector2D Position;
         math::FPVector2D Velocity;
         math::FPVector2D Acceleration;

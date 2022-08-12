@@ -7,7 +7,7 @@ void InputSubsystem::Tick(math::FixedPoint dt)
     // TODO
 }
 
-InputSource* InputSubsystem::CreateComponent()
+InputSource* InputSubsystem::CreateComponent(const InputSource::InitializationParameters& params)
 {
     // TODO
     return nullptr;

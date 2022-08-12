@@ -37,10 +37,10 @@ namespace sputter { namespace game {
         }
 
         template<typename SubsystemType, typename ComponentType>
-        void CreateAndSetComponentByType(ComponentType** ppComponentOut)
+        void CreateAndSetComponentByType(ComponentType** ppComponentOut, const typename ComponentType::InitializationParameters& params)
         {
             auto pSubsystem = m_pSubsystemProvider->GetSubsystemByType<SubsystemType>();
-            ComponentType* pComponent = pSubsystem->CreateComponent();
+            ComponentType* pComponent = pSubsystem->CreateComponent(params);
             if (ppComponentOut)
             {
                 *ppComponentOut = pComponent;
@@ -48,7 +48,6 @@ namespace sputter { namespace game {
 
             SetComponentByType(pComponent);
         }
-
 
     protected:
         sputter::game::SubsystemProvider*      m_pSubsystemProvider;

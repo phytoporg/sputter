@@ -13,7 +13,7 @@ namespace sputter { namespace core {
     public:
         virtual void Tick(math::FixedPoint dt) = 0;
 
-        virtual ComponentType* CreateComponent() = 0;
+        virtual ComponentType* CreateComponent(const typename ComponentType::InitializationParameters& params) = 0;
         virtual void ReleaseComponent(ComponentType* pComponent) = 0;
     };
 }}

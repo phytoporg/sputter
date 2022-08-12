@@ -45,7 +45,7 @@ namespace sputter { namespace render {
 
         virtual void Tick(math::FixedPoint dt) override;
 
-        virtual Sprite* CreateComponent() override;
+        virtual Sprite* CreateComponent(const Sprite::InitializationParameters& params) override;
         virtual void ReleaseComponent(Sprite* pSprite) override;
 
         void Draw(const glm::mat4& projMatrix, const glm::mat4& viewMatrix);
