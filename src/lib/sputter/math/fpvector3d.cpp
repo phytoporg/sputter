@@ -1,4 +1,5 @@
 #include "fpvector3d.h"
+#include "fpconstants.h"
 #include <fpm/math.hpp>
 
 using namespace sputter::math;
@@ -87,7 +88,13 @@ FixedPoint FPVector3D::Length() const
 
 FPVector3D FPVector3D::Normalized() const 
 {
-    return *this / Length();
+    const FixedPoint len = Length();
+    if (len > FPZero)
+    {
+        return *this / Length();
+    }
+
+    return *this;
 }
 
 glm::vec3 FPVector3D::ToVec3() const 

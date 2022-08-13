@@ -17,11 +17,21 @@
 #include <sputter/render/texturestorage.h>
 #include <sputter/render/texture.h>
 
+#include <sputter/input/inputsubsystem.h>
+
 #include <sputter/math/fixedpoint.h>
 
 #include <string>
 
 #include "gamestate.h"
+
+enum class SandboxGameInput {
+    // Starting out with forreal pong
+    INPUT_MOVE_UP,
+    INPUT_MOVE_DOWN,
+    INPUT_MOVE_LEFT,
+    INPUT_MOVE_RIGHT
+};
 
 class SandboxGame : public sputter::game::Game
 {
@@ -54,6 +64,8 @@ private:
     sputter::render::SpriteSubsystem*     m_pSpriteSubsystem;
     sputter::render::MeshSubsystem*       m_pMeshSubsystem;
     sputter::render::Window*              m_pWindow;
+
+    sputter::input::InputSubsystem*       m_pInputSubsystem;
 
     sputter::assets::AssetStorageProvider m_storageProvider;
     sputter::game::SubsystemProvider      m_subsystemProvider;

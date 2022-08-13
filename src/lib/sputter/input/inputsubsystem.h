@@ -2,13 +2,46 @@
 
 #include "inputsource.h"
 #include <sputter/core/subsystem.h>
+#include <sputter/game/subsystemtype.h>
 #include <vector>
 
+namespace sputter { namespace render {
+    class Window;
+}}
+
 namespace sputter { namespace input {
+    enum class DeviceType
+    {
+        Invalid = 0,
+        KeyboardInputDevice,
+        MaxDeviceType
+    };
+
+    struct InputMapEntry
+    {
+        uint32_t DeviceInputCode;
+        uint32_t GameInputCode;
+    };
+
+    struct InputSubsystemSettings
+    {
+        // For keyboards
+        sputter::render::Window* pWindow;
+
+        // 2 players max for now?
+        DeviceType PlayerDevices[2];
+
+        InputMapEntry const* pInputMapEntryArrays[2];
+        size_t pNumInputMapEntries[2];
+    };
+
     class InputSubsystem : public sputter::core::ISubsystem<InputSource>
     {
     public:
-        struct InitializationParameters {}
+        static const game::SubsystemType SubsystemId = 
+            game::SubsystemType::TYPE_INPUTSOURCE;
+
+        InputSubsystem(const InputSubsystemSettings& settings);
 
         virtual void Tick(math::FixedPoint dt) override;
 

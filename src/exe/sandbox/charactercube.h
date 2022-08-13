@@ -16,6 +16,11 @@ namespace sputter
         class Shader;
         class MeshSubsystem;
     }
+
+    namespace input
+    {
+        class InputSource;
+    }
 }
 
 class CharacterCube : sputter::game::Object
@@ -40,6 +45,8 @@ private:
 
     sputter::render::Mesh*                   m_pMeshComponent;
     std::shared_ptr<sputter::render::Shader> m_spShader;
+
+    sputter::input::InputSource*             m_pInputSource;
 
     sputter::math::FPTransform3D             m_localTransform;
     sputter::math::FixedPoint                m_accumulatedTime;

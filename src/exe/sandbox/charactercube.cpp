@@ -1,9 +1,15 @@
 #include "charactercube.h"
+#include "sandboxgame.h"
 
 #include <sputter/assets/assetstorageprovider.h>
+
 #include <sputter/math/fpconstants.h>
+
 #include <sputter/render/meshsubsystem.h>
 #include <sputter/render/shaderstorage.h>
+
+#include <sputter/input/inputsource.h>
+#include <sputter/input/inputsubsystem.h>
 
 #include <fpm/math.hpp>
 
@@ -11,6 +17,7 @@ using namespace sputter::render;
 using namespace sputter::game;
 using namespace sputter::assets;
 using namespace sputter::math;
+using namespace sputter::input;
 
 const std::string CharacterCube::kCubeVertexShaderAssetName = "cube_vert";
 const std::string CharacterCube::kCubeFragmentShaderAssetName = "cube_frag";
@@ -27,6 +34,16 @@ CharacterCube::CharacterCube(
         if (!m_pMeshComponent)
         {
             sputter::system::LogAndFail("Failed to create mesh component in CharacterCube object.");
+        }
+    }
+
+    {
+        InputSource::InitializationParameters params;
+        params.PlayerId = 0;
+        CreateAndSetComponentByType<InputSubsystem>(&m_pInputSource, params);
+        if (!m_pInputSource)
+        {
+            sputter::system::LogAndFail("Failed to create input source in CharacterCube object.");
         }
     }
 
@@ -49,13 +66,37 @@ CharacterCube::CharacterCube(
 
 void CharacterCube::Tick(FixedPoint deltaTime)
 {
-    m_accumulatedTime += deltaTime;
+    // m_accumulatedTime += deltaTime;
 
-    const FixedPoint JiggleFrequency = FixedPoint(5);
-    const FixedPoint JiggleAmplitude = FixedPoint(25);
-    const FixedPoint XOffset = JiggleAmplitude * fpm::sin(JiggleFrequency * m_accumulatedTime);
+    // const FixedPoint JiggleFrequency = FixedPoint(5);
+    // const FixedPoint JiggleAmplitude = FixedPoint(25);
+    // const FixedPoint XOffset = JiggleAmplitude * fpm::sin(JiggleFrequency * m_accumulatedTime);
 
-    m_localTransform.SetRotation(FPVector3D(m_accumulatedTime, m_accumulatedTime, FPZero));
+    // m_localTransform.SetRotation(FPVector3D(m_accumulatedTime, m_accumulatedTime, FPZero));
+    // m_pMeshComponent->SetModelMatrix(m_localTransform.ToMat4());
+
+    FPVector3D velocity = FPVector3D::ZERO;
+    const FixedPoint Speed = FixedPoint(400);
+    if (m_pInputSource->IsInputHeld(static_cast<uint32_t>(SandboxGameInput::INPUT_MOVE_UP)))
+    {
+        velocity += FPVector3D(0, 1, 0);
+    }
+    else if (m_pInputSource->IsInputHeld(static_cast<uint32_t>(SandboxGameInput::INPUT_MOVE_DOWN)))
+    {
+        velocity += FPVector3D(0, -1, 0);
+    }
+
+    if (m_pInputSource->IsInputHeld(static_cast<uint32_t>(SandboxGameInput::INPUT_MOVE_LEFT)))
+    {
+        velocity += FPVector3D(-1, 0, 0);
+    }
+    else if (m_pInputSource->IsInputHeld(static_cast<uint32_t>(SandboxGameInput::INPUT_MOVE_RIGHT)))
+    {
+        velocity += FPVector3D(1, 0, 0);
+    }
+
+    const FPVector3D translation = m_localTransform.GetTranslation();
+    m_localTransform.SetTranslation(translation + velocity.Normalized() * Speed * deltaTime);
     m_pMeshComponent->SetModelMatrix(m_localTransform.ToMat4());
 }
 

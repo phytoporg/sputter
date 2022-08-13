@@ -10,6 +10,8 @@
 #include <sputter/assets/imagedata.h>
 #include <sputter/assets/textdata.h>
 
+#include <sputter/input/inputsubsystem.h>
+
 #include "gamestate.h"
 #include "sandboxgame.h"
 
@@ -46,9 +48,30 @@ SandboxGame::SandboxGame(
         meshSubsystemSettings
     );
 
+    sputter::input::InputSubsystemSettings inputSubsystemSettings;
+    inputSubsystemSettings.pWindow = m_pWindow;
+
+    inputSubsystemSettings.PlayerDevices[0] = sputter::input::DeviceType::KeyboardInputDevice;
+    inputSubsystemSettings.PlayerDevices[1] = sputter::input::DeviceType::Invalid;
+
+    const std::vector<sputter::input::InputMapEntry> p1InputMap = 
+        { 
+          { static_cast<uint32_t>(GLFW_KEY_W),   static_cast<uint32_t>(SandboxGameInput::INPUT_MOVE_UP) },
+          { static_cast<uint32_t>(GLFW_KEY_S), static_cast<uint32_t>(SandboxGameInput::INPUT_MOVE_DOWN) },
+          { static_cast<uint32_t>(GLFW_KEY_A), static_cast<uint32_t>(SandboxGameInput::INPUT_MOVE_LEFT) },
+          { static_cast<uint32_t>(GLFW_KEY_D), static_cast<uint32_t>(SandboxGameInput::INPUT_MOVE_RIGHT) },
+          };
+    inputSubsystemSettings.pInputMapEntryArrays[0] = p1InputMap.data();
+    inputSubsystemSettings.pInputMapEntryArrays[1] = nullptr;
+        
+    inputSubsystemSettings.pNumInputMapEntries[0] = p1InputMap.size();
+    inputSubsystemSettings.pNumInputMapEntries[1] = 0;
+    m_pInputSubsystem = new sputter::input::InputSubsystem(inputSubsystemSettings);
+
     m_subsystemProvider.AddSubsystem(m_pRigidbodySubsystem);
     m_subsystemProvider.AddSubsystem(m_pSpriteSubsystem);
     m_subsystemProvider.AddSubsystem(m_pMeshSubsystem);
+    m_subsystemProvider.AddSubsystem(m_pInputSubsystem);
 
     m_storageProvider.AddResourceStorageByType(&m_textureStorage);
     m_storageProvider.AddResourceStorageByType(&m_shaderStorage);
@@ -60,6 +83,7 @@ SandboxGame::~SandboxGame() {}
 
 void SandboxGame::Tick(math::FixedPoint deltaTime)
 {
+    m_pInputSubsystem->Tick(deltaTime);
     m_pRigidbodySubsystem->Tick(deltaTime);
     m_pGameState->MainShip.Tick(deltaTime);
     m_pGameState->MainCube.Tick(deltaTime);

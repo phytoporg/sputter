@@ -3,10 +3,6 @@
 #include <sputter/system/system.h>
 #include <sputter/memory/fixedmemoryallocator.h>
 
-//
-#include <iostream>
-//
-
 namespace sputter { namespace containers {
     template<typename T>
     class FixedMemoryVector

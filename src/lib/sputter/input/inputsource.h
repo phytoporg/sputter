@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <sputter/game/subsystemtype.h>
 
 namespace sputter { namespace input {
     class IInputDevice; // TODO
@@ -8,7 +9,16 @@ namespace sputter { namespace input {
     class InputSource
     {
     public: 
+        static const game::SubsystemType ComponentId = game::SubsystemType::TYPE_INPUTSOURCE;
+
+        struct InitializationParameters
+        {
+            uint32_t PlayerId;
+        };
+
         InputSource(IInputDevice* pInputDevice);
+
+        IInputDevice* GetInputDevice();
 
         uint32_t GetInputState() const;
         uint32_t GetPreviousState() const;
@@ -21,5 +31,8 @@ namespace sputter { namespace input {
 
     private:
         IInputDevice* m_pInputDevice;
+
+        uint32_t m_previousInput;
+        uint32_t m_currentInput;
     };
 }}

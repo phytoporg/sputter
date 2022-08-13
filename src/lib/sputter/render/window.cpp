@@ -2,6 +2,10 @@
 #include "render.h"
 #include <sputter/system/system.h>
 
+///
+#include <iostream>
+///
+
 #include <stdexcept>
 
 namespace sputter { namespace render {
@@ -65,7 +69,8 @@ namespace sputter { namespace render {
 
     bool Window::GetKeyState(uint32_t keyCode)
     {
-        return glfwGetKey(m_window, keyCode) == GLFW_PRESS;
+        const int keyState = glfwGetKey(m_window, keyCode);
+        return keyState == GLFW_PRESS || keyState == GLFW_REPEAT;
     }
 
     void Window::Clear()

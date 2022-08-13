@@ -1,4 +1,5 @@
 #include "inputsource.h"
+#include "inputdevice.h"
 
 using namespace sputter::input;
 
@@ -6,38 +7,67 @@ InputSource::InputSource(IInputDevice* pInputDevice)
     : m_pInputDevice(pInputDevice)
 {}
 
+IInputDevice* InputSource::GetInputDevice()
+{
+    return m_pInputDevice;
+}
+
 uint32_t InputSource::GetInputState() const 
 {
-    // TODO
+    if (!m_pInputDevice)
+    {
+        return m_pInputDevice->SampleGameInputState();
+    }
+    
     return 0;
 }
 
 uint32_t InputSource::GetPreviousState() const 
 {
-    // TODO
-    return 0;
+    return m_previousInput;
 }
 
 bool InputSource::IsInputHeld(uint32_t gameInputCode) const 
 {
-    // TODO
+    if (m_pInputDevice)
+    {
+        const uint32_t bitMask = (1 << m_pInputDevice->GameToDeviceInput(gameInputCode));
+        return (m_currentInput & bitMask && m_previousInput & bitMask);
+    }
+
     return false;
 }
 
 bool InputSource::IsInputReleased(uint32_t gameInputCode) const 
 {
-    // TODO
+    if (m_pInputDevice)
+    {
+        const uint32_t deviceInput = m_pInputDevice->GameToDeviceInput(gameInputCode);
+        if (!m_pInputDevice->SampleInputState(deviceInput))
+        {
+            return m_previousInput & (1 << deviceInput);
+        }
+    }
+
     return false;
 }
 
 bool InputSource::IsInputPressed(uint32_t gameInputCode) const 
 {
-    // TODO
+    if (m_pInputDevice)
+    {
+        const uint32_t deviceInput = m_pInputDevice->GameToDeviceInput(gameInputCode);
+        return m_pInputDevice->SampleInputState(deviceInput);
+    }
+
     return false;
 }
 
 void InputSource::Tick() 
 {
-    // TODO
-    return;    
+    if (m_pInputDevice)  
+    {
+        m_previousInput = m_currentInput;
+        m_currentInput = m_pInputDevice->SampleInputState();
+    }
 }
