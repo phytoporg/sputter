@@ -2,6 +2,8 @@
 #include "fpconstants.h"
 #include <fpm/math.hpp>
 
+#include <sputter/system/system.h>
+
 using namespace sputter::math;
 
 const FPVector3D FPVector3D::ZERO = FPVector3D(0, 0, 0);
@@ -94,6 +96,7 @@ FPVector3D FPVector3D::Normalized() const
         return *this / Length();
     }
 
+    system::LogAndFail("Can't normalize a zero vector, yo");
     return *this;
 }
 

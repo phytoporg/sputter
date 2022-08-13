@@ -95,9 +95,12 @@ void CharacterCube::Tick(FixedPoint deltaTime)
         velocity += FPVector3D(1, 0, 0);
     }
 
-    const FPVector3D translation = m_localTransform.GetTranslation();
-    m_localTransform.SetTranslation(translation + velocity.Normalized() * Speed * deltaTime);
-    m_pMeshComponent->SetModelMatrix(m_localTransform.ToMat4());
+    if (velocity.Length() > FPZero)
+    {
+        const FPVector3D translation = m_localTransform.GetTranslation();
+        m_localTransform.SetTranslation(translation + velocity.Normalized() * Speed * deltaTime);
+        m_pMeshComponent->SetModelMatrix(m_localTransform.ToMat4());
+    }
 }
 
 void CharacterCube::Initialize(
