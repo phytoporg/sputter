@@ -33,7 +33,7 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    memory::ReservedRegion stateRegion(0x1000);
+    memory::ReservedRegion stateRegion(0x4000);
     memory::FixedMemoryAllocator allocator(
         "GameState",
         stateRegion.GetRegionBase(),

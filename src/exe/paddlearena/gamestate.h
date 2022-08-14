@@ -3,6 +3,7 @@
 #include <sputter/physics/rigidbodysubsystem.h>
 #include <sputter/render/camera.h>
 #include "paddle.h"
+#include "stage.h"
 
 namespace sputter 
 {
@@ -26,4 +27,5 @@ struct GameState
 
     sputter::render::Camera Camera;
     Paddle           Player1Paddle;
+    Stage            Arena;
 };

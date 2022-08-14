@@ -60,6 +60,6 @@ namespace sputter { namespace render {
 
         private:
             struct PImpl;
-            std::shared_ptr<PImpl> m_spPimpl;
+            std::shared_ptr<PImpl> m_spPimpl = nullptr;
     };
 }}

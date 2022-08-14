@@ -10,6 +10,7 @@ namespace sputter { namespace math {
     {
     public:
         FPVector2D();
+        FPVector2D(int x, int y);
         FPVector2D(FixedPoint x, FixedPoint y);
 
         // Accessors

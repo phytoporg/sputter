@@ -1,30 +1,24 @@
-#include "paddle.h"
-#include "paddlearena.h"
-
-#include <sputter/assets/assetstorageprovider.h>
+#include "stage.h"
 
 #include <sputter/math/fpconstants.h>
 
-#include <sputter/render/meshsubsystem.h>
+#include <sputter/assets/assetstorageprovider.h>
+
+#include <sputter/game/subsystemprovider.h>
+
 #include <sputter/render/shaderstorage.h>
-#include <sputter/render/uniform.h>
+#include <sputter/render/meshsubsystem.h>
 
-#include <sputter/input/inputsource.h>
-#include <sputter/input/inputsubsystem.h>
-
-#include <fpm/math.hpp>
-
-using namespace sputter::render;
 using namespace sputter::game;
-using namespace sputter::assets;
 using namespace sputter::math;
-using namespace sputter::input;
+using namespace sputter::assets;
+using namespace sputter::render;
 
-const std::string Paddle::kCubeVertexShaderAssetName = "cube_vert";
-const std::string Paddle::kCubeFragmentShaderAssetName = "cube_frag";
-const std::string Paddle::kCubeShaderName = "cube_shader";
+const std::string Stage::kArenaVertexShaderAssetName = "cube_vert";
+const std::string Stage::kArenaFragmentShaderAssetName = "cube_frag";
+const std::string Stage::kArenaShaderName = "arena_shader";
 
-Paddle::Paddle(
+Stage::Stage(
     AssetStorageProvider* pStorageProvider,
     SubsystemProvider* pSubsystemProvider
 ) : Object(pStorageProvider, pSubsystemProvider)
@@ -38,77 +32,38 @@ Paddle::Paddle(
         }
     }
 
-    {
-        InputSource::InitializationParameters params;
-        params.PlayerId = 0;
-        CreateAndSetComponentByType<InputSubsystem>(&m_pInputSource, params);
-        if (!m_pInputSource)
-        {
-            sputter::system::LogAndFail("Failed to create input source in Paddle object.");
-        }
-    }
-
     auto pShaderStorage = pStorageProvider->GetStorageByType<ShaderStorage>();
     if (!pShaderStorage->AddShaderFromShaderAssetNames(
         pStorageProvider->GetGeneralStorage(),
-        kCubeVertexShaderAssetName,
-        kCubeFragmentShaderAssetName,
-        kCubeShaderName))
+        kArenaVertexShaderAssetName,
+        kArenaFragmentShaderAssetName,
+        kArenaShaderName))
     {
-        sputter::system::LogAndFail("Failed to add shader for character cube.");
+        sputter::system::LogAndFail("Failed to add shader for the arena.");
     }
 
-    m_spShader = pShaderStorage->FindShaderByName(kCubeShaderName);
+    m_spShader = pShaderStorage->FindShaderByName(kArenaShaderName);
     if (!m_spShader)
     {
         sputter::system::LogAndFail("Failed to retrieve shader for character cube.");
     }
 }
 
-void Paddle::Tick(FixedPoint deltaTime)
+void Stage::Tick(FixedPoint deltaTime)
 {
-    FPVector3D velocity = FPVector3D::ZERO;
-    const FixedPoint Speed = FixedPoint(400);
-    if (m_pInputSource->IsInputHeld(static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_UP)))
-    {
-        velocity += FPVector3D(0, 1, 0);
-    }
-    else if (m_pInputSource->IsInputHeld(static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_DOWN)))
-    {
-        velocity += FPVector3D(0, -1, 0);
-    }
-
-    if (m_pInputSource->IsInputHeld(static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_LEFT)))
-    {
-        velocity += FPVector3D(-1, 0, 0);
-    }
-    else if (m_pInputSource->IsInputHeld(static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_RIGHT)))
-    {
-        velocity += FPVector3D(1, 0, 0);
-    }
-
-    if (velocity.Length() > FPZero)
-    {
-        const FPVector3D translation = m_localTransform.GetTranslation();
-        m_localTransform.SetTranslation(translation + velocity.Normalized() * Speed * deltaTime);
-        m_pMeshComponent->SetModelMatrix(m_localTransform.ToMat4());
-    }
-
-    // Do we need to do this on every tick?
-    const uint32_t colorUniformHandle = m_spShader->GetUniform("color");
-    Uniform<glm::vec3>::Set(colorUniformHandle, glm::vec3(1.0, 1.0, 1.0));
+    m_pMeshComponent->SetModelMatrix(m_localTransform.ToMat4());
 }
 
-void Paddle::Initialize(
-    sputter::math::FixedPoint cubeSize,
-    sputter::math::FPVector3D location
-    )
+void Stage::Initialize(FPVector2D stageDimensions)
 {
-    m_localTransform.SetTranslation(location);
+    m_localTransform.SetScale(
+        FPVector3D(
+            stageDimensions.GetX(),
+            stageDimensions.GetY(),
+            FixedPoint(1)));
 
-    using namespace sputter::math;
     // Cube's origin is at the geometric center.
-    const FixedPoint HalfCubeSize = cubeSize / FPTwo;
+    const FixedPoint HalfCubeSize = FPOne / FPTwo;
     static const FPVector3D VertexPositions[] = {
         // Bottom face
         FPVector3D(-HalfCubeSize, -HalfCubeSize, -HalfCubeSize),

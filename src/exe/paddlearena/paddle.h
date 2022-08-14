@@ -43,10 +43,10 @@ private:
     static const std::string       kCubeFragmentShaderAssetName;
     static const std::string       kCubeShaderName;
 
-    sputter::render::Mesh*                   m_pMeshComponent;
-    std::shared_ptr<sputter::render::Shader> m_spShader;
+    sputter::render::Mesh*                   m_pMeshComponent = nullptr;
+    std::shared_ptr<sputter::render::Shader> m_spShader = nullptr;
 
-    sputter::input::InputSource*             m_pInputSource;
+    sputter::input::InputSource*             m_pInputSource = nullptr;
 
     sputter::math::FPTransform3D             m_localTransform;
     sputter::math::FPVector3D                m_initialLocation;

@@ -126,8 +126,6 @@ bool Mesh::SetPositions(
     )
 {
     // Convert to floating-point representation for GPU
-    m_spPimpl->VertexPositions.clear();
-    m_spPimpl->VertexPositions.reserve(arrayLen);
     for (uint32_t i = 0; i < arrayLen; ++i)
     {
         m_spPimpl->VertexPositions.emplace_back(positionsArray[i].ToVec3());

@@ -35,7 +35,8 @@ PaddleArena::PaddleArena(
         allocator.Create<sputter::physics::RigidBodySubsystem>(rigidBodySubsystemSettings);
 
     sputter::render::MeshSubsystemSettings meshSubsystemSettings;
-    meshSubsystemSettings.MaxVertexCount = 8;
+    meshSubsystemSettings.MaxVertexCount = 20;
+    meshSubsystemSettings.MaxMeshCount = 20;
     m_pMeshSubsystem = new sputter::render::MeshSubsystem(
         meshSubsystemSettings
     );
@@ -104,7 +105,7 @@ bool PaddleArena::StartGame()
         CubeSize,
         CubeStartPosition
         );
-
+    m_pGameState->Arena.Initialize(FPVector2D(300, 400));        
     m_pGameState->Camera.Translate(FPVector3D(-150, 200, -200));
 
     return true;
