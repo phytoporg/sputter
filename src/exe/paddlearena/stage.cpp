@@ -1,5 +1,7 @@
 #include "stage.h"
 
+#include <string>
+
 #include <sputter/math/fpconstants.h>
 
 #include <sputter/assets/assetstorageprovider.h>
@@ -61,6 +63,7 @@ void Stage::Initialize(FPVector2D stageDimensions)
             stageDimensions.GetX(),
             stageDimensions.GetY(),
             FixedPoint(1)));
+    m_localTransform.SetTranslation(FPVector3D(FPZero, FPZero, FixedPoint(0.5)));
 
     // Cube's origin is at the geometric center.
     const FixedPoint HalfCubeSize = FPOne / FPTwo;
@@ -145,4 +148,7 @@ void Stage::Initialize(FPVector2D stageDimensions)
     m_pMeshComponent->SetIndices(VertexIndices, NumIndices);
     m_pMeshComponent->SetShader(m_spShader);
     m_pMeshComponent->SetModelMatrix(m_localTransform.ToMat4());
+
+    static const glm::vec3 Gray(0.5, 0.5, 0.5);
+    m_pMeshComponent->SetMeshUniforms({ MeshUniformValue("color", UniformType::Vec3, &Gray) });
 }

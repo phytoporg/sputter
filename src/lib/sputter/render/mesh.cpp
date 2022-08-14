@@ -8,6 +8,8 @@
 #include <vector>
 #include <glm/glm.hpp>
 
+#include <sputter/render/uniform.h>
+
 #include <sputter/system/system.h>
 
 using namespace sputter::render;
@@ -18,16 +20,18 @@ struct Mesh::PImpl
 {
     // Attributes & EOB
     // Is this really needed per-mesh?
-    Attribute<glm::vec3> VertexPositionAttribute;
-    Attribute<glm::vec3> VertexNormalAttribute;
-    Attribute<glm::vec2> VertexTextureCoordinateAttribute;
-    IndexBuffer          Indices;
+    Attribute<glm::vec3>           VertexPositionAttribute;
+    Attribute<glm::vec3>           VertexNormalAttribute;
+    Attribute<glm::vec2>           VertexTextureCoordinateAttribute;
+    IndexBuffer                    Indices;
 
     // Data
-    std::vector<glm::vec3> VertexPositions;
-    std::vector<glm::vec3> VertexNormals;
-    std::vector<glm::vec2> VertexTextureCoordinates;
-    std::vector<uint32_t>  VertexIndices;
+    std::vector<glm::vec3>         VertexPositions;
+    std::vector<glm::vec3>         VertexNormals;
+    std::vector<glm::vec2>         VertexTextureCoordinates;
+    std::vector<uint32_t>          VertexIndices;
+
+    std::vector<MeshUniformValue>  MeshUniformValues;
 
     glm::mat4              ModelMatrix;
 
@@ -52,6 +56,8 @@ struct Mesh::PImpl
         VertexNormals = other.VertexNormals;
         VertexTextureCoordinates = other.VertexTextureCoordinates;
         VertexIndices = other.VertexIndices;
+
+        MeshUniformValues = other.MeshUniformValues;
 
         spShader = other.spShader;
 
@@ -241,6 +247,11 @@ void Mesh::SetModelMatrix(const glm::mat4& modelMatrix)
     m_spPimpl->ModelMatrix = modelMatrix;
 }
 
+void Mesh::SetMeshUniforms(const std::vector<MeshUniformValue>& uniformValues)
+{
+    m_spPimpl->MeshUniformValues = uniformValues;
+}
+
 void Mesh::Draw(const glm::mat4& projMatrix, const glm::mat4& viewMatrix) 
 {
     if (!m_spPimpl->spShader || 
@@ -254,11 +265,27 @@ void Mesh::Draw(const glm::mat4& projMatrix, const glm::mat4& viewMatrix)
 
     m_spPimpl->spShader->Bind();
 
-    Uniform<glm::mat4>::Set(m_spPimpl->ModelUniformHandle, m_spPimpl->ModelMatrix);
+    for (MeshUniformValue& uniformValue : m_spPimpl->MeshUniformValues)
+    {
+        if (uniformValue.Location == Shader::kInvalidHandleValue)
+        {
+            uniformValue.Location = m_spPimpl->spShader->GetUniform(uniformValue.Name);
+        }
 
-    // TODO: Actual view matrix
-    static const glm::mat4 Identity = glm::mat4(1.0);
-    Uniform<glm::mat4>::Set(m_spPimpl->ViewUniformHandle, /*Identity*/ viewMatrix);
+        if (uniformValue.Location != Shader::kInvalidHandleValue)
+        {
+            SetUniformByType(uniformValue.Location, uniformValue.Type, uniformValue.pValue);
+        }
+        else
+        {
+            // Log something if we didn't get a valid response in the lookup
+            LOG(ERROR) << "Failed to retrieve a location for uniform named '" << uniformValue.Name 
+                       << "' in shader '" << m_spPimpl->spShader->GetName() << "'";
+        }
+    }
+
+    Uniform<glm::mat4>::Set(m_spPimpl->ModelUniformHandle, m_spPimpl->ModelMatrix);
+    Uniform<glm::mat4>::Set(m_spPimpl->ViewUniformHandle, viewMatrix);
     Uniform<glm::mat4>::Set(m_spPimpl->ProjUniformHandle, projMatrix);
 
     glBindVertexArray(m_spPimpl->VAO);
@@ -282,3 +309,4 @@ void Mesh::Draw(const glm::mat4& projMatrix, const glm::mat4& viewMatrix)
 
     glBindVertexArray(0);
 }
+

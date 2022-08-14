@@ -1,7 +1,10 @@
 #pragma once
 
 #include "shader.h"
+#include "uniform.h"
 #include <memory>
+#include <vector>
+#include <string>
 #include <sputter/math/fpvector2d.h>
 #include <sputter/math/fpvector3d.h>
 #include <sputter/containers/fixedmemoryvector.h>
@@ -9,6 +12,19 @@
 
 namespace sputter { namespace render {
     class Shader;
+
+    struct MeshUniformValue
+    {
+        MeshUniformValue(const std::string& uniformName, UniformType type, void const* pValue)
+        : Name(uniformName), Type(type), pValue(pValue) {}
+
+        std::string Name;
+        UniformType Type = UniformType::Invalid;
+        void const* pValue = nullptr;
+
+        // TO cache the name -> slot lookups
+        uint32_t    Location = Shader::kInvalidHandleValue;
+    };
 
     class Mesh 
     {
@@ -52,6 +68,9 @@ namespace sputter { namespace render {
 
             bool SetShader(ShaderPtr spShader);
             void SetModelMatrix(const glm::mat4& modelMatrix);
+
+            // TO be set for each draw call
+            void SetMeshUniforms(const std::vector<MeshUniformValue>& uniformValues);
 
             void Draw(const glm::mat4& projMatrix, const glm::mat4& viewMatrix);
 

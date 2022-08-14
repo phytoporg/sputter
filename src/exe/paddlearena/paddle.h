@@ -6,6 +6,7 @@
 #include <sputter/game/object.h>
 #include <sputter/math/fixedpoint.h>
 #include <sputter/math/fptransform3d.h>
+#include <sputter/math/fpvector2d.h>
 #include <sputter/math/fpvector3d.h>
 
 namespace sputter
@@ -27,6 +28,7 @@ class Paddle : sputter::game::Object
 {
 public:
     Paddle(
+        uint32_t playerId,
         sputter::assets::AssetStorageProvider* pStorageProvider,
         sputter::game::SubsystemProvider* pSubsystemProvider
         );
@@ -34,14 +36,14 @@ public:
     virtual void Tick(sputter::math::FixedPoint deltaTime) override;
 
     void Initialize(
-        sputter::math::FixedPoint cubeSize,
+        sputter::math::FPVector2D dimensions,
         sputter::math::FPVector3D location
         );
 
 private:
-    static const std::string       kCubeVertexShaderAssetName;
-    static const std::string       kCubeFragmentShaderAssetName;
-    static const std::string       kCubeShaderName;
+    static const std::string       kPaddleVertexShaderAssetName;
+    static const std::string       kPaddleFragmentShaderAssetName;
+    static const std::string       kPaddleShaderName;
 
     sputter::render::Mesh*                   m_pMeshComponent = nullptr;
     std::shared_ptr<sputter::render::Shader> m_spShader = nullptr;

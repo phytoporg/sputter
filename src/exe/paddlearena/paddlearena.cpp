@@ -99,14 +99,16 @@ bool PaddleArena::StartGame()
 {
     using namespace sputter::math;
 
-    const FixedPoint CubeSize(100);
-    const FPVector3D CubeStartPosition(FixedPoint(400), FixedPoint(-200), FixedPoint(0));
     m_pGameState->Player1Paddle.Initialize(
-        CubeSize,
-        CubeStartPosition
+        FPVector2D(20, 80),
+        FPVector3D(FixedPoint(-350), FPZero, FixedPoint(-0.5))
         );
-    m_pGameState->Arena.Initialize(FPVector2D(300, 400));        
-    m_pGameState->Camera.Translate(FPVector3D(-150, 200, -200));
+    m_pGameState->Player2Paddle.Initialize(
+        FPVector2D(20, 80),
+        FPVector3D(FixedPoint(350), FPZero, FixedPoint(-0.5))
+        );
+    m_pGameState->Arena.Initialize(FPVector2D(800, 600));        
+    m_pGameState->Camera.Translate(FPVector3D(-500, 400, -200));
 
     return true;
 }

@@ -4,6 +4,24 @@
 #include <vector>
 
 namespace sputter { namespace render {
+    enum class UniformType
+    {
+        Invalid,
+        Int,
+        IVec2,
+        IVec4,
+        Float,
+        Vec2,
+        Vec3,
+        Quat,
+        Mat4,
+        MaxUniformType
+    };
+
+    // For instances where templatization isn't as practical. Not type safe but
+    // oh no.
+    void SetUniformByType(uint32_t slot, UniformType type, void const* pValue);
+
     template<typename T>
     class Uniform
     {

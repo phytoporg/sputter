@@ -27,5 +27,6 @@ struct GameState
 
     sputter::render::Camera Camera;
     Paddle           Player1Paddle;
+    Paddle           Player2Paddle;
     Stage            Arena;
 };

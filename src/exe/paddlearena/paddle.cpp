@@ -20,11 +20,12 @@ using namespace sputter::assets;
 using namespace sputter::math;
 using namespace sputter::input;
 
-const std::string Paddle::kCubeVertexShaderAssetName = "cube_vert";
-const std::string Paddle::kCubeFragmentShaderAssetName = "cube_frag";
-const std::string Paddle::kCubeShaderName = "cube_shader";
+const std::string Paddle::kPaddleVertexShaderAssetName = "cube_vert";
+const std::string Paddle::kPaddleFragmentShaderAssetName = "cube_frag";
+const std::string Paddle::kPaddleShaderName = "cube_shader";
 
 Paddle::Paddle(
+    uint32_t playerId,
     AssetStorageProvider* pStorageProvider,
     SubsystemProvider* pSubsystemProvider
 ) : Object(pStorageProvider, pSubsystemProvider)
@@ -40,7 +41,7 @@ Paddle::Paddle(
 
     {
         InputSource::InitializationParameters params;
-        params.PlayerId = 0;
+        params.PlayerId = playerId;
         CreateAndSetComponentByType<InputSubsystem>(&m_pInputSource, params);
         if (!m_pInputSource)
         {
@@ -49,19 +50,23 @@ Paddle::Paddle(
     }
 
     auto pShaderStorage = pStorageProvider->GetStorageByType<ShaderStorage>();
-    if (!pShaderStorage->AddShaderFromShaderAssetNames(
-        pStorageProvider->GetGeneralStorage(),
-        kCubeVertexShaderAssetName,
-        kCubeFragmentShaderAssetName,
-        kCubeShaderName))
-    {
-        sputter::system::LogAndFail("Failed to add shader for character cube.");
-    }
-
-    m_spShader = pShaderStorage->FindShaderByName(kCubeShaderName);
+    m_spShader = pShaderStorage->FindShaderByName(kPaddleShaderName);
     if (!m_spShader)
     {
-        sputter::system::LogAndFail("Failed to retrieve shader for character cube.");
+        if (!pShaderStorage->AddShaderFromShaderAssetNames(
+            pStorageProvider->GetGeneralStorage(),
+            kPaddleVertexShaderAssetName,
+            kPaddleFragmentShaderAssetName,
+            kPaddleShaderName))
+        {
+            sputter::system::LogAndFail("Failed to add shader for paddle.");
+        }
+    }
+
+    m_spShader = pShaderStorage->FindShaderByName(kPaddleShaderName);
+    if (!m_spShader)
+    {
+        sputter::system::LogAndFail("Failed to retrieve shader for paddle.");
     }
 }
 
@@ -100,15 +105,13 @@ void Paddle::Tick(FixedPoint deltaTime)
 }
 
 void Paddle::Initialize(
-    sputter::math::FixedPoint cubeSize,
+    sputter::math::FPVector2D dimensions,
     sputter::math::FPVector3D location
     )
 {
-    m_localTransform.SetTranslation(location);
-
     using namespace sputter::math;
     // Cube's origin is at the geometric center.
-    const FixedPoint HalfCubeSize = cubeSize / FPTwo;
+    const FixedPoint HalfCubeSize = FPOne / FPTwo;
     static const FPVector3D VertexPositions[] = {
         // Bottom face
         FPVector3D(-HalfCubeSize, -HalfCubeSize, -HalfCubeSize),
@@ -182,6 +185,9 @@ void Paddle::Initialize(
         6, 5, 4, 7, 6, 4,
     };
 
+    m_localTransform.SetScale(FPVector3D(dimensions.GetX(), dimensions.GetY(), FPOne));
+    m_localTransform.SetTranslation(location);
+
     const uint32_t NumVertices = sizeof(VertexPositions) / sizeof(VertexPositions[0]); 
     const uint32_t NumIndices = sizeof(VertexIndices) / sizeof(VertexIndices[0]); 
     m_pMeshComponent->SetPositions(VertexPositions, NumVertices);
@@ -190,4 +196,7 @@ void Paddle::Initialize(
     m_pMeshComponent->SetIndices(VertexIndices, NumIndices);
     m_pMeshComponent->SetShader(m_spShader);
     m_pMeshComponent->SetModelMatrix(m_localTransform.ToMat4());
+
+    static const glm::vec3 White(1.0, 1.0, 1.0);
+    m_pMeshComponent->SetMeshUniforms({ MeshUniformValue("color", UniformType::Vec3, &White) });
 }
