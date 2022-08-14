@@ -17,11 +17,12 @@ Next high-level goal: Start prototyping gameplay
 * SandboxGame -> PaddleArena
 * Stage/Arena
 * Actual paddles and paddle proportions
-* "Ball" - procedural cube, 3d rigidbody
 * Collision
+* "Ball" - procedural cube, 3d rigidbody
 * Maintain aspect ratio !
 
 AFTER GAMEPLAY VALIDATION:
+* Messaging system so callbacks from components can happen?
 * Some basic ECS cleanup
 ** UUIDs, not enums
 ** Get rid of Create/ReleaseComponent() calls? Or allow for constructor params.

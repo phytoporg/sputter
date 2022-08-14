@@ -8,6 +8,9 @@
 #include <sputter/physics/rigidbodysubsystem.h>
 #include <sputter/physics/rigidbody2d.h>
 
+#include <sputter/physics/collisionsubsystem.h>
+#include <sputter/physics/collision.h>
+
 #include <sputter/assets/assetstorage.h>
 #include <sputter/assets/assetstorageprovider.h>
 
@@ -59,6 +62,7 @@ private:
     PaddleArena(const PaddleArena& other) = delete;
 
     sputter::physics::RigidBodySubsystem* m_pRigidbodySubsystem;
+    sputter::physics::CollisionSubsystem* m_pCollisionSubsystem;
 
     sputter::render::ShaderStorage        m_shaderStorage;
     sputter::render::MeshSubsystem*       m_pMeshSubsystem;

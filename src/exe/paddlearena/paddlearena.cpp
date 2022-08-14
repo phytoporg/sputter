@@ -34,6 +34,10 @@ PaddleArena::PaddleArena(
     m_pRigidbodySubsystem = 
         allocator.Create<sputter::physics::RigidBodySubsystem>(rigidBodySubsystemSettings);
 
+    physics::CollisionSubsystemSettings collisionSubsystemSettings;
+    m_pCollisionSubsystem = 
+        allocator.Create<sputter::physics::CollisionSubsystem>(collisionSubsystemSettings);
+
     sputter::render::MeshSubsystemSettings meshSubsystemSettings;
     meshSubsystemSettings.MaxVertexCount = 20;
     meshSubsystemSettings.MaxMeshCount = 20;
@@ -62,6 +66,7 @@ PaddleArena::PaddleArena(
     m_pInputSubsystem = new sputter::input::InputSubsystem(inputSubsystemSettings);
 
     m_subsystemProvider.AddSubsystem(m_pRigidbodySubsystem);
+    m_subsystemProvider.AddSubsystem(m_pCollisionSubsystem);
     m_subsystemProvider.AddSubsystem(m_pMeshSubsystem);
     m_subsystemProvider.AddSubsystem(m_pInputSubsystem);
 
@@ -77,7 +82,14 @@ void PaddleArena::Tick(math::FixedPoint deltaTime)
 {
     m_pInputSubsystem->Tick(deltaTime);
     m_pRigidbodySubsystem->Tick(deltaTime);
+    m_pCollisionSubsystem->Tick(deltaTime);
+
+    m_pGameState->Arena.Tick(deltaTime);
     m_pGameState->Player1Paddle.Tick(deltaTime);
+    m_pGameState->Player2Paddle.Tick(deltaTime);
+
+    // POST-TICK
+    m_pCollisionSubsystem->ProcessCollisionResults();
 }
 
 void PaddleArena::Draw()

@@ -21,8 +21,7 @@ namespace sputter { namespace physics {
     class RigidBodySubsystem : public core::ISubsystem<RigidBody2D>
     {
     public:
-        static const game::SubsystemType SubsystemId =
-            game::SubsystemType::TYPE_RIGIDBODY;
+        static const game::SubsystemType SubsystemId = game::SubsystemType::TYPE_RIGIDBODY;
 
         RigidBodySubsystem(const RigidBodySubsystemSettings& settings);
 
