@@ -21,7 +21,7 @@ struct Mesh::PImpl
     Attribute<glm::vec3> VertexPositionAttribute;
     Attribute<glm::vec3> VertexNormalAttribute;
     Attribute<glm::vec2> VertexTextureCoordinateAttribute;
-    IndexBuffer          IndexBuffer;
+    IndexBuffer          Indices;
 
     // Data
     std::vector<glm::vec3> VertexPositions;
@@ -46,7 +46,7 @@ struct Mesh::PImpl
         VertexPositionAttribute = other.VertexPositionAttribute;
         VertexNormalAttribute = other.VertexNormalAttribute;
         VertexTextureCoordinateAttribute = other.VertexTextureCoordinateAttribute;
-        IndexBuffer = other.IndexBuffer;
+        Indices = other.Indices;
 
         VertexPositions = other.VertexPositions;
         VertexNormals = other.VertexNormals;
@@ -92,7 +92,7 @@ Mesh::Mesh(size_t maxVertexCount, size_t maxIndexCount)
     m_spPimpl->VertexTextureCoordinateAttribute.BindTo(2);
 
     m_spPimpl->VertexIndices.reserve(maxIndexCount);
-    m_spPimpl->IndexBuffer.Set(m_spPimpl->VertexIndices.data(), maxIndexCount);
+    m_spPimpl->Indices.Set(m_spPimpl->VertexIndices.data(), maxIndexCount);
 
     m_spPimpl->VAO = vao;
 
@@ -198,7 +198,7 @@ bool Mesh::SetIndices(
     m_spPimpl->VertexIndices.resize(arrayLen);
 
     memcpy(m_spPimpl->VertexIndices.data(), indexArray, arrayLen * sizeof(int));
-    m_spPimpl->IndexBuffer.Set(m_spPimpl->VertexIndices);
+    m_spPimpl->Indices.Set(m_spPimpl->VertexIndices);
     m_spPimpl->IsDirty = true;
     return true;
 }
@@ -273,11 +273,11 @@ void Mesh::Draw(const glm::mat4& projMatrix, const glm::mat4& viewMatrix)
         m_spPimpl->VertexPositionAttribute.Set(m_spPimpl->VertexPositions);
         m_spPimpl->VertexNormalAttribute.Set(m_spPimpl->VertexNormals);
         m_spPimpl->VertexTextureCoordinateAttribute.Set(m_spPimpl->VertexTextureCoordinates);
-        m_spPimpl->IndexBuffer.Set(m_spPimpl->VertexIndices);
+        m_spPimpl->Indices.Set(m_spPimpl->VertexIndices);
         m_spPimpl->IsDirty = false;
     }
 
-    ::Draw(m_spPimpl->IndexBuffer, DrawMode::Triangles);
+    ::Draw(m_spPimpl->Indices, DrawMode::Triangles);
     m_spPimpl->UnbindAttributes();
 
     m_spPimpl->spShader->Unbind();

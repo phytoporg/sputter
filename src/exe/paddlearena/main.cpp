@@ -1,7 +1,7 @@
 // TODO: Find a better place for this. Shouldn't have to define this in the specific game project.
 #define NOMINMAX
 
-#include "sandboxgame.h"
+#include "paddlearena.h"
 
 #include <sputter/assets/imagedata.h>
 #include <sputter/assets/assetstorage.h>
@@ -40,7 +40,7 @@ int main(int argc, char** argv)
         stateRegion.GetRegionSize());
 
     render::Window window("Test window");
-    SandboxGame game(&window, argv[1], allocator);
+    PaddleArena game(&window, argv[1], allocator);
 
     game.StartGame();
 

@@ -13,7 +13,7 @@
 #include <sputter/input/inputsubsystem.h>
 
 #include "gamestate.h"
-#include "sandboxgame.h"
+#include "paddlearena.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -76,7 +76,7 @@ void PaddleArena::Tick(math::FixedPoint deltaTime)
 {
     m_pInputSubsystem->Tick(deltaTime);
     m_pRigidbodySubsystem->Tick(deltaTime);
-    m_pGameState->MainCube.Tick(deltaTime);
+    m_pGameState->Player1Paddle.Tick(deltaTime);
 }
 
 void PaddleArena::Draw()
@@ -100,7 +100,7 @@ bool PaddleArena::StartGame()
 
     const FixedPoint CubeSize(100);
     const FPVector3D CubeStartPosition(FixedPoint(400), FixedPoint(-200), FixedPoint(0));
-    m_pGameState->MainCube.Initialize(
+    m_pGameState->Player1Paddle.Initialize(
         CubeSize,
         CubeStartPosition
         );

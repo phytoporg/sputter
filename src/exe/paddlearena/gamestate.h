@@ -2,8 +2,7 @@
 
 #include <sputter/physics/rigidbodysubsystem.h>
 #include <sputter/render/camera.h>
-#include "testobject.h"
-#include "charactercube.h"
+#include "paddle.h"
 
 namespace sputter 
 {
@@ -26,5 +25,5 @@ struct GameState
         );
 
     sputter::render::Camera Camera;
-    CharacterCube           MainCube;
+    Paddle           Player1Paddle;
 };

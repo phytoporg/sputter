@@ -1,5 +1,5 @@
-#include "charactercube.h"
-#include "sandboxgame.h"
+#include "paddle.h"
+#include "paddlearena.h"
 
 #include <sputter/assets/assetstorageprovider.h>
 
@@ -68,20 +68,20 @@ void Paddle::Tick(FixedPoint deltaTime)
 {
     FPVector3D velocity = FPVector3D::ZERO;
     const FixedPoint Speed = FixedPoint(400);
-    if (m_pInputSource->IsInputHeld(static_cast<uint32_t>(SandboxGameInput::INPUT_MOVE_UP)))
+    if (m_pInputSource->IsInputHeld(static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_UP)))
     {
         velocity += FPVector3D(0, 1, 0);
     }
-    else if (m_pInputSource->IsInputHeld(static_cast<uint32_t>(SandboxGameInput::INPUT_MOVE_DOWN)))
+    else if (m_pInputSource->IsInputHeld(static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_DOWN)))
     {
         velocity += FPVector3D(0, -1, 0);
     }
 
-    if (m_pInputSource->IsInputHeld(static_cast<uint32_t>(SandboxGameInput::INPUT_MOVE_LEFT)))
+    if (m_pInputSource->IsInputHeld(static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_LEFT)))
     {
         velocity += FPVector3D(-1, 0, 0);
     }
-    else if (m_pInputSource->IsInputHeld(static_cast<uint32_t>(SandboxGameInput::INPUT_MOVE_RIGHT)))
+    else if (m_pInputSource->IsInputHeld(static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_RIGHT)))
     {
         velocity += FPVector3D(1, 0, 0);
     }
