@@ -22,6 +22,11 @@ namespace sputter
     {
         class InputSource;
     }
+
+    namespace physics
+    {
+        class Collision;
+    }
 }
 
 class Paddle : sputter::game::Object
@@ -47,6 +52,7 @@ private:
 
     sputter::render::Mesh*                   m_pMeshComponent = nullptr;
     std::shared_ptr<sputter::render::Shader> m_spShader = nullptr;
+    sputter::physics::Collision*             m_pCollisionComponent = nullptr;
 
     sputter::input::InputSource*             m_pInputSource = nullptr;
 

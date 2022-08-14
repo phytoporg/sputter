@@ -37,13 +37,13 @@ void CollisionSubsystem::Tick(math::FixedPoint dt)
 
 Collision* CollisionSubsystem::CreateComponent(const Collision::InitializationParameters& params) 
 {
-    // TODO
-    return nullptr;
+    m_collisions.emplace_back();
+    return &m_collisions.back();
 }
 
 void CollisionSubsystem::ReleaseComponent(Collision* pComponent) 
 {
-
+    // TODO
 }
 
 void CollisionSubsystem::ProcessCollisionResults()

@@ -10,11 +10,17 @@
 
 #include <sputter/render/shaderstorage.h>
 #include <sputter/render/meshsubsystem.h>
+#include <sputter/render/mesh.h>
+
+#include <sputter/physics/aabb.h>
+#include <sputter/physics/collision.h>
+#include <sputter/physics/collisionsubsystem.h>
 
 using namespace sputter::game;
 using namespace sputter::math;
 using namespace sputter::assets;
 using namespace sputter::render;
+using namespace sputter::physics;
 
 const std::string Stage::kArenaVertexShaderAssetName = "cube_vert";
 const std::string Stage::kArenaFragmentShaderAssetName = "cube_frag";
@@ -30,7 +36,16 @@ Stage::Stage(
         CreateAndSetComponentByType<MeshSubsystem>(&m_pMeshComponent, params);
         if (!m_pMeshComponent)
         {
-            sputter::system::LogAndFail("Failed to create mesh component in Paddle object.");
+            sputter::system::LogAndFail("Failed to create mesh component in stage object.");
+        }
+    }
+
+    {
+        sputter::physics::Collision::InitializationParameters params = {};
+        CreateAndSetComponentByType<CollisionSubsystem>(&m_pCollisionComponent, params);
+        if (!m_pCollisionComponent)
+        {
+            sputter::system::LogAndFail("Failed to create collision component in stage object.");
         }
     }
 
@@ -151,4 +166,41 @@ void Stage::Initialize(FPVector2D stageDimensions)
 
     static const glm::vec3 Gray(0.5, 0.5, 0.5);
     m_pMeshComponent->SetMeshUniforms({ MeshUniformValue("color", UniformType::Vec3, &Gray) });
+
+    // Now, set up collision geometry! Defined in *global* space at the moment. TODO: Fix that
+    m_pCollisionComponent->CollisionShapes.clear();
+
+    // Left and right AABBs
+    const FPVector3D SideCollisionExtents(
+        FixedPoint(100),
+        stageDimensions.GetY(),
+        FixedPoint(50)
+    );
+    const FPVector3D LeftLowerLeft(
+        -(stageDimensions.GetX() / FPTwo) - SideCollisionExtents.GetX(), 
+        -(stageDimensions.GetY() / FPTwo),
+        -FPTwo);
+    const FPVector3D RightLowerLeft(
+        (stageDimensions.GetX() / FPTwo), 
+        -(stageDimensions.GetY() / FPTwo),
+        -FPTwo);
+    m_pCollisionComponent->CollisionShapes.push_back(new AABB(LeftLowerLeft, SideCollisionExtents));
+    m_pCollisionComponent->CollisionShapes.push_back(new AABB(RightLowerLeft, SideCollisionExtents));
+
+    // Top and bottom AABBs
+    const FPVector3D TopAndBottomCollisionExtents(
+        stageDimensions.GetX(),
+        FixedPoint(100),
+        FixedPoint(50)
+    );
+    const FPVector3D TopLowerLeft(
+        -(stageDimensions.GetX() / FPTwo), 
+        (stageDimensions.GetY() / FPTwo),
+        -FPTwo);
+    const FPVector3D BottomLowerLeft(
+        -(stageDimensions.GetX() / FPTwo), 
+        -(stageDimensions.GetY() / FPTwo) - TopAndBottomCollisionExtents.GetY(),
+        -FPTwo);
+    m_pCollisionComponent->CollisionShapes.push_back(new AABB(TopLowerLeft, TopAndBottomCollisionExtents));
+    m_pCollisionComponent->CollisionShapes.push_back(new AABB(BottomLowerLeft, TopAndBottomCollisionExtents));
 }

@@ -18,6 +18,9 @@ Next high-level goal: Start prototyping gameplay
 * Stage/Arena
 * Actual paddles and paddle proportions
 * Collision
+** Need a fixed-capacity *array*. Dodge the allocator biz.
+*** Collision subsystem is mixing heap and fixed allocation again. Fix it.
+** Collision geometry in object-local space. Requires some more math.
 * "Ball" - procedural cube, 3d rigidbody
 * Maintain aspect ratio !
 

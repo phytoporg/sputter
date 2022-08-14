@@ -15,6 +15,8 @@ namespace sputter { namespace physics {
     {
         static const game::SubsystemType ComponentId = game::SubsystemType::TYPE_COLLISION;
 
+        Collision() { CollisionShapes.clear(); }
+
         bool Intersects(const Collision& other) const;
 
         // Yet unused

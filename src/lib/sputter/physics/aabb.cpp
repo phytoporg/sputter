@@ -5,8 +5,8 @@
 using namespace sputter::physics;
 using namespace sputter::math;
 
-AABB::AABB(const sputter::math::FPVector3D& upperLeft, const sputter::math::FPVector3D& extents)
-    : m_upperLeft(upperLeft), m_extents(extents)
+AABB::AABB(const sputter::math::FPVector3D& lowerLeft, const sputter::math::FPVector3D& extents)
+    : m_lowerLeft(lowerLeft), m_extents(extents)
 {}
 
 CollisionShapeType AABB::GetShapeType() const 
@@ -21,19 +21,20 @@ bool AABB::Intersects(ICollisionShape* const pOtherShape) const
     case CollisionShapeType::AABB:
         {
             AABB* pOtherAABB = static_cast<AABB*>(pOtherShape);
-            const FixedPoint minX = m_upperLeft.GetX();
-            const FixedPoint minY = m_upperLeft.GetY();
-            const FixedPoint minZ = m_upperLeft.GetZ();
-            const FixedPoint maxX = m_upperLeft.GetX() + m_extents.GetX();
-            const FixedPoint maxY = m_upperLeft.GetY() + m_extents.GetY();
-            const FixedPoint maxZ = m_upperLeft.GetZ() + m_extents.GetZ();
+            const FixedPoint minX = m_lowerLeft.GetX();
+            const FixedPoint minY = m_lowerLeft.GetY();
+            const FixedPoint minZ = m_lowerLeft.GetZ();
 
-            const FixedPoint oMinX = pOtherAABB->m_upperLeft.GetX();
-            const FixedPoint oMinY = pOtherAABB->m_upperLeft.GetY();
-            const FixedPoint oMinZ = pOtherAABB->m_upperLeft.GetZ();
-            const FixedPoint oMaxX = pOtherAABB->m_upperLeft.GetX() + m_extents.GetX();
-            const FixedPoint oMaxY = pOtherAABB->m_upperLeft.GetY() + m_extents.GetY();
-            const FixedPoint oMaxZ = pOtherAABB->m_upperLeft.GetZ() + m_extents.GetZ();
+            const FixedPoint maxX = m_lowerLeft.GetX() + m_extents.GetX();
+            const FixedPoint maxY = m_lowerLeft.GetY() + m_extents.GetY();
+            const FixedPoint maxZ = m_lowerLeft.GetZ() + m_extents.GetZ();
+
+            const FixedPoint oMinX = pOtherAABB->m_lowerLeft.GetX();
+            const FixedPoint oMinY = pOtherAABB->m_lowerLeft.GetY();
+            const FixedPoint oMinZ = pOtherAABB->m_lowerLeft.GetZ();
+            const FixedPoint oMaxX = pOtherAABB->m_lowerLeft.GetX() + m_extents.GetX();
+            const FixedPoint oMaxY = pOtherAABB->m_lowerLeft.GetY() + m_extents.GetY();
+            const FixedPoint oMaxZ = pOtherAABB->m_lowerLeft.GetZ() + m_extents.GetZ();
 
             return (minX <= oMaxX && maxX >= oMinX) &&
                    (minY <= oMaxY && maxY >= oMinY) &&

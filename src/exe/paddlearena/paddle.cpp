@@ -12,6 +12,10 @@
 #include <sputter/input/inputsource.h>
 #include <sputter/input/inputsubsystem.h>
 
+#include <sputter/physics/aabb.h>
+#include <sputter/physics/collision.h>
+#include <sputter/physics/collisionsubsystem.h>
+
 #include <fpm/math.hpp>
 
 using namespace sputter::render;
@@ -19,6 +23,7 @@ using namespace sputter::game;
 using namespace sputter::assets;
 using namespace sputter::math;
 using namespace sputter::input;
+using namespace sputter::physics;
 
 const std::string Paddle::kPaddleVertexShaderAssetName = "cube_vert";
 const std::string Paddle::kPaddleFragmentShaderAssetName = "cube_frag";
@@ -36,6 +41,15 @@ Paddle::Paddle(
         if (!m_pMeshComponent)
         {
             sputter::system::LogAndFail("Failed to create mesh component in Paddle object.");
+        }
+    }
+
+    {
+        sputter::physics::Collision::InitializationParameters params = {};
+        CreateAndSetComponentByType<CollisionSubsystem>(&m_pCollisionComponent, params);
+        if (!m_pCollisionComponent)
+        {
+            sputter::system::LogAndFail("Failed to create collision component in Paddle object.");
         }
     }
 
@@ -99,9 +113,7 @@ void Paddle::Tick(FixedPoint deltaTime)
         m_pMeshComponent->SetModelMatrix(m_localTransform.ToMat4());
     }
 
-    // Do we need to do this on every tick?
-    const uint32_t colorUniformHandle = m_spShader->GetUniform("color");
-    Uniform<glm::vec3>::Set(colorUniformHandle, glm::vec3(1.0, 1.0, 1.0));
+    // TODO: make this unnecessary
 }
 
 void Paddle::Initialize(
@@ -199,4 +211,18 @@ void Paddle::Initialize(
 
     static const glm::vec3 White(1.0, 1.0, 1.0);
     m_pMeshComponent->SetMeshUniforms({ MeshUniformValue("color", UniformType::Vec3, &White) });
+
+    // Now, set up collision geometry! Defined in *global* space at the moment. TODO: Fix that
+    // Because of this, gotta update geometry on tick... D: D:
+    m_pCollisionComponent->CollisionShapes.clear();
+    AABB* pShape = new AABB(
+         FPVector3D(-dimensions.GetX() / FPTwo, -dimensions.GetY() / FPTwo, -FPTwo),
+         FPVector3D(dimensions.GetX(), dimensions.GetY(), FPOne)
+         );
+    m_pCollisionComponent->CollisionShapes.push_back(pShape);
+
+    // m_pCollisionComponent->CollisionShapes.push_back(new AABB(
+    //     FPVector3D(-dimensions.GetX() / FPTwo, -dimensions.GetY() / FPTwo, -FPTwo),
+    //     FPVector3D(dimensions.GetX(), dimensions.GetY(), FPOne)
+    //     ));
 }

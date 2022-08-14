@@ -1,10 +1,21 @@
 #pragma once
 
 #include <string>
+#include <memory>
 #include <sputter/game/object.h>
 #include <sputter/math/fpvector2d.h>
 #include <sputter/math/fptransform3d.h>
-#include <sputter/render/mesh.h>
+
+namespace sputter {
+    namespace render {
+        class Mesh;
+        class Shader;
+    }
+
+    namespace physics {
+        class Collision;
+    }
+}
 
 class Stage : sputter::game::Object
 {
@@ -25,7 +36,8 @@ private:
     static const std::string       kArenaFragmentShaderAssetName;
     static const std::string       kArenaShaderName;
 
-    sputter::render::Mesh*                   m_pMeshComponent;
+    sputter::render::Mesh*                   m_pMeshComponent = nullptr;
+    sputter::physics::Collision*             m_pCollisionComponent = nullptr;
     std::shared_ptr<sputter::render::Shader> m_spShader;
 
     sputter::math::FPTransform3D             m_localTransform;
