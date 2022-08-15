@@ -51,5 +51,8 @@ void CollisionSubsystem::ReleaseComponent(Collision* pComponent)
 
 void CollisionSubsystem::ProcessCollisionResults()
 {
-    // TODO
+    for (const CollisionResult& collisionResult : m_collisionResults)
+    {
+        // TODO: call HandleCollision() or some such? Messaging system? 
+    }
 }

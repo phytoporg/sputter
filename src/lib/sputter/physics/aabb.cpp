@@ -25,21 +25,21 @@ bool AABB::Intersects(ICollisionShape* const pOtherShape) const
     case CollisionShapeType::AABB:
         {
             AABB* pOtherAABB = static_cast<AABB*>(pOtherShape);
-            const auto minX = (float)m_lowerLeft.GetX();
-            const auto minY = (float)m_lowerLeft.GetY();
-            const auto minZ = (float)m_lowerLeft.GetZ();
+            const FixedPoint minX = m_lowerLeft.GetX();
+            const FixedPoint minY = m_lowerLeft.GetY();
+            const FixedPoint minZ = m_lowerLeft.GetZ();
 
-            const auto maxX = (float)(m_lowerLeft.GetX() + m_extents.GetX());
-            const auto maxY = (float)(m_lowerLeft.GetY() + m_extents.GetY());
-            const auto maxZ = (float)(m_lowerLeft.GetZ() + m_extents.GetZ());
+            const FixedPoint maxX = (m_lowerLeft.GetX() + m_extents.GetX());
+            const FixedPoint maxY = (m_lowerLeft.GetY() + m_extents.GetY());
+            const FixedPoint maxZ = (m_lowerLeft.GetZ() + m_extents.GetZ());
 
-            const auto oMinX = (float)(pOtherAABB->m_lowerLeft.GetX());
-            const auto oMinY = (float)(pOtherAABB->m_lowerLeft.GetY());
-            const auto oMinZ = (float)(pOtherAABB->m_lowerLeft.GetZ());
+            const FixedPoint oMinX = (pOtherAABB->m_lowerLeft.GetX());
+            const FixedPoint oMinY = (pOtherAABB->m_lowerLeft.GetY());
+            const FixedPoint oMinZ = (pOtherAABB->m_lowerLeft.GetZ());
 
-            const auto oMaxX = (float)(pOtherAABB->m_lowerLeft.GetX() + pOtherAABB->m_extents.GetX());
-            const auto oMaxY = (float)(pOtherAABB->m_lowerLeft.GetY() + pOtherAABB->m_extents.GetY());
-            const auto oMaxZ = (float)(pOtherAABB->m_lowerLeft.GetZ() + pOtherAABB->m_extents.GetZ());
+            const FixedPoint oMaxX = (pOtherAABB->m_lowerLeft.GetX() + pOtherAABB->m_extents.GetX());
+            const FixedPoint oMaxY = (pOtherAABB->m_lowerLeft.GetY() + pOtherAABB->m_extents.GetY());
+            const FixedPoint oMaxZ = (pOtherAABB->m_lowerLeft.GetZ() + pOtherAABB->m_extents.GetZ());
 
             return (minX <= oMaxX && maxX >= oMinX) &&
                    (minY <= oMaxY && maxY >= oMinY) &&

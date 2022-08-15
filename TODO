@@ -18,11 +18,17 @@ Next high-level goal: Start prototyping gameplay
 * Stage/Arena
 * Actual paddles and paddle proportions
 * Collision
-** Need a fixed-capacity *array*. Dodge the allocator biz.
-*** Collision subsystem is mixing heap and fixed allocation again. Fix it.
 ** Collision geometry in object-local space. Requires some more math.
-* "Ball" - procedural cube, 3d rigidbody
+* Collision handling, overlap resolution
+* "Ball" - procedural cube, 3d rigidbody (!)
 * Maintain aspect ratio !
+* Volumetric fonts
+* Scoring & display
+* Render middle of the arena
+
+* Serialization & Rollback Redux
+** Fix the memory management story
+** Come up with a real serialization solution
 
 AFTER GAMEPLAY VALIDATION:
 * Messaging system so callbacks from components can happen?
