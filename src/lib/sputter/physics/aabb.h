@@ -15,6 +15,9 @@ namespace sputter { namespace physics {
         sputter::math::FPVector3D GetLowerLeft() const;
         sputter::math::FPVector3D GetExtents() const;
 
+        void SetLowerLeft(const sputter::math::FPVector3D& lowerLeft);
+        void SetExtents(const sputter::math::FPVector3D& extents);
+
     private:
         sputter::math::FPVector3D m_lowerLeft;
         sputter::math::FPVector3D m_extents;

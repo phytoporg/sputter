@@ -5,7 +5,10 @@
 using namespace sputter::physics;
 
 CollisionSubsystem::CollisionSubsystem(const CollisionSubsystemSettings& settings)
-{}
+{
+    // TODO: Fixed-size allocation :P
+    m_collisions.reserve(100);
+}
 
 void CollisionSubsystem::Tick(math::FixedPoint dt) 
 {
@@ -23,7 +26,7 @@ void CollisionSubsystem::Tick(math::FixedPoint dt)
                 continue;
             }
 
-            if (A.CollisionFlags & B.CollisionFlags && A.Intersects(B))
+            if ((A.CollisionFlags & B.CollisionFlags) && A.Intersects(B))
             {
                 CollisionResult result;
                 result.pCollisionA = &A;

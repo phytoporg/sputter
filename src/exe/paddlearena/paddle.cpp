@@ -51,6 +51,8 @@ Paddle::Paddle(
         {
             sputter::system::LogAndFail("Failed to create collision component in Paddle object.");
         }
+
+        m_pCollisionComponent->CollisionFlags = 1 << playerId;
     }
 
     {
@@ -114,6 +116,11 @@ void Paddle::Tick(FixedPoint deltaTime)
     }
 
     // TODO: make this unnecessary
+    const FPVector3D Scale = m_localTransform.GetScale();
+    const FPVector3D PaddleLowerLeft = FPVector3D(-Scale.GetX() / FPTwo, -Scale.GetY() / FPTwo, FPOne / FPTwo);
+
+    AABB* pShape = static_cast<AABB*>(m_pCollisionComponent->CollisionShapes.back());
+    pShape->SetLowerLeft(PaddleLowerLeft + m_localTransform.GetTranslation());
 }
 
 void Paddle::Initialize(
@@ -214,15 +221,14 @@ void Paddle::Initialize(
 
     // Now, set up collision geometry! Defined in *global* space at the moment. TODO: Fix that
     // Because of this, gotta update geometry on tick... D: D:
+    //m_pCollisionComponent->CollisionFlags = 0x1; <-- Set during init according to player ID
+    m_pCollisionComponent->pObject = this;
     m_pCollisionComponent->CollisionShapes.clear();
+    
+    const FPVector3D PaddleLowerLeft = FPVector3D(-dimensions.GetX() / FPTwo, -dimensions.GetY() / FPTwo, FPOne / FPTwo);
     AABB* pShape = new AABB(
-         FPVector3D(-dimensions.GetX() / FPTwo, -dimensions.GetY() / FPTwo, -FPTwo),
+         PaddleLowerLeft + location,
          FPVector3D(dimensions.GetX(), dimensions.GetY(), FPOne)
          );
     m_pCollisionComponent->CollisionShapes.push_back(pShape);
-
-    // m_pCollisionComponent->CollisionShapes.push_back(new AABB(
-    //     FPVector3D(-dimensions.GetX() / FPTwo, -dimensions.GetY() / FPTwo, -FPTwo),
-    //     FPVector3D(dimensions.GetX(), dimensions.GetY(), FPOne)
-    //     ));
 }
