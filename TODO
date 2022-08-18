@@ -20,18 +20,31 @@ Next high-level goal: Start prototyping gameplay
 * Collision
 ** Collision geometry in object-local space. Requires some more math.
 * Collision handling, overlap resolution
+** Check out: https://blog.hamaluik.ca/posts/simple-aabb-collision-using-minkowski-difference/
 * "Ball" - procedural cube, 3d rigidbody (!)
 * Maintain aspect ratio !
 * Volumetric fonts
 * Scoring & display
+* Full game loop
 * Render middle of the arena
 
 * Serialization & Rollback Redux
 ** Fix the memory management story
 ** Come up with a real serialization solution
+** Handles rather than pointers where appropriate
+** Serializable pointers where appropriate (prototype in s_ptr)
+** Synctest support to validate, sanity check
+** Debug support for loading, saving state
 
-AFTER GAMEPLAY VALIDATION:
-* Messaging system so callbacks from components can happen?
+ENGINE AFTER GAMEPLAY SLICE:
+* Messaging/Event system so callbacks from components can happen without introducing gross dependencies everywhere
 * Some basic ECS cleanup
-** UUIDs, not enums
-** Get rid of Create/ReleaseComponent() calls? Or allow for constructor params.
+** UUIDs, not enums?
+** Get rid of Create/ReleaseComponent() calls?
+** Allow for more than one component per object for a given component type.
+* Debug drawing
+* Hot-reloading for C++ changes
+* Hot-reloading for assets
+
+* UI
+** Not sure exactly where to start here, but starting would be good!
