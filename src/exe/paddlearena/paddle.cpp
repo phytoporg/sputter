@@ -1,5 +1,6 @@
 #include "paddle.h"
 #include "paddlearena.h"
+#include "objecttypes.h"
 
 #include <sputter/assets/assetstorageprovider.h>
 
@@ -33,7 +34,7 @@ Paddle::Paddle(
     uint32_t playerId,
     AssetStorageProvider* pStorageProvider,
     SubsystemProvider* pSubsystemProvider
-) : Object(pStorageProvider, pSubsystemProvider)
+) : Object(kPaddleArenaObjectTypePaddle, pStorageProvider, pSubsystemProvider)
 {
     {
         sputter::render::Mesh::InitializationParameters params = {};
@@ -231,4 +232,12 @@ void Paddle::Initialize(
          FPVector3D(dimensions.GetX(), dimensions.GetY(), FPOne)
          );
     m_pCollisionComponent->CollisionShapes.push_back(pShape);
+}
+
+void Paddle::HandleCollision(Object const* pOther)
+{
+    if (pOther->GetType() == kPaddleArenaObjectTypeStage)
+    {
+        // TODO: Fix/constrain paddle position
+    }
 }

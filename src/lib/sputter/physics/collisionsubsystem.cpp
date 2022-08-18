@@ -2,6 +2,8 @@
 
 #include "collisionshape.h"
 
+#include <sputter/game/object.h>
+
 using namespace sputter::physics;
 
 CollisionSubsystem::CollisionSubsystem(const CollisionSubsystemSettings& settings)
@@ -53,6 +55,12 @@ void CollisionSubsystem::ProcessCollisionResults()
 {
     for (const CollisionResult& collisionResult : m_collisionResults)
     {
-        // TODO: call HandleCollision() or some such? Messaging system? 
+        // TODO: This should be a message, or some sort of collision-specific
+        // interface.
+        sputter::game::Object* pObjectA = collisionResult.pCollisionA->pObject;
+        sputter::game::Object* pObjectB = collisionResult.pCollisionB->pObject;
+
+        pObjectA->HandleCollision(pObjectB);
+        pObjectB->HandleCollision(pObjectA);
     }
 }

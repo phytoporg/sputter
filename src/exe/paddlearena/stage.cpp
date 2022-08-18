@@ -1,4 +1,5 @@
 #include "stage.h"
+#include "objecttypes.h"
 
 #include <string>
 
@@ -29,7 +30,7 @@ const std::string Stage::kArenaShaderName = "arena_shader";
 Stage::Stage(
     AssetStorageProvider* pStorageProvider,
     SubsystemProvider* pSubsystemProvider
-) : Object(pStorageProvider, pSubsystemProvider)
+) : Object(kPaddleArenaObjectTypeStage, pStorageProvider, pSubsystemProvider)
 {
     {
         sputter::render::Mesh::InitializationParameters params = {};

@@ -18,6 +18,7 @@ namespace sputter { namespace game {
     {
     public:
         Object(
+            uint32_t objectType,
             sputter::assets::AssetStorageProvider* pAssetProvider,
             SubsystemProvider* pSubsystemProvider);
 
@@ -49,6 +50,11 @@ namespace sputter { namespace game {
             SetComponentByType(pComponent);
         }
 
+        // TODO: factor out into message or interface
+        virtual void HandleCollision(Object const * pOther) { /* No handler by default */ }
+
+        uint32_t GetType() const;
+
     protected:
         sputter::game::SubsystemProvider*      m_pSubsystemProvider;
         sputter::assets::AssetStorageProvider* m_pAssetStorageProvider;
@@ -57,6 +63,7 @@ namespace sputter { namespace game {
         Object() = delete;
         Object(const Object& other) = delete;
 
+        uint32_t m_objectType;
         std::array<void*, SubsystemType::TYPE_MAX> m_components;
     };
 }}

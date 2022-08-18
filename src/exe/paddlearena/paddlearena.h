@@ -79,4 +79,3 @@ private:
 
     GameState*                            m_pGameState;
 };
-

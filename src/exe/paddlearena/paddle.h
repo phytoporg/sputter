@@ -45,6 +45,8 @@ public:
         sputter::math::FPVector3D location
         );
 
+    virtual void HandleCollision(Object const* pOther) override;
+
 private:
     static const std::string       kPaddleVertexShaderAssetName;
     static const std::string       kPaddleFragmentShaderAssetName;
