@@ -39,13 +39,16 @@ public:
         );
 
     virtual void Tick(sputter::math::FixedPoint deltaTime) override;
+    virtual void PostTick(sputter::math::FixedPoint deltaTime) override;
 
     void Initialize(
         sputter::math::FPVector2D dimensions,
         sputter::math::FPVector3D location
         );
 
-    virtual void HandleCollision(Object const* pOther) override;
+private:
+    // Some private helpers
+    void TranslatePaddle(const sputter::math::FPVector3D& translation);
 
 private:
     static const std::string       kPaddleVertexShaderAssetName;

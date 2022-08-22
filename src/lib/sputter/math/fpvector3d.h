@@ -34,11 +34,17 @@ namespace sputter { namespace math {
         FPVector3D operator+(const FPVector3D& other) const;
         FPVector3D operator+=(const FPVector3D& other);
 
+        // Subtraction
+        FPVector3D operator-(const FPVector3D& other) const;
+        FPVector3D operator-=(const FPVector3D& other);
+
         // Scalar arithmetic
         FPVector3D operator*(FixedPoint scalar) const;
         FPVector3D operator/(FixedPoint scalar) const;
 
         // Unary vector operations, computations
+        FPVector3D operator-() const;
+
         FixedPoint Length() const;
         FPVector3D Normalized() const;
 

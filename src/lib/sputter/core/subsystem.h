@@ -11,7 +11,8 @@ namespace sputter { namespace core {
     class ISubsystem
     {
     public:
-        virtual void Tick(math::FixedPoint dt) = 0;
+        virtual void Tick(math::FixedPoint dt) {}
+        virtual void PostTick(math::FixedPoint dt) {}
 
         virtual ComponentType* CreateComponent(const typename ComponentType::InitializationParameters& params) = 0;
         virtual void ReleaseComponent(ComponentType* pComponent) = 0;

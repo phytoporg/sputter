@@ -22,7 +22,8 @@ namespace sputter { namespace game {
             sputter::assets::AssetStorageProvider* pAssetProvider,
             SubsystemProvider* pSubsystemProvider);
 
-        virtual void Tick(math::FixedPoint deltaTime) = 0;
+        virtual void Tick(math::FixedPoint deltaTime) {}
+        virtual void PostTick(math::FixedPoint deltaTime) {}
 
         template<typename ComponentType>
         ComponentType* GetComponentByType()
@@ -49,9 +50,6 @@ namespace sputter { namespace game {
 
             SetComponentByType(pComponent);
         }
-
-        // TODO: factor out into message or interface
-        virtual void HandleCollision(Object const * pOther) { /* No handler by default */ }
 
         uint32_t GetType() const;
 

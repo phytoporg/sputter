@@ -10,14 +10,16 @@ namespace sputter { namespace game {
 
 namespace sputter { namespace physics {
     class ICollisionShape;
+    struct CollisionResult;
 
     struct Collision
     {
         static const game::SubsystemType ComponentId = game::SubsystemType::TYPE_COLLISION;
 
-        Collision() { CollisionShapes.reserve(10); }
+        Collision() { CollisionShapes.reserve(100); }
 
         bool Intersects(const Collision& other) const;
+        bool TestIntersection(const Collision& other, CollisionResult* pCollisionResultOut) const;
 
         // Yet unused
         struct InitializationParameters {};
@@ -27,6 +29,9 @@ namespace sputter { namespace physics {
 
         // TODO: Fixed vector
         std::vector<ICollisionShape*> CollisionShapes;
+
+        // TODO: Fixed vector
+        std::vector<CollisionResult> CollisionsThisFrame;
 
         // Game-specified bitfields. Only objects with the same bits set can collide.
         uint32_t CollisionFlags = 0;

@@ -6,10 +6,20 @@
 #include <sputter/physics/collision.h>
 
 namespace sputter { namespace physics {
+    class ICollisionShape;
     struct CollisionResult
     {
-        Collision const* pCollisionA = nullptr;
-        Collision const* pCollisionB = nullptr;
+        CollisionResult() {}
+        CollisionResult(
+            const Collision* pA,
+            const Collision* pB,
+            const ICollisionShape* pShapeA,
+            const ICollisionShape* pShapeB);
+
+        const Collision* pCollisionA = nullptr;
+        const Collision* pCollisionB = nullptr;
+        const ICollisionShape* pCollisionShapeA = nullptr;
+        const ICollisionShape* pCollisionShapeB = nullptr;
     };
 
     struct CollisionSubsystemSettings
@@ -25,12 +35,10 @@ namespace sputter { namespace physics {
         CollisionSubsystem(const CollisionSubsystemSettings& settings);
 
         // Begin ISubsystem
-        virtual void Tick(math::FixedPoint dt) override;
+        virtual void PostTick(math::FixedPoint dt) override;
         virtual Collision* CreateComponent(const Collision::InitializationParameters& params) override;
         virtual void ReleaseComponent(Collision* pComponent) override;
         // End ISubsystem
-
-        void ProcessCollisionResults();
 
     private:
         // No default or copy construction allowed here
@@ -38,6 +46,5 @@ namespace sputter { namespace physics {
         CollisionSubsystem(const CollisionSubsystem& other) = delete;
 
         std::vector<Collision>       m_collisions;
-        std::vector<CollisionResult> m_collisionResults;
     };
 }}

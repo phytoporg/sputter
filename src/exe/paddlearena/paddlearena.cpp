@@ -82,14 +82,14 @@ void PaddleArena::Tick(math::FixedPoint deltaTime)
 {
     m_pInputSubsystem->Tick(deltaTime);
     m_pRigidbodySubsystem->Tick(deltaTime);
-    m_pCollisionSubsystem->Tick(deltaTime);
 
     m_pGameState->Arena.Tick(deltaTime);
     m_pGameState->Player1Paddle.Tick(deltaTime);
     m_pGameState->Player2Paddle.Tick(deltaTime);
 
-    // POST-TICK
-    m_pCollisionSubsystem->ProcessCollisionResults();
+    m_pCollisionSubsystem->PostTick(deltaTime);
+    m_pGameState->Player1Paddle.PostTick(deltaTime);
+    m_pGameState->Player2Paddle.PostTick(deltaTime);
 }
 
 void PaddleArena::Draw()

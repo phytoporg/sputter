@@ -68,6 +68,20 @@ FPVector3D FPVector3D::operator+=(const FPVector3D& other)
     return *this;
 }
 
+FPVector3D FPVector3D::operator-(const FPVector3D& other) const
+{
+    return FPVector3D(m_x - other.m_x, m_y - other.m_y, m_z - other.m_z);
+}
+
+FPVector3D FPVector3D::operator-=(const FPVector3D& other)
+{
+    m_x -= other.m_x;
+    m_y -= other.m_y;
+    m_z -= other.m_z;
+
+    return *this;
+}
+
 FPVector3D FPVector3D::operator*(FixedPoint scalar) const
 {
     return FPVector3D(m_x * scalar, m_y * scalar, m_z * scalar);
@@ -81,6 +95,11 @@ FPVector3D operator*(FixedPoint scalar, const FPVector3D& other)
 FPVector3D FPVector3D::operator/(FixedPoint scalar) const 
 {
     return FPVector3D(m_x / scalar, m_y / scalar, m_z / scalar);
+}
+
+FPVector3D FPVector3D::operator-() const 
+{
+    return FPVector3D(-m_x, -m_y, -m_z);
 }
 
 FixedPoint FPVector3D::Length() const 

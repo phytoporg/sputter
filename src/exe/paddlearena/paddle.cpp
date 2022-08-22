@@ -111,17 +111,29 @@ void Paddle::Tick(FixedPoint deltaTime)
 
     if (velocity.Length() > FPZero)
     {
-        const FPVector3D translation = m_localTransform.GetTranslation();
-        m_localTransform.SetTranslation(translation + velocity.Normalized() * Speed * deltaTime);
-        m_pMeshComponent->SetModelMatrix(m_localTransform.ToMat4());
+        TranslatePaddle(velocity.Normalized() * Speed * deltaTime);
     }
+}
 
-    // TODO: make this unnecessary
-    const FPVector3D Scale = m_localTransform.GetScale();
-    const FPVector3D PaddleLowerLeft = FPVector3D(-Scale.GetX() / FPTwo, -Scale.GetY() / FPTwo, FPOne / FPTwo);
+void Paddle::PostTick(FixedPoint deltaTime)
+{
+    for (CollisionResult& collisionResult : m_pCollisionComponent->CollisionsThisFrame)
+    {
+        const Collision& OtherCollision = collisionResult.pCollisionA == m_pCollisionComponent ?
+            *collisionResult.pCollisionB : *collisionResult.pCollisionA;
+        if (OtherCollision.pObject->GetType() == kPaddleArenaObjectTypeStage)
+        {
+            const ICollisionShape* pOtherShape = collisionResult.pCollisionA == m_pCollisionComponent ?
+                collisionResult.pCollisionShapeB : collisionResult.pCollisionShapeA;
 
-    AABB* pShape = static_cast<AABB*>(m_pCollisionComponent->CollisionShapes.back());
-    pShape->SetLowerLeft(PaddleLowerLeft + m_localTransform.GetTranslation());
+            // lol this is hideous
+            AABB* pMyAABB = static_cast<AABB*>(m_pCollisionComponent->CollisionShapes.back());
+            const AABB* pOtherAABB = static_cast<const AABB*>(pOtherShape);
+            const FPVector3D Separation = pMyAABB->GetSeparation2D(pOtherAABB);
+
+            TranslatePaddle(-Separation * (FPOne + FPEpsilon));
+        }
+    }
 }
 
 void Paddle::Initialize(
@@ -234,10 +246,16 @@ void Paddle::Initialize(
     m_pCollisionComponent->CollisionShapes.push_back(pShape);
 }
 
-void Paddle::HandleCollision(Object const* pOther)
+void Paddle::TranslatePaddle(const FPVector3D& translation)
 {
-    if (pOther->GetType() == kPaddleArenaObjectTypeStage)
-    {
-        // TODO: Fix/constrain paddle position
-    }
+    const FPVector3D CurrentTranslation = m_localTransform.GetTranslation();
+    m_localTransform.SetTranslation(CurrentTranslation + translation);
+    m_pMeshComponent->SetModelMatrix(m_localTransform.ToMat4());
+
+    // Update collision transform as well
+    const FPVector3D Scale = m_localTransform.GetScale();
+    const FPVector3D PaddleLowerLeft = FPVector3D(-Scale.GetX() / FPTwo, -Scale.GetY() / FPTwo, FPOne / FPTwo);
+
+    AABB* pMyAABB = static_cast<AABB*>(m_pCollisionComponent->CollisionShapes.back());
+    pMyAABB->SetLowerLeft(PaddleLowerLeft + m_localTransform.GetTranslation());
 }
