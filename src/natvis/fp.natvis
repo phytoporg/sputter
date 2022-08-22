@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+  <Type Name="sputter::math::FixedPoint">
+  	<DisplayString>{{ float={(float)m_value / 65536}, Bits={m_value} }}</DisplayString>
+  </Type>
+
+  <Type Name="sputter::math::FPVector2D">
+      <DisplayString>{{ x={m_x}, y={m_y} }}</DisplayString>
+  </Type>
+
+  <Type Name="sputter::math::FPVector3D">
+      <DisplayString>{{ x={m_x}, y={m_y}, z={m_z} }}</DisplayString>
+  </Type>
+</AutoVisualizer>
