@@ -83,11 +83,14 @@ void PaddleArena::Tick(math::FixedPoint deltaTime)
     m_pInputSubsystem->Tick(deltaTime);
     m_pRigidbodySubsystem->Tick(deltaTime);
 
+    m_pGameState->TheBall.Tick(deltaTime);
     m_pGameState->Arena.Tick(deltaTime);
     m_pGameState->Player1Paddle.Tick(deltaTime);
     m_pGameState->Player2Paddle.Tick(deltaTime);
 
     m_pCollisionSubsystem->PostTick(deltaTime);
+
+    m_pGameState->TheBall.PostTick(deltaTime);
     m_pGameState->Player1Paddle.PostTick(deltaTime);
     m_pGameState->Player2Paddle.PostTick(deltaTime);
 }
@@ -111,14 +114,16 @@ bool PaddleArena::StartGame()
 {
     using namespace sputter::math;
 
+    m_pGameState->TheBall.Initialize(
+        FPVector2D(10, 10),
+        FPVector3D(FPZero, FPZero, FixedPoint(-0.5)),
+        FPVector2D(-FPOne, FPOne));
     m_pGameState->Player1Paddle.Initialize(
         FPVector2D(20, 80),
-        FPVector3D(FixedPoint(-350), FPZero, FixedPoint(-0.5))
-        );
+        FPVector3D(FixedPoint(-350), FPZero, FixedPoint(-0.5)));
     m_pGameState->Player2Paddle.Initialize(
         FPVector2D(20, 80),
-        FPVector3D(FixedPoint(350), FPZero, FixedPoint(-0.5))
-        );
+        FPVector3D(FixedPoint(350), FPZero, FixedPoint(-0.5)));
     m_pGameState->Arena.Initialize(FPVector2D(800, 600));        
     m_pGameState->Camera.Translate(FPVector3D(-500, 400, -200));
 

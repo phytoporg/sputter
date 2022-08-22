@@ -1,5 +1,7 @@
 #include "fpvector2d.h"
 
+#include <fpm/math.hpp>
+
 using namespace sputter::math;
 
 FPVector2D::FPVector2D()
@@ -41,6 +43,16 @@ void FPVector2D::Set(FixedPoint v[2])
     m_y = v[1];
 }
 
+void FPVector2D::SetX(FixedPoint x)
+{
+    m_x = x;
+}
+
+void FPVector2D::SetY(FixedPoint y)
+{
+    m_y = y;
+}
+
 FPVector2D FPVector2D::operator+(const FPVector2D& other) const
 {
     return FPVector2D(m_x + other.m_x, m_y + other.m_y);
@@ -59,9 +71,24 @@ FPVector2D FPVector2D::operator*(FixedPoint scalar) const
     return FPVector2D(m_x * scalar, m_y * scalar);
 }
 
-FPVector2D operator*(FixedPoint scalar, const FPVector2D& other)
+FPVector2D FPVector2D::operator/(FixedPoint scalar) const
 {
-    return other * scalar;
+    return FPVector2D(m_x / scalar, m_y / scalar);
+}
+
+FPVector2D FPVector2D::operator-() const
+{
+    return FPVector2D(-m_x, -m_y);
+}
+
+FixedPoint FPVector2D::Length() const
+{
+    return fpm::sqrt(m_x * m_x + m_y * m_y);
+}
+
+FPVector2D FPVector2D::Normalized() const
+{
+    return *this / Length();
 }
 
 glm::vec2 sputter::math::FPVector2D::ToVec2() const 

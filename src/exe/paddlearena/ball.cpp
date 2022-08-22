@@ -1,18 +1,17 @@
-#include "paddle.h"
+#include "ball.h"
 #include "paddlearena.h"
 #include "objecttypes.h"
 #include "gameconstants.h"
 
-#include <sputter/assets/assetstorageprovider.h>
+#include <sputter/system/system.h>
 
 #include <sputter/math/fpconstants.h>
+#include <sputter/math/fpvector2d.h>
+#include <sputter/math/fpvector3d.h>
 
 #include <sputter/render/meshsubsystem.h>
 #include <sputter/render/shaderstorage.h>
 #include <sputter/render/uniform.h>
-
-#include <sputter/input/inputsource.h>
-#include <sputter/input/inputsubsystem.h>
 
 #include <sputter/physics/aabb.h>
 #include <sputter/physics/collision.h>
@@ -24,25 +23,24 @@ using namespace sputter::render;
 using namespace sputter::game;
 using namespace sputter::assets;
 using namespace sputter::math;
-using namespace sputter::input;
 using namespace sputter::physics;
 
-const std::string Paddle::kPaddleVertexShaderAssetName = "cube_vert";
-const std::string Paddle::kPaddleFragmentShaderAssetName = "cube_frag";
-const std::string Paddle::kPaddleShaderName = "cube_shader";
+// Same ol' same ol' for now
+const std::string Ball::kBallVertexShaderAssetName = "cube_vert";
+const std::string Ball::kBallFragmentShaderAssetName = "cube_frag";
+const std::string Ball::kBallShaderName = "cube_shader";
 
-Paddle::Paddle(
-    uint32_t playerId,
+Ball::Ball(
     AssetStorageProvider* pStorageProvider,
     SubsystemProvider* pSubsystemProvider
-) : Object(kPaddleArenaObjectTypePaddle, pStorageProvider, pSubsystemProvider)
+) : Object(kPaddleArenaObjectTypeBall, pStorageProvider, pSubsystemProvider)
 {
     {
         sputter::render::Mesh::InitializationParameters params = {};
         CreateAndSetComponentByType<MeshSubsystem>(&m_pMeshComponent, params);
         if (!m_pMeshComponent)
         {
-            sputter::system::LogAndFail("Failed to create mesh component in Paddle object.");
+            sputter::system::LogAndFail("Failed to create mesh component in Ball object.");
         }
     }
 
@@ -51,74 +49,42 @@ Paddle::Paddle(
         CreateAndSetComponentByType<CollisionSubsystem>(&m_pCollisionComponent, params);
         if (!m_pCollisionComponent)
         {
-            sputter::system::LogAndFail("Failed to create collision component in Paddle object.");
-        }
-
-        m_pCollisionComponent->CollisionFlags = 1 << playerId;
-    }
-
-    {
-        InputSource::InitializationParameters params;
-        params.PlayerId = playerId;
-        CreateAndSetComponentByType<InputSubsystem>(&m_pInputSource, params);
-        if (!m_pInputSource)
-        {
-            sputter::system::LogAndFail("Failed to create input source in Paddle object.");
+            sputter::system::LogAndFail("Failed to create collision component in Ball object.");
         }
     }
 
     auto pShaderStorage = pStorageProvider->GetStorageByType<ShaderStorage>();
-    m_spShader = pShaderStorage->FindShaderByName(kPaddleShaderName);
+    m_spShader = pShaderStorage->FindShaderByName(kBallShaderName);
     if (!m_spShader)
     {
         if (!pShaderStorage->AddShaderFromShaderAssetNames(
             pStorageProvider->GetGeneralStorage(),
-            kPaddleVertexShaderAssetName,
-            kPaddleFragmentShaderAssetName,
-            kPaddleShaderName))
+            kBallVertexShaderAssetName,
+            kBallFragmentShaderAssetName,
+            kBallShaderName))
         {
-            sputter::system::LogAndFail("Failed to add shader for paddle.");
+            sputter::system::LogAndFail("Failed to add shader for ball.");
         }
     }
 
-    m_spShader = pShaderStorage->FindShaderByName(kPaddleShaderName);
+    m_spShader = pShaderStorage->FindShaderByName(kBallShaderName);
     if (!m_spShader)
     {
-        sputter::system::LogAndFail("Failed to retrieve shader for paddle.");
+        sputter::system::LogAndFail("Failed to retrieve shader for ball.");
     }
 }
 
-void Paddle::Tick(FixedPoint deltaTime)
+void Ball::Tick(sputter::math::FixedPoint deltaTime)
 {
-    FPVector3D velocity = FPVector3D::ZERO;
-    const FixedPoint Speed = kGameConstantsPaddleSpeed;
-    if (m_pInputSource->IsInputHeld(static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_UP)))
+    const FixedPoint Speed = kGameConstantsBallSpeed;
+    if (m_travelVector.Length() > FPZero)
     {
-        velocity += FPVector3D(0, 1, 0);
-    }
-    else if (m_pInputSource->IsInputHeld(static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_DOWN)))
-    {
-        velocity += FPVector3D(0, -1, 0);
-    }
-
-    /*
-    if (m_pInputSource->IsInputHeld(static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_LEFT)))
-    {
-        velocity += FPVector3D(-1, 0, 0);
-    }
-    else if (m_pInputSource->IsInputHeld(static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_RIGHT)))
-    {
-        velocity += FPVector3D(1, 0, 0);
-    }
-    */
-
-    if (velocity.Length() > FPZero)
-    {
-        TranslatePaddle(velocity.Normalized() * Speed * deltaTime);
+        const FPVector2D TravelNormalized(m_travelVector.Normalized());
+        TranslateBall(FPVector3D(TravelNormalized.GetX(), TravelNormalized.GetY(), FPZero) * Speed * deltaTime);
     }
 }
 
-void Paddle::PostTick(FixedPoint deltaTime)
+void Ball::PostTick(sputter::math::FixedPoint deltaTime)
 {
     for (CollisionResult& collisionResult : m_pCollisionComponent->CollisionsThisFrame)
     {
@@ -134,16 +100,52 @@ void Paddle::PostTick(FixedPoint deltaTime)
             const AABB* pOtherAABB = static_cast<const AABB*>(pOtherShape);
             const FPVector3D Separation = pMyAABB->GetSeparation2D(pOtherAABB);
 
-            TranslatePaddle(-Separation * (FPOne + FPEpsilon));
+            if (fpm::abs(Separation.GetY()) > FPZero)
+            {
+                // Colliding with top of arena, negate y-axis travel and correct separation
+                m_travelVector.SetY(-m_travelVector.GetY());
+                TranslateBall(-Separation * (FPOne + FPEpsilon));
+            }
+            else 
+            {
+                // Colliding with side of the arena. Do nothing? Or explode maybe.
+            }
+        }
+        else if (OtherCollision.pObject->GetType() == kPaddleArenaObjectTypePaddle)
+        {
+            const ICollisionShape* pOtherShape = collisionResult.pCollisionA == m_pCollisionComponent ?
+                collisionResult.pCollisionShapeB : collisionResult.pCollisionShapeA;
+
+            // lol this is also hideous
+            AABB* pMyAABB = static_cast<AABB*>(m_pCollisionComponent->CollisionShapes.back());
+            const AABB* pOtherAABB = static_cast<const AABB*>(pOtherShape);
+            const FPVector3D Separation = pMyAABB->GetSeparation2D(pOtherAABB);
+
+            if (fpm::abs(Separation.GetX()) > FPZero)
+            {
+                // Colliding with the side of the paddle. Negate x-axis travel direction and 
+                // correct separation.
+                m_travelVector.SetX(-m_travelVector.GetX());
+                TranslateBall(-Separation * (FPOne + FPEpsilon));
+            }
+            else if (fpm::abs(Separation.GetY()) > FPZero)
+            {
+                // Colliding with side of the paddle. Might as well bounce here too?
+                m_travelVector.SetY(-m_travelVector.GetY());
+                TranslateBall(-Separation * (FPOne + FPEpsilon));
+            }
         }
     }
 }
 
-void Paddle::Initialize(
-    sputter::math::FPVector2D dimensions,
-    sputter::math::FPVector3D location
+void Ball::Initialize(
+    FPVector2D dimensions,
+    FPVector3D location,
+    FPVector2D startVector
     )
 {
+    // TODO: Time to factor out some mesh generation stuff :P
+
     using namespace sputter::math;
     // Cube's origin is at the geometric center.
     const FixedPoint HalfCubeSize = FPOne / FPTwo;
@@ -223,6 +225,8 @@ void Paddle::Initialize(
     m_localTransform.SetScale(FPVector3D(dimensions.GetX(), dimensions.GetY(), FPOne));
     m_localTransform.SetTranslation(location);
 
+    m_travelVector = startVector.Normalized();
+
     const uint32_t NumVertices = sizeof(VertexPositions) / sizeof(VertexPositions[0]); 
     const uint32_t NumIndices = sizeof(VertexIndices) / sizeof(VertexIndices[0]); 
     m_pMeshComponent->SetPositions(VertexPositions, NumVertices);
@@ -237,19 +241,21 @@ void Paddle::Initialize(
 
     // Now, set up collision geometry! Defined in *global* space at the moment. TODO: Fix that
     // Because of this, gotta update geometry on tick... D: D:
-    //m_pCollisionComponent->CollisionFlags = 0x1; <-- Set during init according to player ID
+    m_pCollisionComponent->CollisionFlags = 0xF; // Why do I need to do this?
     m_pCollisionComponent->pObject = this;
     m_pCollisionComponent->CollisionShapes.clear();
+
+    // Collides with everything
     
-    const FPVector3D PaddleLowerLeft = FPVector3D(-dimensions.GetX() / FPTwo, -dimensions.GetY() / FPTwo, FPOne / FPTwo);
+    const FPVector3D BallLowerLeft = FPVector3D(-dimensions.GetX() / FPTwo, -dimensions.GetY() / FPTwo, FPOne / FPTwo);
     AABB* pShape = new AABB(
-         PaddleLowerLeft + location,
+         BallLowerLeft + location,
          FPVector3D(dimensions.GetX(), dimensions.GetY(), FPOne)
          );
     m_pCollisionComponent->CollisionShapes.push_back(pShape);
 }
 
-void Paddle::TranslatePaddle(const FPVector3D& translation)
+void Ball::TranslateBall(const FPVector3D& translation)
 {
     const FPVector3D CurrentTranslation = m_localTransform.GetTranslation();
     m_localTransform.SetTranslation(CurrentTranslation + translation);
@@ -257,8 +263,8 @@ void Paddle::TranslatePaddle(const FPVector3D& translation)
 
     // Update collision transform as well
     const FPVector3D Scale = m_localTransform.GetScale();
-    const FPVector3D PaddleLowerLeft = FPVector3D(-Scale.GetX() / FPTwo, -Scale.GetY() / FPTwo, FPOne / FPTwo);
+    const FPVector3D BallLowerLeft = FPVector3D(-Scale.GetX() / FPTwo, -Scale.GetY() / FPTwo, FPOne / FPTwo);
 
     AABB* pMyAABB = static_cast<AABB*>(m_pCollisionComponent->CollisionShapes.back());
-    pMyAABB->SetLowerLeft(PaddleLowerLeft + m_localTransform.GetTranslation());
+    pMyAABB->SetLowerLeft(BallLowerLeft + m_localTransform.GetTranslation());
 }

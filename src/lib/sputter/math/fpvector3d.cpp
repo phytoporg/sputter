@@ -119,6 +119,11 @@ FPVector3D FPVector3D::Normalized() const
     return *this;
 }
 
+FixedPoint FPVector3D::DotProduct(const FPVector3D& other) const
+{
+    return m_x * other.m_x, m_y * other.m_y, m_z * other.m_z;
+}
+
 glm::vec3 FPVector3D::ToVec3() const 
 {
     return glm::vec3(float(m_x), float(m_y), float(m_z));

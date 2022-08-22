@@ -4,6 +4,7 @@
 #include <sputter/render/camera.h>
 #include "paddle.h"
 #include "stage.h"
+#include "ball.h"
 
 namespace sputter 
 {
@@ -26,6 +27,7 @@ struct GameState
         );
 
     sputter::render::Camera Camera;
+    Ball             TheBall;
     Paddle           Player1Paddle;
     Paddle           Player2Paddle;
     Stage            Arena;

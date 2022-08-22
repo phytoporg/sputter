@@ -70,7 +70,7 @@ FPVector3D AABB::GetSeparation2D(const ICollisionShape* pOtherShape) const
         const AABB MinkowskiDistance = GetMinkowskiDistance(*pOtherAABB);
 
         // See https://blog.hamaluik.ca/posts/simple-aabb-collision-using-minkowski-difference/
-        // for an explanation!
+        // for an explanation! Pretty elegant.
         return MinkowskiDistance.GetClosesetPointOnBounds(FPVector3D::ZERO);
     }
     else

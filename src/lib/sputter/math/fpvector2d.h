@@ -25,12 +25,18 @@ namespace sputter { namespace math {
         void SetX(FixedPoint x);
         void SetY(FixedPoint y);
 
-        // Addition
+        // Scalar Arithmetic
         FPVector2D operator+(const FPVector2D& other) const;
         FPVector2D operator+=(const FPVector2D& other);
 
-        // Scalar multiplication
         FPVector2D operator*(FixedPoint scalar) const;
+        FPVector2D operator/(FixedPoint scalar) const;
+
+        // Unary vector operations, computations
+        FPVector2D operator-() const;
+
+        FixedPoint Length() const;
+        FPVector2D Normalized() const;
 
         // Conversions
         glm::vec2 ToVec2() const;

@@ -48,6 +48,9 @@ namespace sputter { namespace math {
         FixedPoint Length() const;
         FPVector3D Normalized() const;
 
+        // Other exciting vector operations
+        FixedPoint DotProduct(const FPVector3D& other) const;
+
         // Conversions
         glm::vec3 ToVec3() const;
 
