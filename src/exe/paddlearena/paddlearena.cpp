@@ -1,3 +1,5 @@
+// Not sure where windows.h is entering the picture and I don't have time to dig through /showIncludes
+// walls of text atm. This does the trick for now.
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
 #define NOMINMAX
 #endif
