@@ -10,7 +10,7 @@ namespace sputter
 { 
     namespace physics 
     {
-        class RigidBody2D;
+        struct RigidBody2D;
     }
 
     namespace render 

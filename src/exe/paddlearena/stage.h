@@ -13,7 +13,7 @@ namespace sputter {
     }
 
     namespace physics {
-        class Collision;
+        struct Collision;
     }
 }
 

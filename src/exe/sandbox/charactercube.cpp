@@ -23,10 +23,13 @@ const std::string CharacterCube::kCubeVertexShaderAssetName = "cube_vert";
 const std::string CharacterCube::kCubeFragmentShaderAssetName = "cube_frag";
 const std::string CharacterCube::kCubeShaderName = "cube_shader";
 
+// Sandbox needs to be updated for new construction parameters. For now, hacky hacks.
+static const uint32_t kCharacterCubeTypeID = 0;
+
 CharacterCube::CharacterCube(
     AssetStorageProvider* pStorageProvider,
     SubsystemProvider* pSubsystemProvider
-) : Object(pStorageProvider, pSubsystemProvider), m_accumulatedTime(FPZero)
+) : Object(kCharacterCubeTypeID, pStorageProvider, pSubsystemProvider), m_accumulatedTime(FPZero)
 {
     {
         sputter::render::Mesh::InitializationParameters params = {};

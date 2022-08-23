@@ -7,8 +7,7 @@
 namespace sputter { namespace physics {
     struct RigidBody2D
     {
-        static const game::SubsystemType ComponentId =
-            game::SubsystemType::TYPE_RIGIDBODY;
+        static const game::SubsystemType ComponentId = game::SubsystemType::TYPE_RIGIDBODY;
 
         // Yet unused
         struct InitializationParameters {};

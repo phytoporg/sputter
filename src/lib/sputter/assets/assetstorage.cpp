@@ -14,13 +14,14 @@
 
 namespace 
 {
-    bool IsTextFileExtension(const std::string& extension)
+    bool IsTextFileExtension(const std::filesystem::path& extensionPath)
     {
+        const std::string Extension = extensionPath.string();
         static const std::vector<std::string> TextFileExtensions = {
             ".vert", ".frag", ".glsl"
         };
 
-        const auto it = std::find(std::cbegin(TextFileExtensions), std::cend(TextFileExtensions), extension);
+        const auto it = std::find(std::cbegin(TextFileExtensions), std::cend(TextFileExtensions), Extension);
         return it != std::end(TextFileExtensions);
     }
 }

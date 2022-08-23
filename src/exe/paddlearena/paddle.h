@@ -25,11 +25,11 @@ namespace sputter
 
     namespace physics
     {
-        class Collision;
+        struct Collision;
     }
 }
 
-class GameState;
+struct GameState;
 class Paddle : sputter::game::Object
 {
 public:

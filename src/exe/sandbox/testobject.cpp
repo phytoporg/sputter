@@ -16,10 +16,13 @@ using namespace sputter::game;
 const std::string TestObject::kShipImageAssetName = "ship";
 const std::string TestObject::kShipTextureName = "ship_texture";
 
+// Sandbox needs to be updated for new construction parameters. For now, hacky hacks.
+static const uint32_t kTestObjectTypeID = 1;
+
 TestObject::TestObject(
     sputter::assets::AssetStorageProvider* pStorageProvider,
     SubsystemProvider* pSubsystemProvider)
-    : Object(pStorageProvider, pSubsystemProvider)
+    : Object(kTestObjectTypeID, pStorageProvider, pSubsystemProvider)
 {
     {
         sputter::physics::RigidBody2D::InitializationParameters params = {};
