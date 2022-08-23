@@ -9,6 +9,8 @@
 #include <sputter/render/texturestorage.h>
 #include <sputter/render/shader.h>
 
+#include <sputter/math/fpconstants.h>
+#include <sputter/math/fixedpoint.h>
 #include <sputter/math/fpvector2d.h>
 
 #include <sputter/assets/imagedata.h>
@@ -101,10 +103,24 @@ void PaddleArena::PostTick(math::FixedPoint deltaTime)
     // Do we need to reset the ball?
     if (m_pGameState->TheBall.IsDead())
     {
+        math::FPVector3D ballServePosition;
+        math::FPVector2D ballServeDirection;
+        const math::FixedPoint BallY = m_pGameState->TheBall.GetPosition().GetY();
+        if (BallY < math::FPZero)
+        {
+            ballServePosition = kGameConstantsBallServePositionLeft;
+            ballServeDirection = kGameConstantsBallServeDirectionLeft;
+        }
+        else
+        {
+            ballServePosition = kGameConstantsBallServePositionRight;
+            ballServeDirection = kGameConstantsBallServeDirectionRight;
+        }
+
         // Ideally we wait a few frames. Handle that later!
         m_pGameState->TheBall.Reset(
-            kGameConstantsBallStartPosition,
-            kGameConstantsBallStartDirection
+            ballServePosition,
+            ballServeDirection
             );
     }
 }
