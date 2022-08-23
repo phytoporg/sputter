@@ -287,6 +287,11 @@ bool Ball::IsDead() const
     return !m_isAlive;
 }
 
+FPVector3D Ball::GetPosition() const
+{
+    return m_localTransform.GetTranslation();
+}
+
 void Ball::TranslateBall(const FPVector3D& translation)
 {
     const FPVector3D CurrentTranslation = m_localTransform.GetTranslation();

@@ -47,6 +47,8 @@ public:
 
     bool IsDead() const;
 
+    sputter::math::FPVector3D GetPosition() const;
+
 private:
     // Some private helpers
     void TranslateBall(const sputter::math::FPVector3D& translation);

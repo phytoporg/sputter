@@ -32,10 +32,13 @@ const std::string Paddle::kPaddleFragmentShaderAssetName = "cube_frag";
 const std::string Paddle::kPaddleShaderName = "cube_shader";
 
 Paddle::Paddle(
+    GameState* pGameState,
     uint32_t playerId,
     AssetStorageProvider* pStorageProvider,
     SubsystemProvider* pSubsystemProvider
-) : Object(kPaddleArenaObjectTypePaddle, pStorageProvider, pSubsystemProvider)
+) : Object(kPaddleArenaObjectTypePaddle, pStorageProvider, pSubsystemProvider),
+    m_pGameState(pGameState),
+    m_playerId(playerId)
 {
     {
         sputter::render::Mesh::InitializationParameters params = {};
@@ -54,7 +57,9 @@ Paddle::Paddle(
             sputter::system::LogAndFail("Failed to create collision component in Paddle object.");
         }
 
-        m_pCollisionComponent->CollisionFlags = 1 << playerId;
+        // TODO: Uh, collision flags are busted, let's fix this
+        //m_pCollisionComponent->CollisionFlags = 1 << playerId;
+        m_pCollisionComponent->CollisionFlags = 0xF;
     }
 
     {
@@ -91,17 +96,37 @@ Paddle::Paddle(
 void Paddle::Tick(FixedPoint deltaTime)
 {
     FPVector3D velocity = FPVector3D::ZERO;
-    const FixedPoint Speed = kGameConstantsPaddleSpeed;
-    if (m_pInputSource->IsInputHeld(static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_UP)))
+    if (m_playerId == 1)
     {
-        velocity += FPVector3D(0, 1, 0);
+        // TEMP: simple "AI" for testing purposes, for the second paddle
+        const FixedPoint PaddleY = m_localTransform.GetTranslation().GetY();
+        const FixedPoint BallY = m_pGameState->TheBall.GetPosition().GetY();
+        const FixedPoint VerticalDelta = BallY - PaddleY;
+
+        const FixedPoint TravelThreshold(5);
+        if (VerticalDelta > TravelThreshold)
+        {
+            velocity += FPVector3D(0, 1, 0);
+        }
+        else if (VerticalDelta < -TravelThreshold)
+        {
+            velocity += FPVector3D(0, -1, 0);
+        }
     }
-    else if (m_pInputSource->IsInputHeld(static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_DOWN)))
+    else
     {
-        velocity += FPVector3D(0, -1, 0);
+        if (m_pInputSource->IsInputHeld(static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_UP)))
+        {
+            velocity += FPVector3D(0, 1, 0);
+        }
+        else if (m_pInputSource->IsInputHeld(static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_DOWN)))
+        {
+            velocity += FPVector3D(0, -1, 0);
+        }
     }
 
-    /*
+// Just vertical movement for now
+#if 0
     if (m_pInputSource->IsInputHeld(static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_LEFT)))
     {
         velocity += FPVector3D(-1, 0, 0);
@@ -110,11 +135,11 @@ void Paddle::Tick(FixedPoint deltaTime)
     {
         velocity += FPVector3D(1, 0, 0);
     }
-    */
+#endif
 
     if (velocity.Length() > FPZero)
     {
-        TranslatePaddle(velocity.Normalized() * Speed * deltaTime);
+        TranslatePaddle(velocity.Normalized() * kGameConstantsPaddleSpeed * deltaTime);
     }
 }
 

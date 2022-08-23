@@ -107,7 +107,6 @@ void PaddleArena::PostTick(math::FixedPoint deltaTime)
             kGameConstantsBallStartDirection
             );
     }
-    
 }
 
 void PaddleArena::Draw()

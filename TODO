@@ -22,10 +22,12 @@ Next high-level goal: Start prototyping gameplay
 * Collision handling, overlap resolution
 ** Check out: https://blog.hamaluik.ca/posts/simple-aabb-collision-using-minkowski-difference/
 * "Ball" - procedural cube, 3d rigidbody (!)
+
+* Debug + Fix collision flags not working as intended
 * Maintain aspect ratio !
 * Volumetric fonts
 * Scoring & display
-* Full game loop
+* Full game loop (losing + winning)
 * Render middle of the arena
 
 * Serialization & Rollback Redux

@@ -29,10 +29,13 @@ namespace sputter
     }
 }
 
+class GameState;
 class Paddle : sputter::game::Object
 {
 public:
     Paddle(
+        // TEMP: For AI paddle
+        GameState* pGameState,
         uint32_t playerId,
         sputter::assets::AssetStorageProvider* pStorageProvider,
         sputter::game::SubsystemProvider* pSubsystemProvider
@@ -63,4 +66,9 @@ private:
 
     sputter::math::FPTransform3D             m_localTransform;
     sputter::math::FPVector3D                m_initialLocation;
+
+    // TEMP: For AI paddle
+    GameState*                               m_pGameState;
+
+    uint32_t                                 m_playerId;
 };
