@@ -74,6 +74,9 @@ namespace sputter { namespace render {
 
             void Draw(const glm::mat4& projMatrix, const glm::mat4& viewMatrix);
 
+            void SetVisibility(bool newVisibility);
+            bool GetVisibility() const;
+
             // TODO: Some kind of local fixed-point transform
             // TODO: texture(s)?
 

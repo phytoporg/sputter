@@ -1,3 +1,7 @@
+#include "paddlearena.h"
+#include "gamestate.h"
+#include "gameconstants.h"
+
 #include <sputter/physics/rigidbodysubsystem.h>
 
 #include <sputter/render/meshsubsystem.h>
@@ -11,9 +15,6 @@
 #include <sputter/assets/textdata.h>
 
 #include <sputter/input/inputsubsystem.h>
-
-#include "gamestate.h"
-#include "paddlearena.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -87,12 +88,26 @@ void PaddleArena::Tick(math::FixedPoint deltaTime)
     m_pGameState->Arena.Tick(deltaTime);
     m_pGameState->Player1Paddle.Tick(deltaTime);
     m_pGameState->Player2Paddle.Tick(deltaTime);
+}
 
+void PaddleArena::PostTick(math::FixedPoint deltaTime)
+{
     m_pCollisionSubsystem->PostTick(deltaTime);
 
     m_pGameState->TheBall.PostTick(deltaTime);
     m_pGameState->Player1Paddle.PostTick(deltaTime);
     m_pGameState->Player2Paddle.PostTick(deltaTime);
+
+    // Do we need to reset the ball?
+    if (m_pGameState->TheBall.IsDead())
+    {
+        // Ideally we wait a few frames. Handle that later!
+        m_pGameState->TheBall.Reset(
+            kGameConstantsBallStartPosition,
+            kGameConstantsBallStartDirection
+            );
+    }
+    
 }
 
 void PaddleArena::Draw()
@@ -115,9 +130,9 @@ bool PaddleArena::StartGame()
     using namespace sputter::math;
 
     m_pGameState->TheBall.Initialize(
-        FPVector2D(10, 10),
-        FPVector3D(FPZero, FPZero, FixedPoint(-0.5)),
-        FPVector2D(-FPOne, FPOne));
+        kGameConstantsBallDimensions,
+        kGameConstantsBallStartPosition,
+        kGameConstantsBallStartDirection);
     m_pGameState->Player1Paddle.Initialize(
         FPVector2D(20, 80),
         FPVector3D(FixedPoint(-350), FPZero, FixedPoint(-0.5)));

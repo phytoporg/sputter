@@ -11,6 +11,7 @@ namespace sputter { namespace game {
         virtual ~Game() {};
 
         virtual void Tick(math::FixedPoint deltaTime) = 0;
+        virtual void PostTick(math::FixedPoint deltaTime) {}
         virtual void Draw() = 0;
 
         // Modeled after GGPO

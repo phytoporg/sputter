@@ -43,7 +43,8 @@ struct Mesh::PImpl
     uint32_t               ViewUniformHandle;
     uint32_t               ProjUniformHandle;
 
-    bool                   IsDirty = true;
+    bool                   IsDirty   = true;
+    bool                   IsVisible = true;
 
     void CopyTo(Mesh::PImpl& other)
     {
@@ -62,6 +63,14 @@ struct Mesh::PImpl
         spShader = other.spShader;
 
         VAO = other.VAO;
+
+        ModelUniformHandle = other.ModelUniformHandle;
+        ViewUniformHandle = other.ViewUniformHandle;
+        ProjUniformHandle = other.ProjUniformHandle;
+
+        IsVisible = other.IsVisible;
+
+        IsDirty   = true;
     }
 
     void BindAttributes()
@@ -254,6 +263,13 @@ void Mesh::SetMeshUniforms(const std::vector<MeshUniformValue>& uniformValues)
 
 void Mesh::Draw(const glm::mat4& projMatrix, const glm::mat4& viewMatrix) 
 {
+    if (!GetVisibility())
+    {
+        // Nothing to do if we're not visible
+        return;
+    }
+    
+
     if (!m_spPimpl->spShader || 
          m_spPimpl->ModelUniformHandle == Shader::kInvalidHandleValue ||
          m_spPimpl->ViewUniformHandle  == Shader::kInvalidHandleValue ||
@@ -308,5 +324,15 @@ void Mesh::Draw(const glm::mat4& projMatrix, const glm::mat4& viewMatrix)
     m_spPimpl->spShader->Unbind();
 
     glBindVertexArray(0);
+}
+
+void Mesh::SetVisibility(bool newVisibility)
+{
+    m_spPimpl->IsVisible = newVisibility;
+}
+
+bool Mesh::GetVisibility() const
+{
+    return m_spPimpl->IsVisible;
 }
 

@@ -40,6 +40,12 @@ public:
         sputter::math::FPVector3D location,
         sputter::math::FPVector2D startVector
         );
+    void Reset(
+        sputter::math::FPVector3D location,
+        sputter::math::FPVector2D startVector
+        );
+
+    bool IsDead() const;
 
 private:
     // Some private helpers
@@ -57,4 +63,6 @@ private:
     sputter::math::FPTransform3D             m_localTransform;
     sputter::math::FPVector3D                m_initialLocation;
     sputter::math::FPVector2D                m_travelVector;
+
+    bool                                     m_isAlive = false;
 };

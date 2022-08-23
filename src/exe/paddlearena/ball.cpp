@@ -76,6 +76,12 @@ Ball::Ball(
 
 void Ball::Tick(sputter::math::FixedPoint deltaTime)
 {
+    if (IsDead())
+    {
+        // Nothing to do when dead.
+        return;
+    }
+
     const FixedPoint Speed = kGameConstantsBallSpeed;
     if (m_travelVector.Length() > FPZero)
     {
@@ -86,6 +92,12 @@ void Ball::Tick(sputter::math::FixedPoint deltaTime)
 
 void Ball::PostTick(sputter::math::FixedPoint deltaTime)
 {
+    if (IsDead())
+    {
+        // Nothing to do when dead.
+        return;
+    }
+
     for (CollisionResult& collisionResult : m_pCollisionComponent->CollisionsThisFrame)
     {
         const Collision& OtherCollision = collisionResult.pCollisionA == m_pCollisionComponent ?
@@ -108,7 +120,9 @@ void Ball::PostTick(sputter::math::FixedPoint deltaTime)
             }
             else 
             {
-                // Colliding with side of the arena. Do nothing? Or explode maybe.
+                // Colliding with side of the arena. Time to DIE. Abruptly for the time being.
+                m_isAlive = false;
+                m_pMeshComponent->SetVisibility(false);
             }
         }
         else if (OtherCollision.pObject->GetType() == kPaddleArenaObjectTypePaddle)
@@ -223,9 +237,6 @@ void Ball::Initialize(
     };
 
     m_localTransform.SetScale(FPVector3D(dimensions.GetX(), dimensions.GetY(), FPOne));
-    m_localTransform.SetTranslation(location);
-
-    m_travelVector = startVector.Normalized();
 
     const uint32_t NumVertices = sizeof(VertexPositions) / sizeof(VertexPositions[0]); 
     const uint32_t NumIndices = sizeof(VertexIndices) / sizeof(VertexIndices[0]); 
@@ -246,13 +257,34 @@ void Ball::Initialize(
     m_pCollisionComponent->CollisionShapes.clear();
 
     // Collides with everything
-    
     const FPVector3D BallLowerLeft = FPVector3D(-dimensions.GetX() / FPTwo, -dimensions.GetY() / FPTwo, FPOne / FPTwo);
     AABB* pShape = new AABB(
          BallLowerLeft + location,
          FPVector3D(dimensions.GetX(), dimensions.GetY(), FPOne)
          );
     m_pCollisionComponent->CollisionShapes.push_back(pShape);
+
+    Reset(location, startVector);
+}
+
+void Ball::Reset(
+    sputter::math::FPVector3D location,
+    sputter::math::FPVector2D startVector
+    )
+{
+    // Relocate the ball
+    const FPVector3D CurrentTranslation = m_localTransform.GetTranslation();
+    TranslateBall(location - CurrentTranslation);
+
+    // Set the initial motion vector
+    m_travelVector = startVector.Normalized();
+    m_isAlive = true;
+    m_pMeshComponent->SetVisibility(true);
+}
+
+bool Ball::IsDead() const
+{
+    return !m_isAlive;
 }
 
 void Ball::TranslateBall(const FPVector3D& translation)

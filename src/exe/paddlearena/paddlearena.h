@@ -46,6 +46,7 @@ public:
     virtual ~PaddleArena();
 
     virtual void Tick(sputter::math::FixedPoint deltaTime) override;
+    virtual void PostTick(sputter::math::FixedPoint deltaTime) override;
     virtual void Draw() override;
 
     virtual bool StartGame() override;

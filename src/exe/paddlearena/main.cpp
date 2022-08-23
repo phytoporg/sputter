@@ -56,6 +56,7 @@ int main(int argc, char** argv)
         window.Clear();
 
         game.Tick(DeltaTime);
+        game.PostTick(DeltaTime);
         game.Draw();
 
         window.Tick();
