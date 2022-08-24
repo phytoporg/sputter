@@ -59,10 +59,6 @@ Paddle::Paddle(
         {
             sputter::system::LogAndFail("Failed to create collision component in Paddle object.");
         }
-
-        // TODO: Uh, collision flags are busted, let's fix this
-        //m_pCollisionComponent->CollisionFlags = 1 << playerId;
-        m_pCollisionComponent->CollisionFlags = 0xF;
     }
 
     {
@@ -200,7 +196,8 @@ void Paddle::Initialize(
 
     // Now, set up collision geometry! Defined in *global* space at the moment. TODO: Fix that
     // Because of this, gotta update geometry on tick... D: D:
-    //m_pCollisionComponent->CollisionFlags = 0x1; <-- Set during init according to player ID
+
+    m_pCollisionComponent->CollisionFlags = (1 << m_playerId);
     m_pCollisionComponent->pObject = this;
     m_pCollisionComponent->CollisionShapes.clear();
     
