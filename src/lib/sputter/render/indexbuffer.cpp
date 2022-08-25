@@ -34,7 +34,21 @@ void IndexBuffer::Set(const uint32_t* inputArray, uint32_t arrayLength)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
+void IndexBuffer::Set(const int* inputArray, uint32_t arrayLength) 
+{
+    m_count = arrayLength;    
+    const size_t intSize = sizeof(int);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_handle);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, intSize * arrayLength, inputArray, GL_STATIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+}
+
 void IndexBuffer::Set(const std::vector<uint32_t>& data) 
+{
+    Set(data.data(), static_cast<uint32_t>(data.size()));
+}
+
+void IndexBuffer::Set(const std::vector<int>& data) 
 {
     Set(data.data(), static_cast<uint32_t>(data.size()));
 }

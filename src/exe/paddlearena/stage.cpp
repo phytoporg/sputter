@@ -86,7 +86,7 @@ void Stage::Initialize(FPVector2D stageDimensions)
     static FPVector3D VertexNormals[8];
     static FPVector2D VertexUVs[8];
     static int VertexIndices[36];
-    if (!sputter::render::geometry::MakeUnitCube(VertexPositions, 8, VertexNormals, 8, VertexUVs, 8, VertexIndices, 36))
+    if (!sputter::render::geometry::MakeFixedUnitCube(VertexPositions, 8, VertexNormals, 8, VertexUVs, 8, VertexIndices, 36))
     {
         sputter::system::LogAndFail("Failed to create a unit cube. What's up with that.");
     }

@@ -92,6 +92,7 @@ Mesh::Mesh(size_t maxVertexCount, size_t maxIndexCount)
 {
     uint32_t vao;
     glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
 
     m_spPimpl = std::make_shared<Mesh::PImpl>();
     m_spPimpl->VertexPositions.reserve(maxVertexCount);

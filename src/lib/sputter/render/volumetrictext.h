@@ -1,6 +1,9 @@
 #pragma once
 
+#include "shader.h"
+
 #include <cstdint>
+#include <memory>
 
 namespace sputter { namespace render {
     struct Glyph
@@ -13,9 +16,12 @@ namespace sputter { namespace render {
     class VolumetricTextRenderer
     {
     public:
-        VolumetricTextRenderer();
+        VolumetricTextRenderer(ShaderPtr spShader);
+
+        void DrawText(uint32_t x, uint32_t y, uint32_t size, const char* pText);
 
     private:
-        Glyph m_glyphLookup[256];
+        struct PImpl;
+        std::unique_ptr<PImpl> m_spPimpl;
     };
 }}
