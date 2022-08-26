@@ -1,14 +1,23 @@
 #include "volumetrictext.h"
 
 #include "render.h"
+#include "shader.h"
+#include "shaderstorage.h"
 #include "attribute.h"
+#include "uniform.h"
 #include "indexbuffer.h"
 #include "geometry.h"
+#include "draw.h"
 
 #include <sputter/system/system.h>
 
 #include <string>
 #include <glm/glm.hpp>
+
+static const int kMaxInstances = 1000;
+static const char* kVertexShaderName = "volume_text_vert";
+static const char* kFragmentShaderName = "volume_text_frag";
+static const char* kShaderName = "volumetext_shader";
 
 using namespace sputter::render;
 
@@ -18,17 +27,21 @@ struct VolumetricTextRenderer::PImpl
     uint32_t  VAO;
     ShaderPtr spShader;
 
+    uint32_t                  OffsetPositionUniformHandle = Shader::kInvalidHandleValue;
+
     // Attributes & EOB
-    Attribute<glm::vec3>   VertexPositionAttribute;
-    Attribute<glm::vec3>   VertexNormalAttribute;
-    Attribute<glm::vec2>   VertexTextureCoordinateAttribute;
-    IndexBuffer            Indices;
+    Attribute<glm::vec3>      VertexPositionAttribute;
+    Attribute<glm::vec3>      VertexNormalAttribute;
+    Attribute<glm::vec2>      VertexTextureCoordinateAttribute;
+    Attribute<glm::vec2>      InstanceOffsetAttribute;
+    IndexBuffer               Indices;
 
     // Data
     std::vector<glm::vec3>    VertexPositions;
     std::vector<glm::vec3>    VertexNormals;
     std::vector<glm::vec2>    VertexTextureCoordinates;
     std::vector<int>          VertexIndices;
+    std::vector<glm::vec2>    InstanceOffsets;
 
     void BindAttributes()
     {
@@ -45,10 +58,23 @@ struct VolumetricTextRenderer::PImpl
     }
 };
 
-VolumetricTextRenderer::VolumetricTextRenderer(ShaderPtr spShader) 
+VolumetricTextRenderer::VolumetricTextRenderer(assets::AssetStorage* pAssetStorage, ShaderStorage* pShaderStorage) 
     : m_spPimpl(std::make_unique<PImpl>())
 {
-    m_spPimpl->spShader = spShader;
+    m_spPimpl->spShader = pShaderStorage->FindShaderByName(kShaderName);
+    if (!m_spPimpl->spShader)
+    {
+        if (!pShaderStorage->AddShaderFromShaderAssetNames(
+            pAssetStorage,
+            kVertexShaderName,
+            kFragmentShaderName,
+            kShaderName
+            ))
+        {
+            system::LogAndFail("Could not add volumetric text shader to storage!");
+        }
+        m_spPimpl->spShader = pShaderStorage->FindShaderByName(kShaderName);
+    }
 
     // Just a single "zero" glyph for now
     static bool ZeroGlyphBits[] = 
@@ -97,6 +123,11 @@ VolumetricTextRenderer::VolumetricTextRenderer(ShaderPtr spShader)
 
     m_spPimpl->Indices.Set(m_spPimpl->VertexIndices.data(), kNumIndices);
 
+    // Make room for our instance offsets, though we don't yet have useful data
+    m_spPimpl->InstanceOffsets.reserve(kMaxInstances);
+    m_spPimpl->InstanceOffsetAttribute.Set(m_spPimpl->InstanceOffsets.data(), kMaxInstances);
+    m_spPimpl->InstanceOffsetAttribute.SetInstanceDivisor(1);
+
     glBindVertexArray(0);
 }
 
@@ -105,6 +136,26 @@ void VolumetricTextRenderer::DrawText(uint32_t x, uint32_t y, uint32_t size, con
     const glm::vec2 rootPos(x, y);
     m_spPimpl->spShader->Bind();
 
+    if (m_spPimpl->OffsetPositionUniformHandle == Shader::kInvalidHandleValue)
+    {
+        m_spPimpl->OffsetPositionUniformHandle = m_spPimpl->spShader->GetUniform("rootPos");
+        if (m_spPimpl->OffsetPositionUniformHandle == Shader::kInvalidHandleValue)
+        {
+            system::LogAndFail("Failed to retrieve uniform handle for 'rootPos'");
+        }
+    }
+    Uniform<glm::vec2>::Set(m_spPimpl->OffsetPositionUniformHandle, glm::vec2(x, y));
+    
+    // Let's just fill this thing with nonsense
+    for (int i = 0; i < 100; ++i)
+    {
+        const float x = 1.5f * i;
+        const float y = 1.5f * i;
+        m_spPimpl->InstanceOffsets[i] = glm::vec2(x, y);
+    }
+
+    glBindVertexArray(m_spPimpl->VAO);
+    DrawInstanced(m_spPimpl->Indices.Count(), DrawMode::Triangles, 100);
     // TODO: Set uniforms, vbo, etc
     // Reference @ https://learnopengl.com/Advanced-OpenGL/Instancing
 }

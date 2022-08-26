@@ -17,8 +17,7 @@
 #include <sputter/render/window.h>
 #include <sputter/render/spritesubsystem.h>
 #include <sputter/render/shaderstorage.h>
-#include <sputter/render/texturestorage.h>
-#include <sputter/render/texture.h>
+#include <sputter/render/volumetrictext.h>
 
 #include <sputter/input/inputsubsystem.h>
 
@@ -62,21 +61,20 @@ private:
     PaddleArena() = delete;
     PaddleArena(const PaddleArena& other) = delete;
 
-    sputter::physics::RigidBodySubsystem* m_pRigidbodySubsystem;
-    sputter::physics::CollisionSubsystem* m_pCollisionSubsystem;
+    sputter::physics::RigidBodySubsystem*    m_pRigidbodySubsystem;
+    sputter::physics::CollisionSubsystem*    m_pCollisionSubsystem;
 
-    sputter::render::ShaderStorage        m_shaderStorage;
-    sputter::render::MeshSubsystem*       m_pMeshSubsystem;
-    sputter::render::Window*              m_pWindow;
+    sputter::render::ShaderStorage           m_shaderStorage;
+    sputter::render::MeshSubsystem*          m_pMeshSubsystem;
+    sputter::render::Window*                 m_pWindow;
+    sputter::render::VolumetricTextRenderer* m_pTextRenderer;
 
-    sputter::input::InputSubsystem*       m_pInputSubsystem;
+    sputter::input::InputSubsystem*          m_pInputSubsystem;
 
-    sputter::assets::AssetStorageProvider m_storageProvider;
-    sputter::game::SubsystemProvider      m_subsystemProvider;
+    sputter::assets::AssetStorageProvider    m_storageProvider;
+    sputter::game::SubsystemProvider         m_subsystemProvider;
 
-    sputter::render::TextureStorage       m_textureStorage;
+    sputter::assets::AssetStorage            m_assetStorage;
 
-    sputter::assets::AssetStorage         m_assetStorage;
-
-    GameState*                            m_pGameState;
+    GameState*                               m_pGameState;
 };

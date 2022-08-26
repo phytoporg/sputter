@@ -14,11 +14,12 @@ namespace sputter { namespace render {
 
         ~Attribute();
 
-        void SetAttributePointer(uint32_t slot);
+        void SetAttributePointer(uint32_t slot, uint32_t stride = 0);
         void Set(T* inputArray, uint32_t arrayLength);
         void Set(std::vector<T>& input);
-        void BindTo(uint32_t slot);
+        void BindTo(uint32_t slot, uint32_t stride = 0);
         void UnbindFrom(uint32_t slot);
+        void SetInstanceDivisor(uint32_t divisor);
         uint32_t Count();
         uint32_t GetHandle();
 
@@ -87,10 +88,10 @@ namespace sputter { namespace render {
     }
 
     template<typename T>
-    void Attribute<T>::BindTo(uint32_t slot)
+    void Attribute<T>::BindTo(uint32_t slot, uint32_t stride)
     {
         glBindBuffer(GL_ARRAY_BUFFER, m_handle);
-        SetAttributePointer(slot);
+        SetAttributePointer(slot, stride);
         glEnableVertexAttribArray(slot);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
@@ -101,5 +102,11 @@ namespace sputter { namespace render {
         glBindBuffer(GL_ARRAY_BUFFER, m_handle);
         glDisableVertexAttribArray(slot);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+
+    template<typename T>
+    void Attribute<T>::SetInstanceDivisor(uint32_t divisor)
+    {
+        glVertexAttribDivisor(m_handle, divisor);
     }
 } }

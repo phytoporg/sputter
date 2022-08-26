@@ -79,10 +79,11 @@ PaddleArena::PaddleArena(
     m_subsystemProvider.AddSubsystem(m_pMeshSubsystem);
     m_subsystemProvider.AddSubsystem(m_pInputSubsystem);
 
-    m_storageProvider.AddResourceStorageByType(&m_textureStorage);
     m_storageProvider.AddResourceStorageByType(&m_shaderStorage);
 
     m_pGameState = allocator.Create<GameState>(&m_storageProvider, &m_subsystemProvider);
+
+    m_pTextRenderer = new sputter::render::VolumetricTextRenderer(&m_assetStorage, &m_shaderStorage);
 }
 
 PaddleArena::~PaddleArena() {}
@@ -144,6 +145,9 @@ void PaddleArena::Draw()
 
     const glm::mat4 viewMatrix = m_pGameState->Camera.ViewMatrix4d();
     m_pMeshSubsystem->Draw(OrthoMatrix, viewMatrix);
+
+    // TODO: This doesn't work :(
+    m_pTextRenderer->DrawText(100, 100, 100, "0000");
 }
 
 bool PaddleArena::StartGame()
