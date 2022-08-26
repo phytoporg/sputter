@@ -27,7 +27,12 @@ struct VolumetricTextRenderer::PImpl
     uint32_t  VAO;
     ShaderPtr spShader;
 
-    uint32_t                  OffsetPositionUniformHandle = Shader::kInvalidHandleValue;
+    uint32_t                  OffsetPositionUniformHandle   = Shader::kInvalidHandleValue;
+    uint32_t                  ViewMatrixUniformHandle       = Shader::kInvalidHandleValue;
+    uint32_t                  ProjectionMatrixUniformHandle = Shader::kInvalidHandleValue;
+
+    glm::mat4                 ProjectionMatrix;
+    glm::mat4                 ViewMatrix;
 
     // Attributes & EOB
     Attribute<glm::vec3>      VertexPositionAttribute;
@@ -48,6 +53,7 @@ struct VolumetricTextRenderer::PImpl
         VertexPositionAttribute.BindTo(0);
         VertexNormalAttribute.BindTo(1);
         VertexTextureCoordinateAttribute.BindTo(2);
+        InstanceOffsetAttribute.BindTo(3, sizeof(glm::vec2));
     }
 
     void UnbindAttributes()
@@ -55,6 +61,7 @@ struct VolumetricTextRenderer::PImpl
         VertexPositionAttribute.UnbindFrom(0);
         VertexNormalAttribute.UnbindFrom(1);
         VertexTextureCoordinateAttribute.UnbindFrom(2);
+        InstanceOffsetAttribute.UnbindFrom(3);
     }
 };
 
@@ -126,9 +133,16 @@ VolumetricTextRenderer::VolumetricTextRenderer(assets::AssetStorage* pAssetStora
     // Make room for our instance offsets, though we don't yet have useful data
     m_spPimpl->InstanceOffsets.reserve(kMaxInstances);
     m_spPimpl->InstanceOffsetAttribute.Set(m_spPimpl->InstanceOffsets.data(), kMaxInstances);
+    m_spPimpl->InstanceOffsetAttribute.BindTo(3, sizeof(float) * 2);
     m_spPimpl->InstanceOffsetAttribute.SetInstanceDivisor(1);
 
     glBindVertexArray(0);
+}
+
+void VolumetricTextRenderer::SetMatrices(const glm::mat4& projMatrix, const glm::mat4& viewMatrix)
+{
+    m_spPimpl->ProjectionMatrix = projMatrix;
+    m_spPimpl->ViewMatrix = viewMatrix;
 }
 
 void VolumetricTextRenderer::DrawText(uint32_t x, uint32_t y, uint32_t size, const char* pText)
@@ -145,6 +159,26 @@ void VolumetricTextRenderer::DrawText(uint32_t x, uint32_t y, uint32_t size, con
         }
     }
     Uniform<glm::vec2>::Set(m_spPimpl->OffsetPositionUniformHandle, glm::vec2(x, y));
+
+    if (m_spPimpl->ViewMatrixUniformHandle == Shader::kInvalidHandleValue)
+    {
+        m_spPimpl->ViewMatrixUniformHandle = m_spPimpl->spShader->GetUniform("view");
+        if (m_spPimpl->ViewMatrixUniformHandle == Shader::kInvalidHandleValue)
+        {
+            system::LogAndFail("Failed to retrieve uniform handle for 'view'");
+        }
+    }
+    Uniform<glm::mat4>::Set(m_spPimpl->ViewMatrixUniformHandle, m_spPimpl->ViewMatrix);
+
+    if (m_spPimpl->ProjectionMatrixUniformHandle == Shader::kInvalidHandleValue)
+    {
+        m_spPimpl->ProjectionMatrixUniformHandle = m_spPimpl->spShader->GetUniform("projection");
+        if (m_spPimpl->ProjectionMatrixUniformHandle == Shader::kInvalidHandleValue)
+        {
+            system::LogAndFail("Failed to retrieve uniform handle for 'projection'");
+        }
+    }
+    Uniform<glm::mat4>::Set(m_spPimpl->ProjectionMatrixUniformHandle, m_spPimpl->ProjectionMatrix);
     
     // Let's just fill this thing with nonsense
     for (int i = 0; i < 100; ++i)
@@ -155,7 +189,19 @@ void VolumetricTextRenderer::DrawText(uint32_t x, uint32_t y, uint32_t size, con
     }
 
     glBindVertexArray(m_spPimpl->VAO);
+    m_spPimpl->BindAttributes();
+
+    // Just trying this
+    m_spPimpl->VertexPositionAttribute.Set(m_spPimpl->VertexPositions);
+    m_spPimpl->VertexNormalAttribute.Set(m_spPimpl->VertexNormals);
+    m_spPimpl->VertexTextureCoordinateAttribute.Set(m_spPimpl->VertexTextureCoordinates);
+    m_spPimpl->Indices.Set(m_spPimpl->VertexIndices);
+    m_spPimpl->InstanceOffsetAttribute.Set(m_spPimpl->InstanceOffsets.data(), 100);
+
     DrawInstanced(m_spPimpl->Indices.Count(), DrawMode::Triangles, 100);
     // TODO: Set uniforms, vbo, etc
     // Reference @ https://learnopengl.com/Advanced-OpenGL/Instancing
+
+    m_spPimpl->UnbindAttributes();
+    m_spPimpl->spShader->Unbind();
 }

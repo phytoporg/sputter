@@ -147,6 +147,7 @@ void PaddleArena::Draw()
     m_pMeshSubsystem->Draw(OrthoMatrix, viewMatrix);
 
     // TODO: This doesn't work :(
+    m_pTextRenderer->SetMatrices(OrthoMatrix, viewMatrix);
     m_pTextRenderer->DrawText(100, 100, 100, "0000");
 }
 
