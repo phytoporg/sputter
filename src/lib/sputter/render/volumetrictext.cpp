@@ -211,7 +211,7 @@ void VolumetricTextRenderer::DrawText(uint32_t x, uint32_t y, uint32_t size, con
                 const float xOffset = currentGlyphOffsetX + x;
                 const float yOffset = -y;
 
-                m_spPimpl->InstanceOffsets[voxelCount] = glm::vec2(x, y);
+                m_spPimpl->InstanceOffsets[voxelCount] = glm::vec2(xOffset, yOffset);
                 voxelCount++;
 
                 if (voxelCount > kMaxInstances)
