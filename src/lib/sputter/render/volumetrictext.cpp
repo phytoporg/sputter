@@ -30,6 +30,7 @@ struct VolumetricTextRenderer::PImpl
     uint32_t                  OffsetPositionUniformHandle   = Shader::kInvalidHandleValue;
     uint32_t                  ViewMatrixUniformHandle       = Shader::kInvalidHandleValue;
     uint32_t                  ProjectionMatrixUniformHandle = Shader::kInvalidHandleValue;
+    uint32_t                  SizeUniformHandle             = Shader::kInvalidHandleValue;
 
     glm::mat4                 ProjectionMatrix;
     glm::mat4                 ViewMatrix;
@@ -134,7 +135,7 @@ VolumetricTextRenderer::VolumetricTextRenderer(assets::AssetStorage* pAssetStora
     m_spPimpl->InstanceOffsets.reserve(kMaxInstances);
     m_spPimpl->InstanceOffsetAttribute.Set(m_spPimpl->InstanceOffsets.data(), kMaxInstances);
     m_spPimpl->InstanceOffsetAttribute.BindTo(3, sizeof(float) * 2);
-    m_spPimpl->InstanceOffsetAttribute.SetInstanceDivisor(1);
+    m_spPimpl->InstanceOffsetAttribute.SetInstanceDivisor(3, 1);
 
     glBindVertexArray(0);
 }
@@ -179,28 +180,59 @@ void VolumetricTextRenderer::DrawText(uint32_t x, uint32_t y, uint32_t size, con
         }
     }
     Uniform<glm::mat4>::Set(m_spPimpl->ProjectionMatrixUniformHandle, m_spPimpl->ProjectionMatrix);
-    
-    // Let's just fill this thing with nonsense
-    for (int i = 0; i < 100; ++i)
+
+    if (m_spPimpl->SizeUniformHandle == Shader::kInvalidHandleValue)
     {
-        const float x = 1.5f * i;
-        const float y = 1.5f * i;
-        m_spPimpl->InstanceOffsets[i] = glm::vec2(x, y);
+        m_spPimpl->SizeUniformHandle = m_spPimpl->spShader->GetUniform("size");
+        if (m_spPimpl->SizeUniformHandle == Shader::kInvalidHandleValue)
+        {
+            system::LogAndFail("Failed to retrieve uniform handle for 'size'");
+        }
+    }
+    Uniform<float>::Set(m_spPimpl->SizeUniformHandle, size);
+    
+    // Set up the text !
+    uint32_t voxelCount = 0;
+    int currentGlyphOffsetX = 0;
+    const char* pCurrentCharacter = pText;
+    while (*pCurrentCharacter)
+    {
+        // TODO: safer lookup
+        const Glyph* pGlyph = &m_spPimpl->GlyphLookup[pCurrentCharacter[0]];
+        for (int x = 0; x < pGlyph->Width; ++x)
+        {
+            for (int y = 0; y < pGlyph->Height; ++y)
+            {
+                if (pGlyph->pBitMatrix[y * pGlyph->Width + x] == 0)
+                {
+                    continue;
+                }
+
+                const float xOffset = currentGlyphOffsetX + x;
+                const float yOffset = -y;
+
+                m_spPimpl->InstanceOffsets[voxelCount] = glm::vec2(x, y);
+                voxelCount++;
+
+                if (voxelCount > kMaxInstances)
+                {
+                    system::LogAndFail("Too many voxels for text!");
+                }
+                
+            }
+        }
+
+        // 1 separates the characters. Should be configurable?
+        currentGlyphOffsetX += pGlyph->Width + 1;
+        pCurrentCharacter++;
     }
 
     glBindVertexArray(m_spPimpl->VAO);
     m_spPimpl->BindAttributes();
 
-    // Just trying this
-    m_spPimpl->VertexPositionAttribute.Set(m_spPimpl->VertexPositions);
-    m_spPimpl->VertexNormalAttribute.Set(m_spPimpl->VertexNormals);
-    m_spPimpl->VertexTextureCoordinateAttribute.Set(m_spPimpl->VertexTextureCoordinates);
-    m_spPimpl->Indices.Set(m_spPimpl->VertexIndices);
-    m_spPimpl->InstanceOffsetAttribute.Set(m_spPimpl->InstanceOffsets.data(), 100);
+    m_spPimpl->InstanceOffsetAttribute.Set(m_spPimpl->InstanceOffsets.data(), voxelCount);
 
-    DrawInstanced(m_spPimpl->Indices.Count(), DrawMode::Triangles, 100);
-    // TODO: Set uniforms, vbo, etc
-    // Reference @ https://learnopengl.com/Advanced-OpenGL/Instancing
+    DrawInstanced(m_spPimpl->Indices, DrawMode::Triangles, voxelCount);
 
     m_spPimpl->UnbindAttributes();
     m_spPimpl->spShader->Unbind();

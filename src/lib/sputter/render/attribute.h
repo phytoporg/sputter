@@ -19,7 +19,7 @@ namespace sputter { namespace render {
         void Set(std::vector<T>& input);
         void BindTo(uint32_t slot, uint32_t stride = 0);
         void UnbindFrom(uint32_t slot);
-        void SetInstanceDivisor(uint32_t divisor);
+        void SetInstanceDivisor(uint32_t slot, uint32_t divisor);
         uint32_t Count();
         uint32_t GetHandle();
 
@@ -105,8 +105,8 @@ namespace sputter { namespace render {
     }
 
     template<typename T>
-    void Attribute<T>::SetInstanceDivisor(uint32_t divisor)
+    void Attribute<T>::SetInstanceDivisor(uint32_t slot, uint32_t divisor)
     {
-        glVertexAttribDivisor(m_handle, divisor);
+        glVertexAttribDivisor(slot, divisor);
     }
 } }

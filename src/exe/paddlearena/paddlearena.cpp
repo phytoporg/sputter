@@ -148,7 +148,7 @@ void PaddleArena::Draw()
 
     // TODO: This doesn't work :(
     m_pTextRenderer->SetMatrices(OrthoMatrix, viewMatrix);
-    m_pTextRenderer->DrawText(100, 100, 100, "0000");
+    m_pTextRenderer->DrawText(100, 100, 10, "0000");
 }
 
 bool PaddleArena::StartGame()
