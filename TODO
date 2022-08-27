@@ -22,12 +22,12 @@ Next high-level goal: Start prototyping gameplay
 * Collision handling, overlap resolution
 ** Check out: https://blog.hamaluik.ca/posts/simple-aabb-collision-using-minkowski-difference/
 * "Ball" - procedural cube, 3d rigidbody (!)
-
 * Debug + Fix collision flags not working as intended
-* Maintain aspect ratio !
 * Volumetric fonts
+
 * Scoring & display
 * Full game loop (losing + winning)
+* Maintain aspect ratio !
 * Render middle of the arena
 
 * Serialization & Rollback Redux
@@ -38,8 +38,10 @@ Next high-level goal: Start prototyping gameplay
 ** Synctest support to validate, sanity check
 ** Debug support for loading, saving state
 
+* Start on netplay support after maybe a *little* cleanup
+
 ENGINE AFTER GAMEPLAY SLICE:
-* Messaging/Event system so callbacks from components can happen without introducing gross dependencies everywhere
+* Messaging/Event system so callbacks from components can happen without introducing gross dependencies everywhere? 
 * Some basic ECS cleanup
 ** UUIDs, not enums?
 ** Get rid of Create/ReleaseComponent() calls?
