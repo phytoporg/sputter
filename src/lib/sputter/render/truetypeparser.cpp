@@ -1,6 +1,7 @@
 #include "truetypeparser.h"
 
 #include <cstdint>
+#include <vector>
 
 #include <sputter/assets/binarydata.h>
 #include <sputter/system/system.h>
@@ -49,7 +50,7 @@ namespace {
         );
     }
 
-    uint32_t SwapEndianness(uint32_t value)
+    uint32_t SwapEndianness32(uint32_t value)
     {
         return
             (value << 24) |
@@ -58,7 +59,7 @@ namespace {
             ((value >> 24) & 0xFF);
     }
 
-    uint16_t SwapEndianness(uint16_t value)
+    uint16_t SwapEndianness16(uint16_t value)
     {
         return
             (value << 8) |
@@ -244,38 +245,29 @@ struct GLYPH_Header
 
 struct GLYPH_ContoursDescription
 {
-    uint16_t    EndPtsOfContours[];
+    uint16_t   EndPtsOfContours[];
 };
 
 struct GLYPH_InstructionsDescription
 {
     uint16_t   InstructionLength;
-    uint8_t    Instructions[];
+    uint8_t    pInstructions[];
 };
 
-struct GLYPH_FlagsDescription
-{
-    uint8_t    Flags[];
-};
+// PointData flags
+const uint8_t kGLYPHPointFlagOnCurvePoint      = 1 << 1;
+const uint8_t kGLYPHPointFlagXShortVector      = 1 << 2;
+const uint8_t kGLYPHPointFlagYShortVector      = 1 << 3;
+const uint8_t kGLYPHPointFlagRepeatFlags       = 1 << 4;
+const uint8_t kGLYPHPointFlagXIsSameOrPositive = 1 << 5;
+const uint8_t kGLYPHPointFlagYIsSameOrPositive = 1 << 6;
+const uint8_t kGLYPHPointFlagOverlapSimple     = 1 << 7;
 
-struct GLYPH_XCoordinatesDescription8
+struct GLYPH_PointData
 {
-    uint8_t    XCoordinates[];
-};
-
-struct GLYPH_XCoordinatesDescription16
-{
-    uint16_t    XCoordinates[];
-};
-
-struct GLYPH_YCoordinatesDescription8
-{
-    uint8_t    YCoordinates[];
-};
-
-struct GLYPH_YCoordinatesDescription16
-{
-    uint16_t    YCoordinates[];
+    const uint8_t*  pFlags;
+    const uint8_t*  pXCoordinates;
+    const uint8_t*  pYCoordinates;
 };
 
 // HEAD - Font header table
@@ -283,7 +275,22 @@ struct HEAD_Header
 {
     uint16_t    MajorVersion;
     uint16_t    MinorVersion;
-    // There's more, but I don't know what "Fixed" means as a type :P
+    uint32_t    FontRevision; // "Fixed"?
+    uint32_t    ChecksumAdjustment;
+    uint32_t    MagicNumber;
+    uint16_t    Flags;
+    uint16_t    UnitsPerEm;
+    uint32_t    Created;
+    uint32_t    Modified;
+    int16_t     XMin;
+    int16_t     YMin;
+    int16_t     XMax;
+    int16_t     YMax;
+    uint16_t    MacStyle;
+    uint16_t    LowestRecPPEM;
+    int16_t     FontDirectionHint;
+    int16_t     IndexToLocFormat;
+    int16_t     GlyphDataFormat;
 };
 
 // HHEA - Font header table
@@ -297,7 +304,7 @@ struct HHEA_Header
 // LOCA - Index to location
 struct LOCA_Header
 {
-    uint32_t    offsets[];
+    uint32_t    Offsets[];
 };
 
 // MAXP - Maximum profile
@@ -340,18 +347,23 @@ TrueTypeParser::TrueTypeParser(const assets::BinaryData& dataToParse)
         system::LogAndFail("TTF: Unexpected EOF");
     }
     
-    if (SwapEndianness(pOffsetSubtable->ScalerType) != 0x00010000)
+    if (SwapEndianness32(pOffsetSubtable->ScalerType) != 0x00010000)
     {
         LOG(ERROR) << "TTF: Unsupported scaler type";
         return;
     }
 
     const uint32_t kMaxTableDirectories = 18;
-    const uint32_t NumTables = SwapEndianness(pOffsetSubtable->NumTables);
+    const uint16_t NumTables = SwapEndianness16(pOffsetSubtable->NumTables);
     if (NumTables > kMaxTableDirectories)
     {
         system::LogAndFail("TTF: Too many table directories");
     }
+
+    // For use in processing contour points
+    std::vector<uint8_t> expandedContourPointFlags;
+    std::vector<uint8_t> expandedContourXCoordinates;
+    std::vector<uint8_t> expandedContourYCoordinates;
 
     const EBLC_Header*  pEblcHeader = nullptr;
     const EBDT_Header*  pEbdtHeader = nullptr;
@@ -374,193 +386,195 @@ TrueTypeParser::TrueTypeParser(const assets::BinaryData& dataToParse)
         {
             case FOURCC("EBDT"):
             {
-                std::cerr << "Locating EBDT... ";
-                pEbdtHeader = reinterpret_cast<const EBDT_Header*>(pDataStart + SwapEndianness(pTableDirectory->Offset));
+                LOG(INFO) << "Locating EBDT... ";
+                pEbdtHeader = reinterpret_cast<const EBDT_Header*>(pDataStart + SwapEndianness32(pTableDirectory->Offset));
 
                 // Straight up hardcoded in the spec
-                if (SwapEndianness(pEbdtHeader->MajorVersion) != 2 ||
-                    SwapEndianness(pEbdtHeader->MinorVersion) != 0)
+                if (SwapEndianness16(pEbdtHeader->MajorVersion) != 2 ||
+                    SwapEndianness16(pEbdtHeader->MinorVersion) != 0)
                 {
-                    std::cerr << "EBDT or directory entry is malformed" << std::endl;
+                    LOG(ERROR) << "EBDT or directory entry is malformed";
                     return;
                 }
-                std::cerr << "found" << std::endl;;
+                LOG(INFO) << "found";
             }
             break;
             case FOURCC("EBLC"):
             {
-                std::cerr << "Locating EBLC... ";
-                pEblcHeader = reinterpret_cast<const EBLC_Header*>(pDataStart + SwapEndianness(pTableDirectory->Offset));
+                LOG(INFO) << "Locating EBLC... ";
+                pEblcHeader = reinterpret_cast<const EBLC_Header*>(pDataStart + SwapEndianness32(pTableDirectory->Offset));
 
                 // Straight up hardcoded in the spec
-                if (SwapEndianness(pEblcHeader->MajorVersion) != 2 ||
-                    SwapEndianness(pEblcHeader->MinorVersion) != 0)
+                if (SwapEndianness16(pEblcHeader->MajorVersion) != 2 ||
+                    SwapEndianness16(pEblcHeader->MinorVersion) != 0)
                 {
-                    std::cerr << "EBLC or directory entry is malformed" << std::endl;
+                    LOG(ERROR) << "EBLC or directory entry is malformed";
                     return;
                 }
-                std::cerr << "found." << std::endl;
+                LOG(INFO) << "found.";
             }
             break;
             case FOURCC("EBSC"):
             {
-                std::cerr << "Locating EBSC... ";
-                pEbscHeader = reinterpret_cast<const EBSC_Header*>(pDataStart + SwapEndianness(pTableDirectory->Offset));
+                LOG(INFO) << "Locating EBSC... ";
+                pEbscHeader = reinterpret_cast<const EBSC_Header*>(pDataStart + SwapEndianness32(pTableDirectory->Offset));
 
                 // Straight up hardcoded in the spec
-                if (SwapEndianness(pEbscHeader->MajorVersion) != 2 ||
-                    SwapEndianness(pEbscHeader->MinorVersion) != 0)
+                if (SwapEndianness16(pEbscHeader->MajorVersion) != 2 ||
+                    SwapEndianness16(pEbscHeader->MinorVersion) != 0)
                 {
-                    std::cerr << "EBSC or directory entry is malformed" << std::endl;
+                    LOG(ERROR) << "EBSC or directory entry is malformed";
                     return;
                 }
-                std::cerr << "found." << std::endl;
+                LOG(INFO) << "found.";
             }
             break;
             case FOURCC("GDEF"):
             {
                 // Don't need attachment points or any such complexity for our purposes.
-                std::cerr << "GDEF in table directory. Skipping." << std::endl;
+                LOG(INFO) << "GDEF in table directory. Skipping.";
             }
             break;
             case FOURCC("GPOS"):
             {
                 // We support monospace fonts only, no need for this table.
-                std::cerr << "GPOS in table directory. Skipping." << std::endl;
+                LOG(INFO) << "GPOS in table directory. Skipping.";
             }
             break;
             case FOURCC("GSUB"):
             {
                 // For script-based glyphs. Skip!
-                std::cerr << "GSUB in table directory. Skipping." << std::endl;
+                LOG(INFO) << "GSUB in table directory. Skipping.";
             }
             break;
             case FOURCC("OS/2"):
             {
                 // No support for weighting characters. Skip.
-                std::cerr << "OS/2 in table directory. Skipping." << std::endl;
+                LOG(INFO) << "OS/2 in table directory. Skipping.";
             }
             break;
             case FOURCC("VDMX"):
             {
                 // Still no support for weighting characters. Skip.
-                std::cerr << "VDMX in table directory. Skipping." << std::endl;
+                LOG(INFO) << "VDMX in table directory. Skipping.";
             }
             break;
             case FOURCC("cmap"):
             {
-                std::cerr << "Locating cmap... ";
-                pCmapHeader = reinterpret_cast<const CMAP_Header*>(pDataStart + SwapEndianness(pTableDirectory->Offset));
+                LOG(INFO) << "Locating cmap... ";
+                pCmapHeader = reinterpret_cast<const CMAP_Header*>(pDataStart + SwapEndianness32(pTableDirectory->Offset));
 
                 // Straight up hardcoded in the spec
-                if (SwapEndianness(pCmapHeader->Version) != 0)
+                if (SwapEndianness16(pCmapHeader->Version) != 0)
                 {
-                    std::cerr << "cmap or directory entry is malformed" << std::endl;
+                    LOG(ERROR) << "cmap or directory entry is malformed";
                     return;
                 }
 
-                std::cerr << "found." << std::endl;
-
-                // REMOVE
-                std::cerr << "Number of tables: " << SwapEndianness(pCmapHeader->NumTables) << std::endl;
+                LOG(INFO) << "found.";
             }
             break;
             case FOURCC("gasp"):
             {
                 // We're strictly rendering binary glyphs.
-                std::cerr << "gasp in table directory. Skipping." << std::endl;
+                LOG(INFO) << "gasp in table directory. Skipping.";
             }
             break;
             case FOURCC("glyf"):
             {
-                std::cerr << "Locating glyf... ";
-                pFirstGlyphHeader = reinterpret_cast<const GLYPH_Header*>(pDataStart + SwapEndianness(pTableDirectory->Offset));
-                std::cerr << "found." << std::endl;
+                LOG(INFO) << "Locating glyf... ";
+                pFirstGlyphHeader = reinterpret_cast<const GLYPH_Header*>(pDataStart + SwapEndianness32(pTableDirectory->Offset));
+                LOG(INFO) << "found.";
             }
             break;
             case FOURCC("head"):
             {
-                std::cerr << "Locating head... " << std::endl;
-                pHeadHeader = reinterpret_cast<const HEAD_Header*>(pDataStart + SwapEndianness(pTableDirectory->Offset));
-                if (SwapEndianness(pHeadHeader->MajorVersion) != 1 ||
-                    SwapEndianness(pHeadHeader->MinorVersion) != 0)
+                LOG(INFO) << "Locating head... ";
+                pHeadHeader = reinterpret_cast<const HEAD_Header*>(pDataStart + SwapEndianness32(pTableDirectory->Offset));
+                if (SwapEndianness16(pHeadHeader->MajorVersion) != 1 ||
+                    SwapEndianness16(pHeadHeader->MinorVersion) != 0 ||
+                    SwapEndianness32(pHeadHeader->MagicNumber)  != 0x5F0F3CF5)
                 {
-                    std::cerr << "head or directory entry is malformed" << std::endl;
+                    LOG(ERROR) << "head or directory entry is malformed";
                     return;
                 }
-                
-                std::cerr << "found." << std::endl;
+
+                LOG(INFO) << "found.";
             }
             break;
             case FOURCC("hhea"):
             {
-                std::cerr << "Locating hhea... " << std::endl;
-                pHheaHeader = reinterpret_cast<const HHEA_Header*>(pDataStart + SwapEndianness(pTableDirectory->Offset));
-                if (SwapEndianness(pHheaHeader->MajorVersion) != 1 ||
-                    SwapEndianness(pHheaHeader->MinorVersion) != 0)
+                LOG(INFO) << "Locating hhea... ";
+                pHheaHeader = reinterpret_cast<const HHEA_Header*>(pDataStart + SwapEndianness32(pTableDirectory->Offset));
+                if (SwapEndianness16(pHheaHeader->MajorVersion) != 1 ||
+                    SwapEndianness16(pHheaHeader->MinorVersion) != 0)
                 {
-                    std::cerr << "hhea or directory entry is malformed" << std::endl;
+                    LOG(ERROR) << "hhea or directory entry is malformed";
                     return;
                 }
                 
-                std::cerr << "found." << std::endl;
+                LOG(INFO) << "found.";
             }
             break;
             case FOURCC("hmtx"):
             {
-                // Unclear if I need to support this yet?
-                std::cerr << "hmtx found in directory, but skipping." << std::endl;
+                // Unclear if this is needed just yet. Skip for now.
+                LOG(INFO) << "hmtx found in directory, but skipping.";
             }
             break;
             case FOURCC("loca"):
             {
-                std::cerr << "Locating loca table... ";
-                pLocaHeader = reinterpret_cast<const LOCA_Header*>(pDataStart + SwapEndianness(pTableDirectory->Offset));
-                std::cerr << "found." << std::endl;
+                LOG(INFO) << "Locating loca table... ";
+                pLocaHeader = reinterpret_cast<const LOCA_Header*>(pDataStart + SwapEndianness32(pTableDirectory->Offset));
+                LOG(INFO) << "found.";
             }
             break;
             case FOURCC("maxp"):
             {
-                std::cerr << "Locating maxp table... ";
-                pMaxpHeader = reinterpret_cast<const MAXP_Header*>(pDataStart + SwapEndianness(pTableDirectory->Offset));
+                LOG(INFO) << "Locating maxp table... ";
+                pMaxpHeader = reinterpret_cast<const MAXP_Header*>(pDataStart + SwapEndianness32(pTableDirectory->Offset));
 
-                if (SwapEndianness(pMaxpHeader->Version) != 0x00010000)
+                if (SwapEndianness32(pMaxpHeader->Version) != 0x00010000)
                 {
-                    std::cerr << "maxp or directory entry is malformed" << std::endl;
+                    LOG(ERROR) << "maxp or directory entry is malformed";
                     return;
                 }
+
+                expandedContourPointFlags.resize(pMaxpHeader->MaxPoints);
+                expandedContourXCoordinates.resize(pMaxpHeader->MaxPoints);
+                expandedContourYCoordinates.resize(pMaxpHeader->MaxPoints);
                 
-                std::cerr << "found." << std::endl;
+                LOG(INFO) << "found.";
             }
             break;
             case FOURCC("name"):
             {
                 // Nah. Skip.
-                std::cerr << "name in table directory. Skipping." << std::endl;
+                LOG(INFO) << "name in table directory. Skipping.";
             }
             break;
             case FOURCC("post"):
             {
                 // Don't need this either. Skip.
-                std::cerr << "post in table directory. Skipping." << std::endl;
+                LOG(INFO) << "post in table directory. Skipping.";
             }
             break;
         }
     }
 
     // Okay great. Now we have some headers. Let's check out cmap
-    const uint16_t NumCmapTables = SwapEndianness(pCmapHeader->NumTables);
+    const uint16_t NumCmapTables = SwapEndianness16(pCmapHeader->NumTables);
     const CMAP_SegmentMapHeader* pSegmentMap = nullptr;
     for (uint16_t i = 0; i < NumCmapTables; ++i)
     {
         const CMAP_EncodingRecord* pCurrentEncodingRecord = &pCmapHeader->EncodingRecords[i];
-        const uint16_t PlatformID = SwapEndianness(pCurrentEncodingRecord->PlatformID);
-        const uint16_t EncodingID = SwapEndianness(pCurrentEncodingRecord->EncodingID);
+        const uint16_t PlatformID = SwapEndianness16(pCurrentEncodingRecord->PlatformID);
+        const uint16_t EncodingID = SwapEndianness16(pCurrentEncodingRecord->EncodingID);
 
         if (PlatformID == kCMAPPlatformIdWindows && EncodingID == kCMAPUnicodeBMPEncodingForWindows)
         {
             // This is the configuration we're after. Solid.
-            const uint32_t MapOffset = SwapEndianness(pCurrentEncodingRecord->SubtableOffset);
+            const uint32_t MapOffset = SwapEndianness32(pCurrentEncodingRecord->SubtableOffset);
             pSegmentMap = GetOffsetFrom<CMAP_SegmentMapHeader>(pCmapHeader, MapOffset);
             break;
         }
@@ -568,15 +582,11 @@ TrueTypeParser::TrueTypeParser(const assets::BinaryData& dataToParse)
 
     if (!pSegmentMap)
     {
-        std::cerr << "TTF: Unsupported encoding format" << std::endl;
+        LOG(ERROR) << "TTF: Unsupported encoding format";
         return;
     }
     
-    std::cerr << "Number of segments: " 
-              << SwapEndianness(pSegmentMap->SegCountX2) / 2 
-              << std::endl;
-
-    const uint32_t NumSegmentsX2 = SwapEndianness(pSegmentMap->SegCountX2);
+    const uint32_t NumSegmentsX2 = SwapEndianness16(pSegmentMap->SegCountX2);
     const uint32_t NumSegments = NumSegmentsX2 / 2;
     CMAP_SegmentMapPointers segmentMapPointers;
     segmentMapPointers.pEndCodes       = GetOffsetFrom<uint16_t>(pSegmentMap, sizeof(*pSegmentMap));
@@ -597,22 +607,22 @@ TrueTypeParser::TrueTypeParser(const assets::BinaryData& dataToParse)
     uint16_t glyphId = 0xFFFF; // Invalid
     for (uint16_t i = 0; i < NumSegments; ++i)
     {
-        const uint16_t SegmentStart = SwapEndianness(segmentMapPointers.pStartCodes[i]);
-        const uint16_t SegmentEnd = SwapEndianness(segmentMapPointers.pEndCodes[i]);
+        const uint16_t SegmentStart = SwapEndianness16(segmentMapPointers.pStartCodes[i]);
+        const uint16_t SegmentEnd = SwapEndianness16(segmentMapPointers.pEndCodes[i]);
 
         if (TestChar <= SegmentEnd && TestChar >= SegmentStart)
         {
-            const uint16_t IdOffset = SwapEndianness(segmentMapPointers.pIdRangeOffsets[i]);
+            const uint16_t IdOffset = SwapEndianness16(segmentMapPointers.pIdRangeOffsets[i]);
 
             // Indexing trick from the spec
-            const uint16_t GlyphIndex = SwapEndianness(*(IdOffset / 2 + (TestChar - SegmentStart) + &segmentMapPointers.pIdRangeOffsets[i]));
+            const uint16_t GlyphIndex = SwapEndianness16(*(IdOffset / 2 + (TestChar - SegmentStart) + &segmentMapPointers.pIdRangeOffsets[i]));
             if (segmentMapPointers.pGlyphIdArray[GlyphIndex] == 0)
             {
-                glyphId = TestChar + SwapEndianness((uint16_t)segmentMapPointers.pIdDeltas[i]);
+                glyphId = TestChar + SwapEndianness16(segmentMapPointers.pIdDeltas[i]);
             }
             else
             {
-                glyphId = SwapEndianness(GlyphIndex);
+                glyphId = SwapEndianness16(GlyphIndex);
             }
         }
         else if (TestChar > SegmentEnd || SegmentEnd == 0xFFFF)
@@ -621,12 +631,105 @@ TrueTypeParser::TrueTypeParser(const assets::BinaryData& dataToParse)
         }
     }
 
-    std::cerr << "Glyph ID = " << glyphId << std::endl;
+    // Grab the offset for this glyph
+    const uint32_t GlyphOffset = SwapEndianness32(pLocaHeader->Offsets[glyphId]);
+    const GLYPH_Header* pFoundGlyphHeader = GetOffsetFrom<GLYPH_Header>(pFirstGlyphHeader, GlyphOffset);
+    if (SwapEndianness16(pFoundGlyphHeader->NumberOfContours) < 0)
+    {
+        LOG(ERROR) << "Unsupported glyph description type";
+        return;
+    }
+
+    const uint16_t NumberOfContours = SwapEndianness16(pFoundGlyphHeader->NumberOfContours);
+    const GLYPH_ContoursDescription* pContourDescriptions = GetOffsetFrom<GLYPH_ContoursDescription>(pFoundGlyphHeader, sizeof(*pFoundGlyphHeader));
+    const GLYPH_InstructionsDescription* pInstructionDescriptions = GetOffsetFrom<GLYPH_InstructionsDescription>(pContourDescriptions, NumberOfContours * 2);
+
+    const uint16_t NumberOfPoints = SwapEndianness16(pContourDescriptions->EndPtsOfContours[NumberOfContours - 1]);
+    GLYPH_PointData pointData;
+    pointData.pFlags = GetOffsetFrom<uint8_t>(pInstructionDescriptions, pInstructionDescriptions->InstructionLength + 2);
+
+    // The flags array can specify repeated flag bytes, so it can actually be shorter in length than the X/Y
+    // coordinate array. This also means it must be processed to know the *actual* length of the array, which
+    // we need to know where to begin processing X-coordinates.
+
+    expandedContourPointFlags.resize(NumberOfPoints);
+    const uint8_t* pCurrentFlag = pointData.pFlags;
+    uint16_t logicalFlagEntry = 0;
+    while (logicalFlagEntry < NumberOfPoints)
+    {
+        const uint8_t Flags = pointData.pFlags[logicalFlagEntry];
+        expandedContourPointFlags[logicalFlagEntry] = Flags;
+        ++pCurrentFlag;
+
+        if (Flags & kGLYPHPointFlagRepeatFlags)
+        {
+            // The next byte dictates how many times this value is repeated.
+            // See: https://docs.microsoft.com/en-us/typography/opentype/spec/glyf?source=recommendations
+            uint8_t repeatCount = pointData.pFlags[logicalFlagEntry + 1];
+            while (repeatCount--)
+            {
+                expandedContourPointFlags[++logicalFlagEntry] = Flags;
+            }
+
+            // Advance from the repeat count
+            ++pCurrentFlag;
+        }
+    }
+
+    // Need to treat coordinates similarly! Coordinate components can be one or two bytes, depending on flags.
+    pointData.pXCoordinates = pCurrentFlag;
+    expandedContourXCoordinates.resize(NumberOfPoints);
+
+    const uint8_t* pCurrentXCoordinate = pointData.pXCoordinates;
+    uint16_t logicalXCoordinateEntry = 0;
+    int16_t  previousXCoordinate = 0;
+    while (logicalXCoordinateEntry < NumberOfPoints)
+    {
+        int16_t currentXCoordinate;
+        const uint8_t Flags = expandedContourPointFlags[logicalXCoordinateEntry];
+        if (Flags & kGLYPHPointFlagXShortVector)
+        {
+            currentXCoordinate = static_cast<int16_t>(*pCurrentXCoordinate);
+            pCurrentXCoordinate++;
+
+            if (!(Flags & kGLYPHPointFlagXIsSameOrPositive))
+            {
+                currentXCoordinate = -currentXCoordinate;
+            }
+        }
+        else
+        {
+            if (Flags & kGLYPHPointFlagXIsSameOrPositive)
+            {
+                // Don't advance the X-coordinate index, this value is just getting repeated.
+                currentXCoordinate = previousXCoordinate;
+            }
+            else
+            {
+                currentXCoordinate = SwapEndianness16(*reinterpret_cast<const int16_t*>(pCurrentXCoordinate));
+                pCurrentXCoordinate += 2;
+            }
+        }
+
+        // Quick sanity check
+        if (currentXCoordinate < SwapEndianness16(pFoundGlyphHeader->XMin) || 
+            currentXCoordinate > SwapEndianness16(pFoundGlyphHeader->XMax))
+        {
+            LOG(ERROR) << "Glyph X-coordinate out of bounds";
+            return;
+        }
+
+        previousXCoordinate = currentXCoordinate;
+        logicalXCoordinateEntry++;
+    }
+
+    // TODO: Y-coordinates!
+    pointData.pYCoordinates = pCurrentXCoordinate;
 
 #if 0
     // Iterate over glyphs
     const GLYPH_Header* pCurrentGlyphHeader = pFirstGlyphHeader;
-    const uint16_t NumGlyphs = SwapEndianness(pMaxpHeader->NumGlyphs);
+    const uint16_t NumGlyphs = SwapEndianness16(pMaxpHeader->NumGlyphs);
     for (uint16_t i = 0; i < NumGlyphs; ++i)
     {
         const uint32_t GlyphOffset = SwapEndianness(pLocaHeader->offsets[i]);
