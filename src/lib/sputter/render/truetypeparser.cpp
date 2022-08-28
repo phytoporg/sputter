@@ -41,6 +41,14 @@ namespace {
         return pReturnValue;
     }
 
+    template<typename ReturnType, typename OffsetStartType>
+    const ReturnType* GetOffsetFrom(const OffsetStartType* pBase, uint32_t byteOffset)
+    {
+        return reinterpret_cast<const ReturnType*>(
+            reinterpret_cast<const char*>(pBase) + byteOffset
+        );
+    }
+
     uint32_t SwapEndianness(uint32_t value)
     {
         return
@@ -157,6 +165,16 @@ struct EBSC_BitmapScale
     uint8_t               SubstitutePpemY;
 };
 
+// CMAP Encoding record platform IDs
+const uint16_t kCMAPPlatformIdUnicode   = 0;
+const uint16_t kCMAPPlatformIdMacintosh = 1;
+const uint16_t kCMAPPlatformIdISO       = 2;
+const uint16_t kCMAPPlatformIdWindows   = 3;
+const uint16_t kCMAPPlatformIdCustom    = 4;
+
+// CMAP Encoding record encoding IDs
+const uint16_t kCMAPUnicodeBMPEncodingForWindows = 1; // The only encoding we support
+
 // cmap - Character map table
 struct CMAP_EncodingRecord
 {
@@ -170,6 +188,48 @@ struct CMAP_Header
     uint16_t             Version;
     uint16_t             NumTables;
     CMAP_EncodingRecord  EncodingRecords[];
+};
+
+struct CMAP_SegmentMapHeader // Format 4
+{
+    uint16_t    Format;
+    uint16_t    Length;
+    uint16_t    Language;
+    uint16_t    SegCountX2;
+    uint16_t    SearchRange;
+    uint16_t    EntrySelector;
+    uint16_t    RangeShift;
+    uint16_t    EndCode[];
+};
+
+struct CMAP_SegmentMapDescription // Format 4
+{
+    uint16_t    Format;
+    uint16_t    Length;
+    uint16_t    Language;
+    uint16_t    SegCountX2;
+    uint16_t    SearchRange;
+    uint16_t    EntrySelector;
+    uint16_t    RangeShift;
+};
+
+// The actual layout looks like:
+// CMAP_SegmentMapDescription, as above
+// End codes (SegCount)
+// Two bytes of zero-padding
+// Start codes (xSegCount)
+// IDDelts (xSegCount)
+// IDRangeOffsets (xSegCount)
+// GlyphIDArray (xArbitrary)
+
+struct CMAP_SegmentMapPointers
+{
+    // These need to be set up, all pointing to SegCount elements
+    const uint16_t* pEndCodes = nullptr;
+    const uint16_t* pStartCodes = nullptr;
+    const int16_t*  pIdDeltas = nullptr;
+    const uint16_t* pIdRangeOffsets = nullptr;
+    const uint16_t* pGlyphIdArray = nullptr;
 };
 
 // glyf - Glyphs
@@ -415,13 +475,6 @@ TrueTypeParser::TrueTypeParser(const assets::BinaryData& dataToParse)
             {
                 std::cerr << "Locating glyf... ";
                 pFirstGlyphHeader = reinterpret_cast<const GLYPH_Header*>(pDataStart + SwapEndianness(pTableDirectory->Offset));
-
-                std::cerr << "Number of contours: " << SwapEndianness((uint16_t)pFirstGlyphHeader->NumberOfContours) << std::endl;
-                std::cerr << "MinX: " << SwapEndianness((uint16_t)pFirstGlyphHeader->XMin) << std::endl;
-                std::cerr << "MaxX: " << SwapEndianness((uint16_t)pFirstGlyphHeader->XMax) << std::endl;
-                std::cerr << "MinY: " << SwapEndianness((uint16_t)pFirstGlyphHeader->YMin) << std::endl;
-                std::cerr << "MinY: " << SwapEndianness((uint16_t)pFirstGlyphHeader->YMax) << std::endl;
-
                 std::cerr << "found." << std::endl;
             }
             break;
@@ -494,6 +547,92 @@ TrueTypeParser::TrueTypeParser(const assets::BinaryData& dataToParse)
             break;
         }
     }
+
+    // Okay great. Now we have some headers. Let's check out cmap
+    const uint16_t NumCmapTables = SwapEndianness(pCmapHeader->NumTables);
+    const CMAP_SegmentMapHeader* pSegmentMap = nullptr;
+    for (uint16_t i = 0; i < NumCmapTables; ++i)
+    {
+        const CMAP_EncodingRecord* pCurrentEncodingRecord = &pCmapHeader->EncodingRecords[i];
+        const uint16_t PlatformID = SwapEndianness(pCurrentEncodingRecord->PlatformID);
+        const uint16_t EncodingID = SwapEndianness(pCurrentEncodingRecord->EncodingID);
+
+        if (PlatformID == kCMAPPlatformIdWindows && EncodingID == kCMAPUnicodeBMPEncodingForWindows)
+        {
+            // This is the configuration we're after. Solid.
+            const uint32_t MapOffset = SwapEndianness(pCurrentEncodingRecord->SubtableOffset);
+            pSegmentMap = GetOffsetFrom<CMAP_SegmentMapHeader>(pCmapHeader, MapOffset);
+            break;
+        }
+    }
+
+    if (!pSegmentMap)
+    {
+        std::cerr << "TTF: Unsupported encoding format" << std::endl;
+        return;
+    }
+    
+    std::cerr << "Number of segments: " 
+              << SwapEndianness(pSegmentMap->SegCountX2) / 2 
+              << std::endl;
+
+    const uint32_t NumSegmentsX2 = SwapEndianness(pSegmentMap->SegCountX2);
+    const uint32_t NumSegments = NumSegmentsX2 / 2;
+    CMAP_SegmentMapPointers segmentMapPointers;
+    segmentMapPointers.pEndCodes       = GetOffsetFrom<uint16_t>(pSegmentMap, sizeof(*pSegmentMap));
+    segmentMapPointers.pStartCodes     = GetOffsetFrom<uint16_t>(segmentMapPointers.pEndCodes, NumSegmentsX2 + 2);
+    segmentMapPointers.pIdDeltas       = GetOffsetFrom<int16_t>(segmentMapPointers.pStartCodes, NumSegmentsX2);
+    segmentMapPointers.pIdRangeOffsets = GetOffsetFrom<uint16_t>(segmentMapPointers.pIdDeltas, NumSegmentsX2);
+    segmentMapPointers.pGlyphIdArray   = GetOffsetFrom<uint16_t>(segmentMapPointers.pIdRangeOffsets, NumSegmentsX2);
+
+    if (segmentMapPointers.pEndCodes[NumSegments] != 0 ||
+        segmentMapPointers.pEndCodes[NumSegments - 1] != 0xFFFF)
+    {
+        system::LogAndFail("Improperly initialized segment map pointers");
+    }
+
+    // Linear search for a test character. The segment map is designed for binary search--
+    // later !
+    const uint16_t TestChar = static_cast<uint16_t>('0');
+    uint16_t glyphId = 0xFFFF; // Invalid
+    for (uint16_t i = 0; i < NumSegments; ++i)
+    {
+        const uint16_t SegmentStart = SwapEndianness(segmentMapPointers.pStartCodes[i]);
+        const uint16_t SegmentEnd = SwapEndianness(segmentMapPointers.pEndCodes[i]);
+
+        if (TestChar <= SegmentEnd && TestChar >= SegmentStart)
+        {
+            const uint16_t IdOffset = SwapEndianness(segmentMapPointers.pIdRangeOffsets[i]);
+
+            // Indexing trick from the spec
+            const uint16_t GlyphIndex = SwapEndianness(*(IdOffset / 2 + (TestChar - SegmentStart) + &segmentMapPointers.pIdRangeOffsets[i]));
+            if (segmentMapPointers.pGlyphIdArray[GlyphIndex] == 0)
+            {
+                glyphId = TestChar + SwapEndianness((uint16_t)segmentMapPointers.pIdDeltas[i]);
+            }
+            else
+            {
+                glyphId = SwapEndianness(GlyphIndex);
+            }
+        }
+        else if (TestChar > SegmentEnd || SegmentEnd == 0xFFFF)
+        {
+            break;
+        }
+    }
+
+    std::cerr << "Glyph ID = " << glyphId << std::endl;
+
+#if 0
+    // Iterate over glyphs
+    const GLYPH_Header* pCurrentGlyphHeader = pFirstGlyphHeader;
+    const uint16_t NumGlyphs = SwapEndianness(pMaxpHeader->NumGlyphs);
+    for (uint16_t i = 0; i < NumGlyphs; ++i)
+    {
+        const uint32_t GlyphOffset = SwapEndianness(pLocaHeader->offsets[i]);
+        pSegmentMap = GetOffsetFrom<GLYPH_Header>(pFirstGlyphHeader, GlyphOffset);
+    }
+#endif
 
     m_isGood = true;
 }
