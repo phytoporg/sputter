@@ -8,6 +8,8 @@
 #include "indexbuffer.h"
 #include "geometry.h"
 #include "draw.h"
+#include "font.h"
+#include "fontstorage.h"
 
 #include <sputter/system/system.h>
 
@@ -18,6 +20,7 @@ static const int kMaxInstances = 1000;
 static const char* kVertexShaderName = "volume_text_vert";
 static const char* kFragmentShaderName = "volume_text_frag";
 static const char* kShaderName = "volumetext_shader";
+static const char* kFontName = "fixedsys_font";
 
 using namespace sputter::render;
 
@@ -26,6 +29,7 @@ struct VolumetricTextRenderer::PImpl
     Glyph GlyphLookup[256];
     uint32_t  VAO;
     ShaderPtr spShader;
+    FontPtr   spFont;
 
     uint32_t                  OffsetPositionUniformHandle   = Shader::kInvalidHandleValue;
     uint32_t                  ViewMatrixUniformHandle       = Shader::kInvalidHandleValue;
@@ -66,7 +70,11 @@ struct VolumetricTextRenderer::PImpl
     }
 };
 
-VolumetricTextRenderer::VolumetricTextRenderer(assets::AssetStorage* pAssetStorage, ShaderStorage* pShaderStorage) 
+VolumetricTextRenderer::VolumetricTextRenderer(
+    assets::AssetStorage* pAssetStorage,
+    ShaderStorage* pShaderStorage,
+    FontStorage* pFontStorage
+    ) 
     : m_spPimpl(std::make_unique<PImpl>())
 {
     m_spPimpl->spShader = pShaderStorage->FindShaderByName(kShaderName);
@@ -82,6 +90,17 @@ VolumetricTextRenderer::VolumetricTextRenderer(assets::AssetStorage* pAssetStora
             system::LogAndFail("Could not add volumetric text shader to storage!");
         }
         m_spPimpl->spShader = pShaderStorage->FindShaderByName(kShaderName);
+    }
+
+    // TODO: Actually use this font
+    m_spPimpl->spFont = pFontStorage->FindFontByName(kFontName);
+    if (!m_spPimpl->spFont)
+    {
+        if (!pFontStorage->AddFontFromAssetName(pAssetStorage, kFontName))
+        {
+            system::LogAndFail("Could not add volumetric text font to storage!");
+        }
+        m_spPimpl->spFont = pFontStorage->FindFontByName(kFontName);
     }
 
     // Just a single "zero" glyph for now
@@ -218,7 +237,6 @@ void VolumetricTextRenderer::DrawText(uint32_t x, uint32_t y, uint32_t size, con
                 {
                     system::LogAndFail("Too many voxels for text!");
                 }
-                
             }
         }
 

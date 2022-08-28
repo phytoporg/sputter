@@ -6,6 +6,7 @@ namespace sputter { namespace assets {
         TYPE_INVALID = 0,
         TYPE_TEXTURE,
         TYPE_SHADER,
+        TYPE_FONT,
         TYPE_MAX
     };
 }}

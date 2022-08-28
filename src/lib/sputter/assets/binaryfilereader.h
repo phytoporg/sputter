@@ -4,11 +4,11 @@
 
 namespace sputter { namespace assets {
     // Forward declarations
-    struct TextData;
+    struct BinaryData;
 
-    class TextFileReader 
+    class BinaryFileReader 
     {
     public:
-        bool ReadTextFile(const std::string& filePath, TextData* pData);
+        bool ReadBinaryFile(const std::string& filePath, BinaryData* pData);
     };
 }}

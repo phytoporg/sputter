@@ -17,6 +17,7 @@
 #include <sputter/render/window.h>
 #include <sputter/render/spritesubsystem.h>
 #include <sputter/render/shaderstorage.h>
+#include <sputter/render/fontstorage.h>
 #include <sputter/render/volumetrictext.h>
 
 #include <sputter/input/inputsubsystem.h>
@@ -65,6 +66,8 @@ private:
     sputter::physics::CollisionSubsystem*    m_pCollisionSubsystem;
 
     sputter::render::ShaderStorage           m_shaderStorage;
+    sputter::render::FontStorage             m_fontStorage;
+
     sputter::render::MeshSubsystem*          m_pMeshSubsystem;
     sputter::render::Window*                 m_pWindow;
     sputter::render::VolumetricTextRenderer* m_pTextRenderer;

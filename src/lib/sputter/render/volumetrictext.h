@@ -14,18 +14,16 @@ namespace sputter {
 
 namespace sputter { namespace render {
     class ShaderStorage;
-
-    struct Glyph
-    {
-        uint32_t Width;
-        uint32_t Height;
-        bool*    pBitMatrix;
-    };
+    class FontStorage;
 
     class VolumetricTextRenderer
     {
     public:
-        VolumetricTextRenderer(assets::AssetStorage* pAssetStorage, ShaderStorage* pShaderStorage);
+        VolumetricTextRenderer(
+            assets::AssetStorage* pAssetStorage,
+            ShaderStorage* pShaderStorage,
+            FontStorage* pFontStorage
+            );
 
         // TODO: Shouldn't have to provide this?
         void SetMatrices(const glm::mat4& projMatrix, const glm::mat4& viewMatrix);

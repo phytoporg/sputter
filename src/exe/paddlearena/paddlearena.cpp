@@ -83,7 +83,7 @@ PaddleArena::PaddleArena(
 
     m_pGameState = allocator.Create<GameState>(&m_storageProvider, &m_subsystemProvider);
 
-    m_pTextRenderer = new sputter::render::VolumetricTextRenderer(&m_assetStorage, &m_shaderStorage);
+    m_pTextRenderer = new sputter::render::VolumetricTextRenderer(&m_assetStorage, &m_shaderStorage, &m_fontStorage);
 }
 
 PaddleArena::~PaddleArena() {}

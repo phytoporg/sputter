@@ -6,6 +6,7 @@ namespace sputter { namespace assets {
         INVALID = 0,
         IMAGE_ASSET,
         TEXT_ASSET,
+        BINARY_ASSET,
         MAX_ASSET_DATA_TYPE
     };
 

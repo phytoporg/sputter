@@ -6,6 +6,9 @@
 #include "textdata.h"
 #include "textfilereader.h"
 
+#include "binarydata.h"
+#include "binaryfilereader.h"
+
 #include <algorithm>
 #include <filesystem>
 #include <string>
@@ -23,6 +26,22 @@ namespace
 
         const auto it = std::find(std::cbegin(TextFileExtensions), std::cend(TextFileExtensions), Extension);
         return it != std::end(TextFileExtensions);
+    }
+
+    bool IsImageFileExtension(const std::filesystem::path& extensionPath)
+    {
+        const std::string Extension = extensionPath.string();
+
+        // S'all we support atm
+        return Extension == ".png";
+    }
+
+    bool IsBinaryFileExtension(const std::filesystem::path& extensionPath)
+    {
+        const std::string Extension = extensionPath.string();
+
+        // S'all we support atm
+        return Extension == ".ttf";
     }
 }
 
@@ -46,7 +65,7 @@ namespace sputter { namespace assets {
             };
 
             // We only support .png files at the moment for image assets
-            if (CurrentPath.extension() == ".png")
+            if (IsImageFileExtension(CurrentPath.extension()))
             {
                 PngReader reader;
 
@@ -84,6 +103,29 @@ namespace sputter { namespace assets {
                     m_assetMap.insert({
                         relativePathString,
                         {CurrentPath.stem().string(), spData}
+                        });
+                }
+                else
+                {
+                    LOG(WARNING) << "Asset loader: failed to load " 
+                                 << CurrentPath.string();
+                }
+            }
+            else if (IsBinaryFileExtension(CurrentPath.extension()))
+            {
+                BinaryFileReader reader;
+
+                const std::string& relativePathString = 
+                    CurrentPath.string().substr(rootPathStr.length() + 1);
+                auto spData = std::make_shared<BinaryData>();
+                if (reader.ReadBinaryFile(CurrentPath.string(), spData.get()))
+                {
+                    LOG(INFO) << "Asset loader: loaded " 
+                              << relativePathString;
+
+                    m_assetMap.insert({
+                        relativePathString,
+                        { CurrentPath.stem().string(), spData }
                         });
                 }
                 else
