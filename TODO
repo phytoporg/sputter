@@ -24,8 +24,12 @@ Next high-level goal: Start prototyping gameplay
 * "Ball" - procedural cube, 3d rigidbody (!)
 * Debug + Fix collision flags not working as intended
 * Volumetric fonts
-
 * Scoring & display
+** Need to revisit a few fundamental questions: what is the "resolution" 
+   for this game? Need this for proper font rendering, and to properly
+   capture the general illusion of OLD GAEM.
+** Worry about this after the font rasterizer works :P
+
 * Full game loop (losing + winning)
 * Maintain aspect ratio !
 * Render middle of the arena
