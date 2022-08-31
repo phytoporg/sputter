@@ -1,5 +1,6 @@
 #include "truetypeparser.h"
 #include "truetypetables.h"
+#include "rasterizer.h"
 
 #include <cstdint>
 #include <vector>
@@ -528,6 +529,67 @@ TrueTypeParser::TrueTypeParser(const assets::BinaryData& dataToParse)
     {
         LOG(ERROR) << "TTF: Failed to decode glyph y coordinates";
         return;
+    }
+
+    // Scale and then rasterize
+
+    // Scale -> pointSize * resolution / ( 72 points per inch * units_per_em )
+    const uint8_t PointSize = 24; // TODO: parameterize
+    const uint16_t PPI = 100;
+    const uint32_t PPEM = PointSize * PPI / 72.0f;
+    uint8_t* pPixelGlyph = new uint8_t[PPEM * PPEM];
+    if (!pPixelGlyph)
+    {
+        system::LogAndFail("Allocation fialed. OOM.");
+    }
+    memset(pPixelGlyph, 0, PPEM * PPEM);
+
+    // Render the contours
+    const uint16_t UnitsPerEm = SwapEndianness16(pHeadHeader->UnitsPerEm);
+    const float EmToPixels = static_cast<float>(PPEM) / UnitsPerEm;
+    uint16_t previousX = expandedContourXCoordinates[0] * EmToPixels;
+    uint16_t previousY = expandedContourYCoordinates[1] * EmToPixels;
+
+    uint16_t pointIndex = 1;
+    uint16_t contourIndex = 0;
+    while (contourIndex < pFoundGlyphHeader->NumberOfContours)
+    {
+        const uint8_t Flags = expandedContourPointFlags[pointIndex];
+        const uint8_t X     = expandedContourXCoordinates[pointIndex] * EmToPixels;
+        const uint8_t Y     = expandedContourYCoordinates[pointIndex] * EmToPixels;
+
+        if (!(Flags & kGLYPHPointFlagOnCurvePoint))
+        {
+            system::LogAndFail("No support for bezier fanciness (yet)");
+        }
+
+        ++pointIndex;
+        if (pointIndex >= NumberOfPoints)
+        {
+            break;
+        }
+
+        if (X == previousX)
+        {
+            DrawVerticalLine(X, previousY, Y, pPixelGlyph, PPEM);
+        }
+        else if (Y == previousY)
+        {
+            DrawHorizontalLine(Y, previousX, X, pPixelGlyph, PPEM);
+        }
+        else   
+        {
+            // TODO: A visit to Dr. Bresenham's office
+            system::LogAndFail("No support for arbitrary lines (yet)");
+        }
+        
+        if (contourIndex == pContourDescriptions->EndPtsOfContours[contourIndex])
+        {
+            ++contourIndex;
+        }
+
+        previousX = X;
+        previousY = Y;
     }
 
 #if 0
