@@ -86,7 +86,7 @@ namespace {
         int16_t coordinateMin,
         int16_t coordinateMax,
         const std::vector<uint8_t>& flagsVector,
-        std::vector<uint8_t>* pExpandedVectorOut,
+        std::vector<uint16_t>* pExpandedVectorOut,
         const uint8_t** ppEndPointerOut = nullptr
     )
     {
@@ -182,9 +182,9 @@ TrueTypeParser::TrueTypeParser(const assets::BinaryData& dataToParse)
     }
 
     // For use in processing contour points. Consider alloca?
-    std::vector<uint8_t> expandedContourPointFlags;
-    std::vector<uint8_t> expandedContourXCoordinates;
-    std::vector<uint8_t> expandedContourYCoordinates;
+    std::vector<uint8_t>  expandedContourPointFlags;
+    std::vector<uint16_t> expandedContourXCoordinates;
+    std::vector<uint16_t> expandedContourYCoordinates;
 
     const EBLC_Header*  pEblcHeader = nullptr;
     const EBDT_Header*  pEbdtHeader = nullptr;
@@ -547,48 +547,41 @@ TrueTypeParser::TrueTypeParser(const assets::BinaryData& dataToParse)
     // Render the contours
     const uint16_t UnitsPerEm = SwapEndianness16(pHeadHeader->UnitsPerEm);
     const float EmToPixels = static_cast<float>(PPEM) / UnitsPerEm;
-    uint16_t previousX = expandedContourXCoordinates[0] * EmToPixels;
-    uint16_t previousY = expandedContourYCoordinates[1] * EmToPixels;
+    uint16_t contourStartingPointIndex = 0;
+    int16_t previousX = expandedContourXCoordinates[0] * EmToPixels;
+    int16_t previousY = expandedContourYCoordinates[0] * EmToPixels;
 
     uint16_t pointIndex = 1;
     uint16_t contourIndex = 0;
-    while (contourIndex < pFoundGlyphHeader->NumberOfContours)
+    while (contourIndex < pFoundGlyphHeader->NumberOfContours && pointIndex < NumberOfPoints)
     {
         const uint8_t Flags = expandedContourPointFlags[pointIndex];
-        const uint8_t X     = expandedContourXCoordinates[pointIndex] * EmToPixels;
-        const uint8_t Y     = expandedContourYCoordinates[pointIndex] * EmToPixels;
+        const int16_t X     = expandedContourXCoordinates[pointIndex] * EmToPixels;
+        const int16_t Y     = expandedContourYCoordinates[pointIndex] * EmToPixels;
 
         if (!(Flags & kGLYPHPointFlagOnCurvePoint))
         {
             system::LogAndFail("No support for bezier fanciness (yet)");
         }
 
-        ++pointIndex;
-        if (pointIndex >= NumberOfPoints)
-        {
-            break;
-        }
+        DrawLine(previousX, previousY, X, Y, pPixelGlyph, PPEM);
 
-        if (X == previousX)
-        {
-            DrawVerticalLine(X, previousY, Y, pPixelGlyph, PPEM);
-        }
-        else if (Y == previousY)
-        {
-            DrawHorizontalLine(Y, previousX, X, pPixelGlyph, PPEM);
-        }
-        else   
-        {
-            DrawLine(previousX, previousY, X, Y, pPixelGlyph, PPEM);
-        }
-        
-        if (contourIndex == pContourDescriptions->EndPtsOfContours[contourIndex])
+        if (pointIndex == SwapEndianness16(pContourDescriptions->EndPtsOfContours[contourIndex]))
         {
             ++contourIndex;
+
+            // Close the contour
+            uint16_t contourStartX = expandedContourXCoordinates[contourStartingPointIndex] * EmToPixels;
+            uint16_t contourStartY = expandedContourYCoordinates[contourStartingPointIndex] * EmToPixels;
+            DrawLine(X, Y, contourStartX, contourStartY, pPixelGlyph, PPEM);
+
+            contourStartingPointIndex = pointIndex + 1;
         }
 
         previousX = X;
         previousY = Y;
+
+        ++pointIndex;
     }
 
 #if 0
