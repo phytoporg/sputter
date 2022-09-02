@@ -579,8 +579,7 @@ TrueTypeParser::TrueTypeParser(const assets::BinaryData& dataToParse)
         }
         else   
         {
-            // TODO: A visit to Dr. Bresenham's office
-            system::LogAndFail("No support for arbitrary lines (yet)");
+            DrawLine(previousX, previousY, X, Y, pPixelGlyph, PPEM);
         }
         
         if (contourIndex == pContourDescriptions->EndPtsOfContours[contourIndex])
