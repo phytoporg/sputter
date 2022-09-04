@@ -31,7 +31,7 @@ namespace {
         return sum;
     }
 
-    // Wanted to get away from templates, but we're committed. BIG COMPILE TIMES LETS GOOOO
+    // Wanted to get away from templates, but we're committed.
     template<typename T>
     const T* ReadNext(const char** pDataStream, size_t* pBytesRemaining)
     {
@@ -86,7 +86,7 @@ namespace {
         int16_t coordinateMin,
         int16_t coordinateMax,
         const std::vector<uint8_t>& flagsVector,
-        std::vector<uint16_t>* pExpandedVectorOut,
+        std::vector<int16_t>* pExpandedVectorOut,
         const uint8_t** ppEndPointerOut = nullptr
     )
     {
@@ -152,6 +152,20 @@ namespace {
 
         return true;
     }
+
+    // REMOVEME
+    void DebugDumpGlyph(uint8_t* pPixelGlyph, uint16_t squareDims)
+    {
+        for (uint16_t y = 0; y < squareDims; y++)
+        {
+            for (uint16_t x = 0; x < squareDims; x++)
+            {
+                std::cerr << (pPixelGlyph[y * squareDims + x] & 1 ? "1" : "0") << " ";
+            }
+            std::cerr << "\n";
+        }
+        std::cerr << std::endl;
+    }
 }
 
 using namespace sputter::render;
@@ -182,9 +196,9 @@ TrueTypeParser::TrueTypeParser(const assets::BinaryData& dataToParse)
     }
 
     // For use in processing contour points. Consider alloca?
-    std::vector<uint8_t>  expandedContourPointFlags;
-    std::vector<uint16_t> expandedContourXCoordinates;
-    std::vector<uint16_t> expandedContourYCoordinates;
+    std::vector<uint8_t> expandedContourPointFlags;
+    std::vector<int16_t> expandedContourXCoordinates;
+    std::vector<int16_t> expandedContourYCoordinates;
 
     const EBLC_Header*  pEblcHeader = nullptr;
     const EBDT_Header*  pEbdtHeader = nullptr;
@@ -551,9 +565,17 @@ TrueTypeParser::TrueTypeParser(const assets::BinaryData& dataToParse)
     int16_t previousX = expandedContourXCoordinates[0] * EmToPixels;
     int16_t previousY = expandedContourYCoordinates[0] * EmToPixels;
 
+    uint16_t pointsInContour = SwapEndianness16(pContourDescriptions->EndPtsOfContours[0]) + 1;
+    // uint8_t contourWindingOrder = ComputeWindingOrder(
+    //     expandedContourXCoordinates.data(),
+    //     expandedContourYCoordinates.data(),
+    //     pointsInContour);
     uint16_t pointIndex = 1;
     uint16_t contourIndex = 0;
-    while (contourIndex < pFoundGlyphHeader->NumberOfContours && pointIndex < NumberOfPoints)
+
+    // Encode the winding order in the upper nibble
+    // uint8_t fillColor = (contourWindingOrder << 4) | 1;
+    while (contourIndex < NumberOfContours && pointIndex < NumberOfPoints)
     {
         const uint8_t Flags = expandedContourPointFlags[pointIndex];
         const int16_t X     = expandedContourXCoordinates[pointIndex] * EmToPixels;
@@ -564,18 +586,36 @@ TrueTypeParser::TrueTypeParser(const assets::BinaryData& dataToParse)
             system::LogAndFail("No support for bezier fanciness (yet)");
         }
 
-        DrawLine(previousX, previousY, X, Y, pPixelGlyph, PPEM);
+        // TODO: Not sure if this is right when starting a new contour? Initial contour's first point
+        // should probably be included in the loop logic.
 
-        if (pointIndex == SwapEndianness16(pContourDescriptions->EndPtsOfContours[contourIndex]))
+        //DrawLine(previousX, previousY, X, Y, pPixelGlyph, PPEM, fillColor);
+        {
+            const uint8_t FillColor = (SegmentToRasterFlags(previousX, previousY, X, Y) << 4) | 1;
+            DrawLine(previousX, previousY, X, Y, pPixelGlyph, PPEM, FillColor);
+        }
+
+        if (pointIndex == pointsInContour - 1)
         {
             ++contourIndex;
 
             // Close the contour
             uint16_t contourStartX = expandedContourXCoordinates[contourStartingPointIndex] * EmToPixels;
             uint16_t contourStartY = expandedContourYCoordinates[contourStartingPointIndex] * EmToPixels;
-            DrawLine(X, Y, contourStartX, contourStartY, pPixelGlyph, PPEM);
+            {
+                const uint8_t FillColor = (SegmentToRasterFlags(X, Y, contourStartX, contourStartY) << 4) | 1;
+                DrawLine(previousX, previousY, X, Y, pPixelGlyph, PPEM, FillColor);
+            }
+            // DrawLine(X, Y, contourStartX, contourStartY, pPixelGlyph, PPEM, fillColor);
 
             contourStartingPointIndex = pointIndex + 1;
+            pointsInContour = SwapEndianness16(pContourDescriptions->EndPtsOfContours[contourIndex]) + 1 - contourStartingPointIndex;
+            // contourWindingOrder = ComputeWindingOrder(
+            //     &expandedContourXCoordinates[contourStartingPointIndex],
+            //     &expandedContourYCoordinates[contourStartingPointIndex],
+            //     pointsInContour);
+            // Encode the winding order in the upper nibble
+            // fillColor = (contourWindingOrder << 4) | 1;
         }
 
         previousX = X;
@@ -584,6 +624,24 @@ TrueTypeParser::TrueTypeParser(const assets::BinaryData& dataToParse)
         ++pointIndex;
     }
 
+    DebugDumpGlyph(pPixelGlyph, PPEM);
+
+    // Call ScanlineFill() for each y-value
+    // TODO: Use xMin, xMax, etc...
+    const int16_t xMin = SwapEndianness16(pFoundGlyphHeader->XMin) * EmToPixels;
+    const int16_t xMax = SwapEndianness16(pFoundGlyphHeader->XMax) * EmToPixels;
+    const int16_t yMin = SwapEndianness16(pFoundGlyphHeader->YMin) * EmToPixels;
+    const int16_t yMax = SwapEndianness16(pFoundGlyphHeader->YMax) * EmToPixels;
+    for (int16_t y = yMin; y <= yMax; y++)
+    {
+        std::cerr << "y = " << y << std::endl;
+        uint8_t* pScanline = &pPixelGlyph[y * PPEM];
+
+        const uint8_t FinalFillColor = 1;
+        ScanlineFill(pScanline, PPEM, 0, PPEM - 1, FinalFillColor);
+        DebugDumpGlyph(pPixelGlyph, PPEM);
+    }
+    
 #if 0
     // Iterate over glyphs
     const GLYPH_Header* pCurrentGlyphHeader = pFirstGlyphHeader;
