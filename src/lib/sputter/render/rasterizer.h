@@ -3,13 +3,7 @@
 #include <cstdint>
 
 namespace sputter { namespace render {
-    // Set one
-    const uint8_t kRasterFlagWindingOrderInvalid = 0;
-    const uint8_t kRasterFlagWindingOrderCCW     = 1 << 1;
-    const uint8_t kRasterFlagWindingOrderCW      = 1 << 2;
 
-    // Set two
-    // const uint8_t kRasterFlagWindingOrderInvalid = 0;
     const uint8_t kRasterFlagSegmentHasDeltaX    = 1 << 0;
     const uint8_t kRasterFlagDeltaXIsNegative    = 1 << 1;
     const uint8_t kRasterFlagSegmentHasDeltaY    = 1 << 2;

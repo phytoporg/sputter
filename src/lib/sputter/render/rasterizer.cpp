@@ -7,6 +7,7 @@ namespace
 {
     int16_t LineFunction(int16_t x, int16_t dX, int16_t stepX2x, int16_t y, int16_t dY, int16_t stepY2x)
     {
+        // 2 * f(x, y) = 0 derived from f(x, y) = dY * x - dX * y + b
         return dY * (2 * x + stepX2x) - dX * (2 * y + stepY2x);
     }
 
@@ -102,74 +103,6 @@ namespace
 
 }
 
-// Do we need this?
-uint8_t sputter::render::ComputeWindingOrder(int16_t* pXCoordinates, int16_t* pYCoordinates, uint16_t numPoints)
-{
-    static int8_t WindingTable[8][2] = {
-        {  1,  0 },
-        {  1,  1 },
-        {  0,  1 },
-        { -1,  1 },
-        { -1,  0 },
-        { -1, -1 },
-        {  0, -1 },
-        {  1, -1 },
-    };
-
-    int8_t tableIndex = -1;
-    int16_t previousX = pXCoordinates[0];
-    int16_t previousY = pYCoordinates[0];
-    for (size_t i = 1; i < numPoints; i++)
-    {
-        const int16_t X = pXCoordinates[i];
-        const int16_t Y = pYCoordinates[i];
-
-        const int8_t dX = Sign(X - previousX);
-        const int8_t dY = Sign(Y - previousY);
-
-        int8_t tempTableIndex = -1;
-        for (int8_t j = 0; j < 8; ++j)
-        {
-            if (WindingTable[j][0] == dX && WindingTable[j][1] == dY)
-            {
-                tempTableIndex = j;
-                break;
-            }
-        }
-        if (tempTableIndex < 0)
-        {
-            sputter::system::LogAndFail("No matching winding table entry!");
-        }
-
-        if (tableIndex < 0)
-        {
-            tableIndex = tempTableIndex;
-        }
-        else if (tableIndex != tempTableIndex)
-        {
-            if (tempTableIndex > tableIndex)
-            {
-                return
-                    (tempTableIndex - tableIndex < (8 - tableIndex + tempTableIndex)) ? 
-                    sputter::render::kRasterFlagWindingOrderCCW :
-                    sputter::render::kRasterFlagWindingOrderCW;
-            }
-            else if (tableIndex > tempTableIndex)
-            {
-                return
-                    (tableIndex - tempTableIndex < (8 - tempTableIndex + tableIndex)) ? 
-                    sputter::render::kRasterFlagWindingOrderCW :
-                    sputter::render::kRasterFlagWindingOrderCCW;
-            }
-        }
-
-        previousX = X;
-        previousY = Y;
-    }
-    
-    return sputter::render::kRasterFlagWindingOrderInvalid;
-}
-
 uint8_t sputter::render::SegmentToRasterFlags(int16_t x0, int16_t y0, int16_t x1, int16_t y1)
 {
     using namespace sputter::render;
@@ -248,6 +181,8 @@ void sputter::render::ScanlineFill(uint8_t* pScanline, uint16_t stride, uint8_t 
 {
     // Compute winding numbers in pass one
     // Second pass to actually fill in the scanline
+
+    // TODO: This can surely be done in a single pass?
 
     int8_t windingNumber = 0;
     uint8_t previousValue = pScanline[stride - 1];

@@ -149,8 +149,21 @@ namespace {
         return true;
     }
 
+    void DrawContourSegment(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t* pData, uint16_t stride, uint8_t color)
+    {
+        const uint8_t PreviousPointValue = pData[y0 * stride + x0];
+
+        const uint8_t FillColor = (sputter::render::SegmentToRasterFlags(x0, y0, x1, y1) << 4) | color;
+        sputter::render::DrawLine(x0, y0, x1, y1, pData, stride, FillColor);
+
+        // OR in flags for the initial point, or we clobber correct directional information
+        // for determining the winding number.
+        pData[y0 * stride + x0] |= (PreviousPointValue & 0xF0);
+    }
+
     void DebugDumpGlyph(uint8_t* pPixelGlyph, uint16_t width, uint16_t height)
     {
+#if DEBUG
         for (int16_t y = height - 1; y >= 0; --y)
         {
             for (int16_t x = 0; x < width; ++x)
@@ -162,6 +175,7 @@ namespace {
 
         // Flush?
         VLOG(1) << "\n";
+#endif
     }
 }
 
@@ -336,7 +350,7 @@ TrueTypeParser::TrueTypeParser(const assets::BinaryData& dataToParse)
             break;
             case FOURCC("hmtx"):
             {
-                // Unclear if this is needed just yet. Skip for now.
+                // TODO: Process this table and surface proper horizontal metrics for glyphs
                 LOG(INFO) << "hmtx found in directory, but skipping.";
             }
             break;
@@ -572,7 +586,9 @@ Glyph TrueTypeParser::GetCharacterGlyph(char c)
     uint16_t pointIndex = 1;
     uint16_t contourIndex = 0;
 
-    // Encode the winding order in the upper nibble
+    // Encode directional flags into the upper nibble of each set contour pixel
+    // for winding number computations during scanline fill.
+    const uint8_t Color = 1;
     while (contourIndex < NumberOfContours && pointIndex < NumberOfPoints)
     {
         const uint8_t Flags = expandedContourPointFlags[pointIndex];
@@ -584,16 +600,7 @@ Glyph TrueTypeParser::GetCharacterGlyph(char c)
             system::LogAndFail("No support for bezier fanciness (yet)");
         }
 
-        {
-            const uint8_t PreviousPointValue = pPixelGlyph[previousY * GlyphWidth + previousX];
-
-            const uint8_t FillColor = (SegmentToRasterFlags(previousX, previousY, X, Y) << 4) | 1;
-            DrawLine(previousX, previousY, X, Y, pPixelGlyph, GlyphWidth, FillColor);
-
-            // Maintain flags for the previous point for correct winding number evaluation when performing
-            // scanline fill.
-            pPixelGlyph[previousY * GlyphWidth + previousX] |= (PreviousPointValue & 0xF0);
-        }
+        DrawContourSegment(previousX, previousY, X, Y, pPixelGlyph, GlyphWidth, Color);
 
         if ((pointIndex - contourStartingPointIndex) == pointsInContour - 1)
         {
@@ -602,16 +609,7 @@ Glyph TrueTypeParser::GetCharacterGlyph(char c)
             // Close the contour
             uint16_t contourStartX = expandedContourXCoordinates[contourStartingPointIndex] * EmToPixels - xMin;
             uint16_t contourStartY = expandedContourYCoordinates[contourStartingPointIndex] * EmToPixels - yMin;
-            {
-                const uint8_t PreviousPointValue = pPixelGlyph[Y * GlyphWidth + X];
-
-                const uint8_t FillColor = (SegmentToRasterFlags(X, Y, contourStartX, contourStartY) << 4) | 1;
-                DrawLine(X, Y, contourStartX, contourStartY, pPixelGlyph, GlyphWidth, FillColor);
-
-                // Maintain flags for the previous point for correct winding number evaluation when performing
-                // scanline fill.
-                pPixelGlyph[Y * GlyphWidth + X] |= (PreviousPointValue & 0xF0);
-            }
+            DrawContourSegment(X, Y, contourStartX, contourStartY, pPixelGlyph, GlyphWidth, Color);
 
             contourStartingPointIndex = pointIndex + 1;
             pointsInContour = SwapEndianness16(pContourDescriptions->EndPtsOfContours[contourIndex]) + 1 - contourStartingPointIndex;
@@ -626,7 +624,6 @@ Glyph TrueTypeParser::GetCharacterGlyph(char c)
     DebugDumpGlyph(pPixelGlyph, GlyphWidth, GlyphHeight);
 
     // Call ScanlineFill() for each y-value
-    // TODO: Use xMin, xMax, etc...
     for (int16_t y = yMin; y <= yMax; y++)
     {
         VLOG(1) << "y = " << y << "\n";
@@ -637,17 +634,6 @@ Glyph TrueTypeParser::GetCharacterGlyph(char c)
         DebugDumpGlyph(pPixelGlyph, GlyphWidth, GlyphHeight);
     }
     
-#if 0
-    // Iterate over glyphs
-    const GLYPH_Header* pCurrentGlyphHeader = m_pFirstGlyphHeader;
-    const uint16_t NumGlyphs = SwapEndianness16(m_pMaxpHeader->NumGlyphs);
-    for (uint16_t i = 0; i < NumGlyphs; ++i)
-    {
-        const uint32_t GlyphOffset = SwapEndianness(m_pLocaHeader->offsets[i]);
-        pSegmentMap = GetOffsetFrom<GLYPH_Header>(m_pFirstGlyphHeader, GlyphOffset);
-    }
-#endif
-
     bool* pGlyphBitMatrix = new bool[GlyphWidth * GlyphHeight];
     for (int16_t y = 0; y < GlyphHeight; ++y) // One flat loop instead maybe?
     {
