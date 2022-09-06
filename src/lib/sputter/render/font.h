@@ -7,10 +7,12 @@
 #include "glyph.h"
 
 namespace sputter { namespace render {
+    class TrueTypeParser;
+
     class Font
     {
     public:
-        Font(const std::string& name, const std::vector<Glyph>& glyphTable);
+        Font(const std::string& name, TrueTypeParser* pParser);
         ~Font();
 
         const std::string& GetName() const;
@@ -18,7 +20,9 @@ namespace sputter { namespace render {
 
     private:
         std::string        m_name;
-        std::vector<Glyph> m_glyphTable;
+        std::vector<Glyph> m_glyphCache;
+
+        TrueTypeParser*    m_pParser = nullptr;
     };
 
     typedef std::shared_ptr<Font> FontPtr;

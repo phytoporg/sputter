@@ -15,6 +15,8 @@ namespace sputter {
 }
 
 namespace sputter { namespace render {
+    class TrueTypeParser;
+
     class FontStorage : public assets::IResourceStorage<Font>
     {
     public:

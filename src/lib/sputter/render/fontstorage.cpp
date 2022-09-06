@@ -26,8 +26,14 @@ FontStorage::AddFont(
     const std::string& fontName
 )
 {
-    TrueTypeParser parser(binaryData);
-    return parser.IsGood();
+    auto pParser = new TrueTypeParser(binaryData);
+    if (pParser && pParser->IsGood())
+    {
+        m_storageVector.emplace_back(fontName, pParser);
+        return true;
+    }
+    
+    return false;
 }
 
 FontPtr FontStorage::FindFontByName(const std::string& fontName) const

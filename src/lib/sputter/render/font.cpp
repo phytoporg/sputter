@@ -1,4 +1,5 @@
 #include "font.h"
+#include "truetypeparser.h"
 
 #include <cstring>
 
@@ -15,17 +16,19 @@ const Glyph Glyph::kInvalidGlyph = Glyph{
     nullptr
     };
 
-Font::Font(const std::string& name, const std::vector<Glyph>& glyphTable) 
-    : m_name(name), m_glyphTable(glyphTable)
+Font::Font(const std::string& name, TrueTypeParser* pParser) 
+    : m_name(name), m_pParser(pParser)
 {}
 
 Font::~Font()
 {
     // The font owns the glyphs. Free all of the memories !!
-    for (Glyph& glyph : m_glyphTable)
+    for (Glyph& glyph : m_glyphCache)
     {
         delete[] glyph.pBitMatrix;
     }
+
+    delete m_pParser;
 }
 
 const std::string& Font::GetName() const 
@@ -35,15 +38,17 @@ const std::string& Font::GetName() const
 
 bool Font::GetGlyph(char character, Glyph* pOut) const 
 {
+    // TODO: USE THE PARSER BEFORE HITTING THE CACHE
+
     const auto characterIndex = static_cast<size_t>(character);
-    if (characterIndex >= m_glyphTable.size() || 
-        !m_glyphTable[characterIndex].IsValid())
+    if (characterIndex >= m_glyphCache.size() || 
+        !m_glyphCache[characterIndex].IsValid())
     {
         // Zero out the whole thing !
         *pOut = Glyph::kInvalidGlyph;
         return false;
     }
 
-    *pOut = m_glyphTable[characterIndex];    
+    *pOut = m_glyphCache[characterIndex];    
     return true;
 }
