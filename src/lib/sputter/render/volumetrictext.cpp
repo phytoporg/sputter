@@ -16,7 +16,7 @@
 #include <string>
 #include <glm/glm.hpp>
 
-static const int kMaxInstances = 1000;
+static const int kMaxInstances = 2000;
 static const char* kVertexShaderName = "volume_text_vert";
 static const char* kFragmentShaderName = "volume_text_frag";
 static const char* kShaderName = "volumetext_shader";
@@ -26,7 +26,6 @@ using namespace sputter::render;
 
 struct VolumetricTextRenderer::PImpl 
 {
-    Glyph GlyphLookup[256];
     uint32_t  VAO;
     ShaderPtr spShader;
     FontPtr   spFont;
@@ -115,10 +114,6 @@ VolumetricTextRenderer::VolumetricTextRenderer(
           0, 1, 1, 1, 1, 1, 1, 0, 
           };
 
-    m_spPimpl->GlyphLookup[static_cast<int>('0')] = Glyph{
-        8, 8, ZeroGlyphBits
-    };
-
     glGenVertexArrays(1, &m_spPimpl->VAO);
     glBindVertexArray(m_spPimpl->VAO);
 
@@ -165,7 +160,7 @@ void VolumetricTextRenderer::SetMatrices(const glm::mat4& projMatrix, const glm:
     m_spPimpl->ViewMatrix = viewMatrix;
 }
 
-void VolumetricTextRenderer::DrawText(uint32_t x, uint32_t y, uint32_t size, const char* pText)
+void VolumetricTextRenderer::DrawText(int32_t x, int32_t y, uint32_t size, const char* pText)
 {
     const glm::vec2 rootPos(x, y);
     m_spPimpl->spShader->Bind();
@@ -216,19 +211,23 @@ void VolumetricTextRenderer::DrawText(uint32_t x, uint32_t y, uint32_t size, con
     const char* pCurrentCharacter = pText;
     while (*pCurrentCharacter)
     {
-        // TODO: safer lookup
-        const Glyph* pGlyph = &m_spPimpl->GlyphLookup[pCurrentCharacter[0]];
-        for (int x = 0; x < pGlyph->Width; ++x)
+        Glyph characterGlyph;
+        if (!m_spPimpl->spFont->GetGlyph(*pCurrentCharacter, &characterGlyph))
         {
-            for (int y = 0; y < pGlyph->Height; ++y)
+            system::LogAndFail("Could not get character glyph.");
+        }
+
+        for (int i = 0; i < characterGlyph.Width; ++i)
+        {
+            for (int j = 0; j < characterGlyph.Height; ++j)
             {
-                if (pGlyph->pBitMatrix[y * pGlyph->Width + x] == 0)
+                if (characterGlyph.pBitMatrix[j * characterGlyph.Width + i] == 0)
                 {
                     continue;
                 }
 
-                const float xOffset = currentGlyphOffsetX + x;
-                const float yOffset = -y;
+                const float xOffset = currentGlyphOffsetX + i;
+                const float yOffset = j;
 
                 m_spPimpl->InstanceOffsets[voxelCount] = glm::vec2(xOffset, yOffset);
                 voxelCount++;
@@ -241,7 +240,7 @@ void VolumetricTextRenderer::DrawText(uint32_t x, uint32_t y, uint32_t size, con
         }
 
         // 1 separates the characters. Should be configurable?
-        currentGlyphOffsetX += pGlyph->Width + 1;
+        currentGlyphOffsetX += characterGlyph.Width + 1;
         pCurrentCharacter++;
     }
 

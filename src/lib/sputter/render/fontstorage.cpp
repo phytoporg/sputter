@@ -26,10 +26,10 @@ FontStorage::AddFont(
     const std::string& fontName
 )
 {
-    auto pParser = new TrueTypeParser(binaryData);
+    TrueTypeParser* pParser = new TrueTypeParser(binaryData);
     if (pParser && pParser->IsGood())
     {
-        m_storageVector.emplace_back(fontName, pParser);
+        m_storageVector.emplace_back(std::make_shared<Font>(fontName, pParser));
         return true;
     }
     
@@ -38,6 +38,14 @@ FontStorage::AddFont(
 
 FontPtr FontStorage::FindFontByName(const std::string& fontName) const
 {
+    for (FontPtr spFont : m_storageVector)
+    {
+        if (spFont->GetName() == fontName)
+        {
+            return spFont;
+        }
+    }
+
     return nullptr;
 }
 

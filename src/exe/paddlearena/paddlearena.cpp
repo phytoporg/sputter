@@ -146,9 +146,8 @@ void PaddleArena::Draw()
     const glm::mat4 viewMatrix = m_pGameState->Camera.ViewMatrix4d();
     m_pMeshSubsystem->Draw(OrthoMatrix, viewMatrix);
 
-    // TODO: This doesn't work :(
     m_pTextRenderer->SetMatrices(OrthoMatrix, viewMatrix);
-    m_pTextRenderer->DrawText(100, 100, 10, "0000");
+    m_pTextRenderer->DrawText(-370, 300, 5, "0123456789");
 }
 
 bool PaddleArena::StartGame()

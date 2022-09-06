@@ -3,13 +3,10 @@
 #include <math.h>
 #include <sputter/system/system.h>
 
-#include <iostream> // REMOVEME
-
 namespace 
 {
     int16_t LineFunction(int16_t x, int16_t dX, int16_t stepX2x, int16_t y, int16_t dY, int16_t stepY2x)
     {
-
         return dY * (2 * x + stepX2x) - dX * (2 * y + stepY2x);
     }
 
@@ -81,7 +78,7 @@ namespace
         {
             // Locally crossing this segment from left-to-right
             (*pWindingNumber)--;
-            std::cerr << "CROSS: dy == 1, winding number = " << int(*pWindingNumber) << std::endl;
+            VLOG(1) << "CROSS: dy == 1, winding number = " << int(*pWindingNumber);
         }
         else if (dY == 0 && dX == 1)
         {
@@ -95,7 +92,7 @@ namespace
         {
             // Locally crossing this segment from right-to-left
             (*pWindingNumber)++;
-            std::cerr << "CROSS: dy == -1, winding number = " << int(*pWindingNumber) << std::endl;
+            VLOG(1) << "CROSS: dy == -1, winding number = " << int(*pWindingNumber);
         }
         else
         {
@@ -270,7 +267,7 @@ void sputter::render::ScanlineFill(uint8_t* pScanline, uint16_t stride, uint8_t 
                 UpdateWindingNumberChangeFromRightRayTest(dX, dY, &windingNumber);
                 if (oldWindingNumber != windingNumber)
                 {
-                    std::cerr << "x = " << x << std::endl;
+                    VLOG(1) << "x = " << x << "\n";
                 }
                 
             }

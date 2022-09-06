@@ -2,10 +2,6 @@
 #include "render.h"
 #include <sputter/system/system.h>
 
-///
-#include <iostream>
-///
-
 #include <stdexcept>
 
 namespace sputter { namespace render {

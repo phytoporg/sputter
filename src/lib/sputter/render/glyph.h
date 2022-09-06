@@ -6,6 +6,7 @@ namespace sputter { namespace render {
     struct Glyph
     {
         static const Glyph kInvalidGlyph;
+
         bool IsValid() const;
 
         uint32_t Width;

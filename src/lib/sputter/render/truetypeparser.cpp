@@ -8,10 +8,6 @@
 #include <sputter/assets/binarydata.h>
 #include <sputter/system/system.h>
 
-// REMOVE ME
-#include <iostream>
-// REMOVE ME
-
 constexpr uint32_t FOURCC(const char* pString)
 {
     return pString[0] | (pString[1] << 8) | (pString[2] << 16) | (pString[3] << 24);
@@ -153,18 +149,19 @@ namespace {
         return true;
     }
 
-    // REMOVEME
     void DebugDumpGlyph(uint8_t* pPixelGlyph, uint16_t width, uint16_t height)
     {
         for (int16_t y = height - 1; y >= 0; --y)
         {
             for (int16_t x = 0; x < width; ++x)
             {
-                std::cerr << (pPixelGlyph[y * width + x] & 1 ? "1" : "0") << " ";
+                VLOG(1) << (pPixelGlyph[y * width + x] & 1 ? "1" : "0") << " ";
             }
-            std::cerr << "\n";
+            VLOG(1) << "\n";
         }
-        std::cerr << std::endl;
+
+        // Flush?
+        VLOG(1) << "\n";
     }
 }
 
@@ -384,7 +381,6 @@ TrueTypeParser::TrueTypeParser(const assets::BinaryData& dataToParse)
 
     // Okay great. Now we have some headers. Let's check out cmap
     const uint16_t NumCmapTables = SwapEndianness16(m_pCmapHeader->NumTables);
-    const CMAP_SegmentMapHeader* m_pCmapSegmentMap = nullptr;
     for (uint16_t i = 0; i < NumCmapTables; ++i)
     {
         const CMAP_EncodingRecord* pCurrentEncodingRecord = &m_pCmapHeader->EncodingRecords[i];
@@ -408,7 +404,6 @@ TrueTypeParser::TrueTypeParser(const assets::BinaryData& dataToParse)
     
     const uint32_t NumSegmentsX2 = SwapEndianness16(m_pCmapSegmentMap->SegCountX2);
     const uint32_t NumSegments = NumSegmentsX2 / 2;
-    CMAP_SegmentMapPointers m_CmapSegmentMapPointers;
     m_CmapSegmentMapPointers.pEndCodes       = GetOffsetFrom<uint16_t>(m_pCmapSegmentMap, sizeof(*m_pCmapSegmentMap));
     m_CmapSegmentMapPointers.pStartCodes     = GetOffsetFrom<uint16_t>(m_CmapSegmentMapPointers.pEndCodes, NumSegmentsX2 + 2);
     m_CmapSegmentMapPointers.pIdDeltas       = GetOffsetFrom<int16_t>(m_CmapSegmentMapPointers.pStartCodes, NumSegmentsX2);
@@ -634,7 +629,7 @@ Glyph TrueTypeParser::GetCharacterGlyph(char c)
     // TODO: Use xMin, xMax, etc...
     for (int16_t y = yMin; y <= yMax; y++)
     {
-        std::cerr << "y = " << y << std::endl;
+        VLOG(1) << "y = " << y << "\n";
         uint8_t* pScanline = &pPixelGlyph[y * GlyphWidth];
 
         const uint8_t FinalFillColor = 1;
@@ -654,12 +649,12 @@ Glyph TrueTypeParser::GetCharacterGlyph(char c)
 #endif
 
     bool* pGlyphBitMatrix = new bool[GlyphWidth * GlyphHeight];
-    for (int16_t y = GlyphHeight - 1; y >= 0; --y) // One flat loop instead maybe?
+    for (int16_t y = 0; y < GlyphHeight; ++y) // One flat loop instead maybe?
     {
         for (int16_t x = 0; x < GlyphWidth; ++x)
         {
             const size_t Index = y * GlyphWidth + x;
-            pGlyphBitMatrix[Index] = pPixelGlyph[Index] == 0 ? false : true;
+            pGlyphBitMatrix[Index] = (pPixelGlyph[Index] & 0xF) == 0 ? false : true;
         }
     }
 

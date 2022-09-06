@@ -16,7 +16,7 @@ namespace sputter { namespace render {
         ~Font();
 
         const std::string& GetName() const;
-        bool GetGlyph(char character, Glyph* pOut) const;
+        bool GetGlyph(char character, Glyph* pOut);
 
     private:
         std::string        m_name;
