@@ -263,4 +263,19 @@ struct MAXP_Header
     uint16_t    MaxComponentDepth;
 };
 
+// HTMX - Horizontal Metrics table
+struct HMTX_LongHorizontalMetrics 
+{
+	uint16_t AdvanceWidth;      // In font design units, whatever that means
+	int16_t  LeftSideBearing;   // In font design units, whatever that means
+};
+
+struct HMTX 
+{
+    HMTX_LongHorizontalMetrics* pMetrics; // Number of entries dictated by HHEA.NumberOfHMetrics
+    int16_t*                    pLeftSideBearings; // Number of entries is NumGlyphs - NumberOfHMetrics
+};
+
+// VMTX - Vertical Metrics table
+
 #pragma pack(pop)

@@ -154,13 +154,13 @@ namespace {
     }
 
     // REMOVEME
-    void DebugDumpGlyph(uint8_t* pPixelGlyph, uint16_t squareDims)
+    void DebugDumpGlyph(uint8_t* pPixelGlyph, uint16_t width, uint16_t height)
     {
-        for (uint16_t y = 0; y < squareDims; y++)
+        for (int16_t y = height - 1; y >= 0; --y)
         {
-            for (uint16_t x = 0; x < squareDims; x++)
+            for (int16_t x = 0; x < width; ++x)
             {
-                std::cerr << (pPixelGlyph[y * squareDims + x] & 1 ? "1" : "0") << " ";
+                std::cerr << (pPixelGlyph[y * width + x] & 1 ? "1" : "0") << " ";
             }
             std::cerr << "\n";
         }
@@ -195,20 +195,6 @@ TrueTypeParser::TrueTypeParser(const assets::BinaryData& dataToParse)
         system::LogAndFail("TTF: Too many table directories");
     }
 
-    // For use in processing contour points. Consider alloca?
-    std::vector<uint8_t> expandedContourPointFlags;
-    std::vector<int16_t> expandedContourXCoordinates;
-    std::vector<int16_t> expandedContourYCoordinates;
-
-    const EBLC_Header*  pEblcHeader = nullptr;
-    const EBDT_Header*  pEbdtHeader = nullptr;
-    const EBSC_Header*  pEbscHeader = nullptr;
-    const CMAP_Header*  pCmapHeader = nullptr;
-    const GLYPH_Header* pFirstGlyphHeader = nullptr;
-    const HEAD_Header*  pHeadHeader = nullptr;
-    const HHEA_Header*  pHheaHeader = nullptr;
-    const LOCA_Header*  pLocaHeader = nullptr;
-    const MAXP_Header*  pMaxpHeader = nullptr;
     for (uint16_t i = 0; i < NumTables; ++i)
     {
         const auto* pTableDirectory = ReadNext<TableDirectory>(&pData, &bytesRemaining);
@@ -222,11 +208,11 @@ TrueTypeParser::TrueTypeParser(const assets::BinaryData& dataToParse)
             case FOURCC("EBDT"):
             {
                 LOG(INFO) << "Locating EBDT... ";
-                pEbdtHeader = reinterpret_cast<const EBDT_Header*>(pDataStart + SwapEndianness32(pTableDirectory->Offset));
+                m_pEbdtHeader = reinterpret_cast<const EBDT_Header*>(pDataStart + SwapEndianness32(pTableDirectory->Offset));
 
                 // Straight up hardcoded in the spec
-                if (SwapEndianness16(pEbdtHeader->MajorVersion) != 2 ||
-                    SwapEndianness16(pEbdtHeader->MinorVersion) != 0)
+                if (SwapEndianness16(m_pEbdtHeader->MajorVersion) != 2 ||
+                    SwapEndianness16(m_pEbdtHeader->MinorVersion) != 0)
                 {
                     LOG(ERROR) << "EBDT or directory entry is malformed";
                     return;
@@ -237,11 +223,11 @@ TrueTypeParser::TrueTypeParser(const assets::BinaryData& dataToParse)
             case FOURCC("EBLC"):
             {
                 LOG(INFO) << "Locating EBLC... ";
-                pEblcHeader = reinterpret_cast<const EBLC_Header*>(pDataStart + SwapEndianness32(pTableDirectory->Offset));
+                m_pEblcHeader = reinterpret_cast<const EBLC_Header*>(pDataStart + SwapEndianness32(pTableDirectory->Offset));
 
                 // Straight up hardcoded in the spec
-                if (SwapEndianness16(pEblcHeader->MajorVersion) != 2 ||
-                    SwapEndianness16(pEblcHeader->MinorVersion) != 0)
+                if (SwapEndianness16(m_pEblcHeader->MajorVersion) != 2 ||
+                    SwapEndianness16(m_pEblcHeader->MinorVersion) != 0)
                 {
                     LOG(ERROR) << "EBLC or directory entry is malformed";
                     return;
@@ -252,11 +238,11 @@ TrueTypeParser::TrueTypeParser(const assets::BinaryData& dataToParse)
             case FOURCC("EBSC"):
             {
                 LOG(INFO) << "Locating EBSC... ";
-                pEbscHeader = reinterpret_cast<const EBSC_Header*>(pDataStart + SwapEndianness32(pTableDirectory->Offset));
+                m_pEbscHeader = reinterpret_cast<const EBSC_Header*>(pDataStart + SwapEndianness32(pTableDirectory->Offset));
 
                 // Straight up hardcoded in the spec
-                if (SwapEndianness16(pEbscHeader->MajorVersion) != 2 ||
-                    SwapEndianness16(pEbscHeader->MinorVersion) != 0)
+                if (SwapEndianness16(m_pEbscHeader->MajorVersion) != 2 ||
+                    SwapEndianness16(m_pEbscHeader->MinorVersion) != 0)
                 {
                     LOG(ERROR) << "EBSC or directory entry is malformed";
                     return;
@@ -297,10 +283,10 @@ TrueTypeParser::TrueTypeParser(const assets::BinaryData& dataToParse)
             case FOURCC("cmap"):
             {
                 LOG(INFO) << "Locating cmap... ";
-                pCmapHeader = reinterpret_cast<const CMAP_Header*>(pDataStart + SwapEndianness32(pTableDirectory->Offset));
+                m_pCmapHeader = reinterpret_cast<const CMAP_Header*>(pDataStart + SwapEndianness32(pTableDirectory->Offset));
 
                 // Straight up hardcoded in the spec
-                if (SwapEndianness16(pCmapHeader->Version) != 0)
+                if (SwapEndianness16(m_pCmapHeader->Version) != 0)
                 {
                     LOG(ERROR) << "cmap or directory entry is malformed";
                     return;
@@ -318,17 +304,17 @@ TrueTypeParser::TrueTypeParser(const assets::BinaryData& dataToParse)
             case FOURCC("glyf"):
             {
                 LOG(INFO) << "Locating glyf... ";
-                pFirstGlyphHeader = reinterpret_cast<const GLYPH_Header*>(pDataStart + SwapEndianness32(pTableDirectory->Offset));
+                m_pFirstGlyphHeader = reinterpret_cast<const GLYPH_Header*>(pDataStart + SwapEndianness32(pTableDirectory->Offset));
                 LOG(INFO) << "found.";
             }
             break;
             case FOURCC("head"):
             {
                 LOG(INFO) << "Locating head... ";
-                pHeadHeader = reinterpret_cast<const HEAD_Header*>(pDataStart + SwapEndianness32(pTableDirectory->Offset));
-                if (SwapEndianness16(pHeadHeader->MajorVersion) != 1 ||
-                    SwapEndianness16(pHeadHeader->MinorVersion) != 0 ||
-                    SwapEndianness32(pHeadHeader->MagicNumber)  != 0x5F0F3CF5)
+                m_pHeadHeader = reinterpret_cast<const HEAD_Header*>(pDataStart + SwapEndianness32(pTableDirectory->Offset));
+                if (SwapEndianness16(m_pHeadHeader->MajorVersion) != 1 ||
+                    SwapEndianness16(m_pHeadHeader->MinorVersion) != 0 ||
+                    SwapEndianness32(m_pHeadHeader->MagicNumber)  != 0x5F0F3CF5)
                 {
                     LOG(ERROR) << "head or directory entry is malformed";
                     return;
@@ -340,9 +326,9 @@ TrueTypeParser::TrueTypeParser(const assets::BinaryData& dataToParse)
             case FOURCC("hhea"):
             {
                 LOG(INFO) << "Locating hhea... ";
-                pHheaHeader = reinterpret_cast<const HHEA_Header*>(pDataStart + SwapEndianness32(pTableDirectory->Offset));
-                if (SwapEndianness16(pHheaHeader->MajorVersion) != 1 ||
-                    SwapEndianness16(pHheaHeader->MinorVersion) != 0)
+                m_pHheaHeader = reinterpret_cast<const HHEA_Header*>(pDataStart + SwapEndianness32(pTableDirectory->Offset));
+                if (SwapEndianness16(m_pHheaHeader->MajorVersion) != 1 ||
+                    SwapEndianness16(m_pHheaHeader->MinorVersion) != 0)
                 {
                     LOG(ERROR) << "hhea or directory entry is malformed";
                     return;
@@ -360,25 +346,21 @@ TrueTypeParser::TrueTypeParser(const assets::BinaryData& dataToParse)
             case FOURCC("loca"):
             {
                 LOG(INFO) << "Locating loca table... ";
-                pLocaHeader = reinterpret_cast<const LOCA_Header*>(pDataStart + SwapEndianness32(pTableDirectory->Offset));
+                m_pLocaHeader = reinterpret_cast<const LOCA_Header*>(pDataStart + SwapEndianness32(pTableDirectory->Offset));
                 LOG(INFO) << "found.";
             }
             break;
             case FOURCC("maxp"):
             {
                 LOG(INFO) << "Locating maxp table... ";
-                pMaxpHeader = reinterpret_cast<const MAXP_Header*>(pDataStart + SwapEndianness32(pTableDirectory->Offset));
+                m_pMaxpHeader = reinterpret_cast<const MAXP_Header*>(pDataStart + SwapEndianness32(pTableDirectory->Offset));
 
-                if (SwapEndianness32(pMaxpHeader->Version) != 0x00010000)
+                if (SwapEndianness32(m_pMaxpHeader->Version) != 0x00010000)
                 {
                     LOG(ERROR) << "maxp or directory entry is malformed";
                     return;
                 }
 
-                expandedContourPointFlags.resize(pMaxpHeader->MaxPoints);
-                expandedContourXCoordinates.resize(pMaxpHeader->MaxPoints);
-                expandedContourYCoordinates.resize(pMaxpHeader->MaxPoints);
-                
                 LOG(INFO) << "found.";
             }
             break;
@@ -394,15 +376,18 @@ TrueTypeParser::TrueTypeParser(const assets::BinaryData& dataToParse)
                 LOG(INFO) << "post in table directory. Skipping.";
             }
             break;
+            default:
+                system::LogAndFail("Unhandled TrueType table");
+                break;
         }
     }
 
     // Okay great. Now we have some headers. Let's check out cmap
-    const uint16_t NumCmapTables = SwapEndianness16(pCmapHeader->NumTables);
-    const CMAP_SegmentMapHeader* pSegmentMap = nullptr;
+    const uint16_t NumCmapTables = SwapEndianness16(m_pCmapHeader->NumTables);
+    const CMAP_SegmentMapHeader* m_pCmapSegmentMap = nullptr;
     for (uint16_t i = 0; i < NumCmapTables; ++i)
     {
-        const CMAP_EncodingRecord* pCurrentEncodingRecord = &pCmapHeader->EncodingRecords[i];
+        const CMAP_EncodingRecord* pCurrentEncodingRecord = &m_pCmapHeader->EncodingRecords[i];
         const uint16_t PlatformID = SwapEndianness16(pCurrentEncodingRecord->PlatformID);
         const uint16_t EncodingID = SwapEndianness16(pCurrentEncodingRecord->EncodingID);
 
@@ -410,72 +395,83 @@ TrueTypeParser::TrueTypeParser(const assets::BinaryData& dataToParse)
         {
             // This is the configuration we're after. Solid.
             const uint32_t MapOffset = SwapEndianness32(pCurrentEncodingRecord->SubtableOffset);
-            pSegmentMap = GetOffsetFrom<CMAP_SegmentMapHeader>(pCmapHeader, MapOffset);
+            m_pCmapSegmentMap = GetOffsetFrom<CMAP_SegmentMapHeader>(m_pCmapHeader, MapOffset);
             break;
         }
     }
 
-    if (!pSegmentMap)
+    if (!m_pCmapSegmentMap)
     {
         LOG(ERROR) << "TTF: Unsupported encoding format";
         return;
     }
     
-    const uint32_t NumSegmentsX2 = SwapEndianness16(pSegmentMap->SegCountX2);
+    const uint32_t NumSegmentsX2 = SwapEndianness16(m_pCmapSegmentMap->SegCountX2);
     const uint32_t NumSegments = NumSegmentsX2 / 2;
-    CMAP_SegmentMapPointers segmentMapPointers;
-    segmentMapPointers.pEndCodes       = GetOffsetFrom<uint16_t>(pSegmentMap, sizeof(*pSegmentMap));
-    segmentMapPointers.pStartCodes     = GetOffsetFrom<uint16_t>(segmentMapPointers.pEndCodes, NumSegmentsX2 + 2);
-    segmentMapPointers.pIdDeltas       = GetOffsetFrom<int16_t>(segmentMapPointers.pStartCodes, NumSegmentsX2);
-    segmentMapPointers.pIdRangeOffsets = GetOffsetFrom<uint16_t>(segmentMapPointers.pIdDeltas, NumSegmentsX2);
-    segmentMapPointers.pGlyphIdArray   = GetOffsetFrom<uint16_t>(segmentMapPointers.pIdRangeOffsets, NumSegmentsX2);
+    CMAP_SegmentMapPointers m_CmapSegmentMapPointers;
+    m_CmapSegmentMapPointers.pEndCodes       = GetOffsetFrom<uint16_t>(m_pCmapSegmentMap, sizeof(*m_pCmapSegmentMap));
+    m_CmapSegmentMapPointers.pStartCodes     = GetOffsetFrom<uint16_t>(m_CmapSegmentMapPointers.pEndCodes, NumSegmentsX2 + 2);
+    m_CmapSegmentMapPointers.pIdDeltas       = GetOffsetFrom<int16_t>(m_CmapSegmentMapPointers.pStartCodes, NumSegmentsX2);
+    m_CmapSegmentMapPointers.pIdRangeOffsets = GetOffsetFrom<uint16_t>(m_CmapSegmentMapPointers.pIdDeltas, NumSegmentsX2);
+    m_CmapSegmentMapPointers.pGlyphIdArray   = GetOffsetFrom<uint16_t>(m_CmapSegmentMapPointers.pIdRangeOffsets, NumSegmentsX2);
 
-    if (segmentMapPointers.pEndCodes[NumSegments] != 0 ||
-        segmentMapPointers.pEndCodes[NumSegments - 1] != 0xFFFF)
+    if (m_CmapSegmentMapPointers.pEndCodes[NumSegments] != 0 ||
+        m_CmapSegmentMapPointers.pEndCodes[NumSegments - 1] != 0xFFFF)
     {
         system::LogAndFail("Improperly initialized segment map pointers");
     }
 
-    // Linear search for a test character. The segment map is designed for binary search--
-    // later !
-    const uint16_t TestChar = static_cast<uint16_t>('0');
-    uint16_t glyphId = 0xFFFF; // Invalid
-    for (uint16_t i = 0; i < NumSegments; ++i)
-    {
-        const uint16_t SegmentStart = SwapEndianness16(segmentMapPointers.pStartCodes[i]);
-        const uint16_t SegmentEnd = SwapEndianness16(segmentMapPointers.pEndCodes[i]);
+    m_isGood = true;
+}
 
-        if (TestChar <= SegmentEnd && TestChar >= SegmentStart)
+bool TrueTypeParser::IsGood() 
+{
+    return m_isGood;
+}
+
+Glyph TrueTypeParser::GetCharacterGlyph(char c)
+{
+    const uint32_t NumCmapSegmentsX2 = SwapEndianness16(m_pCmapSegmentMap->SegCountX2);
+    const uint32_t NumCmapSegments = NumCmapSegmentsX2 / 2;
+
+    const uint16_t GlyphCharacter = static_cast<uint16_t>(c);
+    uint16_t glyphId = 0xFFFF; // Invalid
+    for (uint16_t i = 0; i < NumCmapSegments; ++i)
+    {
+        const uint16_t SegmentStart = SwapEndianness16(m_CmapSegmentMapPointers.pStartCodes[i]);
+        const uint16_t SegmentEnd = SwapEndianness16(m_CmapSegmentMapPointers.pEndCodes[i]);
+
+        if (GlyphCharacter <= SegmentEnd && GlyphCharacter >= SegmentStart)
         {
-            const uint16_t IdOffset = SwapEndianness16(segmentMapPointers.pIdRangeOffsets[i]);
+            const uint16_t IdOffset = SwapEndianness16(m_CmapSegmentMapPointers.pIdRangeOffsets[i]);
 
             // Indexing trick from the spec
-            const uint16_t GlyphIndex = SwapEndianness16(*(IdOffset / 2 + (TestChar - SegmentStart) + &segmentMapPointers.pIdRangeOffsets[i]));
-            if (segmentMapPointers.pGlyphIdArray[GlyphIndex] == 0)
+            const uint16_t GlyphIndex = SwapEndianness16(*(IdOffset / 2 + (GlyphCharacter - SegmentStart) + &m_CmapSegmentMapPointers.pIdRangeOffsets[i]));
+            if (m_CmapSegmentMapPointers.pGlyphIdArray[GlyphIndex] == 0)
             {
-                glyphId = TestChar + SwapEndianness16(segmentMapPointers.pIdDeltas[i]);
+                glyphId = GlyphCharacter + SwapEndianness16(m_CmapSegmentMapPointers.pIdDeltas[i]);
             }
             else
             {
                 glyphId = SwapEndianness16(GlyphIndex);
             }
         }
-        else if (TestChar > SegmentEnd || SegmentEnd == 0xFFFF)
+        else if (GlyphCharacter > SegmentEnd || SegmentEnd == 0xFFFF)
         {
             break;
         }
     }
 
     // Grab the offset for this glyph
-    const uint32_t GlyphOffset = SwapEndianness32(pLocaHeader->Offsets[glyphId]);
-    const GLYPH_Header* pFoundGlyphHeader = GetOffsetFrom<GLYPH_Header>(pFirstGlyphHeader, GlyphOffset);
-    if (SwapEndianness16(pFoundGlyphHeader->NumberOfContours) < 0)
+    const uint32_t GlyphOffset = SwapEndianness32(m_pLocaHeader->Offsets[glyphId]);
+    const GLYPH_Header* pFoundGlyphHeader = GetOffsetFrom<GLYPH_Header>(m_pFirstGlyphHeader, GlyphOffset);
+    const uint16_t NumberOfContours = SwapEndianness16(pFoundGlyphHeader->NumberOfContours);
+    if (SwapEndianness16(NumberOfContours) < 0)
     {
         LOG(ERROR) << "Unsupported glyph description type";
-        return;
+        return Glyph::kInvalidGlyph;
     }
 
-    const uint16_t NumberOfContours = SwapEndianness16(pFoundGlyphHeader->NumberOfContours);
     const GLYPH_ContoursDescription* pContourDescriptions = GetOffsetFrom<GLYPH_ContoursDescription>(pFoundGlyphHeader, sizeof(*pFoundGlyphHeader));
     const GLYPH_InstructionsDescription* pInstructionDescriptions = GetOffsetFrom<GLYPH_InstructionsDescription>(pContourDescriptions, NumberOfContours * 2);
 
@@ -483,6 +479,10 @@ TrueTypeParser::TrueTypeParser(const assets::BinaryData& dataToParse)
     const uint16_t NumberOfPoints = SwapEndianness16(pContourDescriptions->EndPtsOfContours[NumberOfContours - 1]) + 1;
     GLYPH_PointData pointData;
     pointData.pFlags = GetOffsetFrom<uint8_t>(pInstructionDescriptions, pInstructionDescriptions->InstructionLength + 2);
+
+    std::vector<uint8_t> expandedContourPointFlags;
+    std::vector<int16_t> expandedContourXCoordinates;
+    std::vector<int16_t> expandedContourYCoordinates;
 
     // The flags array can specify repeated flag bytes, so it can actually be shorter in length than the X/Y
     // coordinate array. This also means it must be processed to know the *actual* length of the array, which
@@ -528,7 +528,7 @@ TrueTypeParser::TrueTypeParser(const assets::BinaryData& dataToParse)
             &pointData.pYCoordinates))
     {
         LOG(ERROR) << "TTF: Failed to decode glyph X coordinates";
-        return;
+        return Glyph::kInvalidGlyph;
     }
 
     if (!DecodeGlyphCoordinates(
@@ -542,7 +542,7 @@ TrueTypeParser::TrueTypeParser(const assets::BinaryData& dataToParse)
             &expandedContourYCoordinates))
     {
         LOG(ERROR) << "TTF: Failed to decode glyph y coordinates";
-        return;
+        return Glyph::kInvalidGlyph;
     }
 
     // Scale and then rasterize
@@ -551,71 +551,75 @@ TrueTypeParser::TrueTypeParser(const assets::BinaryData& dataToParse)
     const uint8_t PointSize = 24; // TODO: parameterize
     const uint16_t PPI = 100;
     const uint32_t PPEM = PointSize * PPI / 72.0f;
-    uint8_t* pPixelGlyph = new uint8_t[PPEM * PPEM];
+    const uint16_t UnitsPerEm = SwapEndianness16(m_pHeadHeader->UnitsPerEm);
+    const float EmToPixels = static_cast<float>(PPEM) / UnitsPerEm;
+    const int16_t xMin = SwapEndianness16(pFoundGlyphHeader->XMin) * EmToPixels;
+    const int16_t xMax = SwapEndianness16(pFoundGlyphHeader->XMax) * EmToPixels;
+    const int16_t yMin = SwapEndianness16(pFoundGlyphHeader->YMin) * EmToPixels;
+    const int16_t yMax = SwapEndianness16(pFoundGlyphHeader->YMax) * EmToPixels;
+    const uint16_t GlyphHeight = yMax - yMin + 1;
+    const uint16_t GlyphWidth = xMax - xMin + 1;
+    uint8_t* pPixelGlyph = new uint8_t[GlyphWidth * GlyphHeight];
     if (!pPixelGlyph)
     {
         system::LogAndFail("Allocation fialed. OOM.");
     }
-    memset(pPixelGlyph, 0, PPEM * PPEM);
+    memset(pPixelGlyph, 0, GlyphWidth * GlyphHeight);
 
     // Render the contours
-    const uint16_t UnitsPerEm = SwapEndianness16(pHeadHeader->UnitsPerEm);
-    const float EmToPixels = static_cast<float>(PPEM) / UnitsPerEm;
+
+    // TODO: This loop sucks, make it better!!
     uint16_t contourStartingPointIndex = 0;
-    int16_t previousX = expandedContourXCoordinates[0] * EmToPixels;
-    int16_t previousY = expandedContourYCoordinates[0] * EmToPixels;
+    int16_t previousX = expandedContourXCoordinates[0] * EmToPixels - xMin;
+    int16_t previousY = expandedContourYCoordinates[0] * EmToPixels - yMin;
 
     uint16_t pointsInContour = SwapEndianness16(pContourDescriptions->EndPtsOfContours[0]) + 1;
-    // uint8_t contourWindingOrder = ComputeWindingOrder(
-    //     expandedContourXCoordinates.data(),
-    //     expandedContourYCoordinates.data(),
-    //     pointsInContour);
     uint16_t pointIndex = 1;
     uint16_t contourIndex = 0;
 
     // Encode the winding order in the upper nibble
-    // uint8_t fillColor = (contourWindingOrder << 4) | 1;
     while (contourIndex < NumberOfContours && pointIndex < NumberOfPoints)
     {
         const uint8_t Flags = expandedContourPointFlags[pointIndex];
-        const int16_t X     = expandedContourXCoordinates[pointIndex] * EmToPixels;
-        const int16_t Y     = expandedContourYCoordinates[pointIndex] * EmToPixels;
+        const int16_t X     = expandedContourXCoordinates[pointIndex] * EmToPixels - xMin;
+        const int16_t Y     = expandedContourYCoordinates[pointIndex] * EmToPixels - yMin;
 
         if (!(Flags & kGLYPHPointFlagOnCurvePoint))
         {
             system::LogAndFail("No support for bezier fanciness (yet)");
         }
 
-        // TODO: Not sure if this is right when starting a new contour? Initial contour's first point
-        // should probably be included in the loop logic.
-
-        //DrawLine(previousX, previousY, X, Y, pPixelGlyph, PPEM, fillColor);
         {
+            const uint8_t PreviousPointValue = pPixelGlyph[previousY * GlyphWidth + previousX];
+
             const uint8_t FillColor = (SegmentToRasterFlags(previousX, previousY, X, Y) << 4) | 1;
-            DrawLine(previousX, previousY, X, Y, pPixelGlyph, PPEM, FillColor);
+            DrawLine(previousX, previousY, X, Y, pPixelGlyph, GlyphWidth, FillColor);
+
+            // Maintain flags for the previous point for correct winding number evaluation when performing
+            // scanline fill.
+            pPixelGlyph[previousY * GlyphWidth + previousX] |= (PreviousPointValue & 0xF0);
         }
 
-        if (pointIndex == pointsInContour - 1)
+        if ((pointIndex - contourStartingPointIndex) == pointsInContour - 1)
         {
             ++contourIndex;
 
             // Close the contour
-            uint16_t contourStartX = expandedContourXCoordinates[contourStartingPointIndex] * EmToPixels;
-            uint16_t contourStartY = expandedContourYCoordinates[contourStartingPointIndex] * EmToPixels;
+            uint16_t contourStartX = expandedContourXCoordinates[contourStartingPointIndex] * EmToPixels - xMin;
+            uint16_t contourStartY = expandedContourYCoordinates[contourStartingPointIndex] * EmToPixels - yMin;
             {
+                const uint8_t PreviousPointValue = pPixelGlyph[Y * GlyphWidth + X];
+
                 const uint8_t FillColor = (SegmentToRasterFlags(X, Y, contourStartX, contourStartY) << 4) | 1;
-                DrawLine(previousX, previousY, X, Y, pPixelGlyph, PPEM, FillColor);
+                DrawLine(X, Y, contourStartX, contourStartY, pPixelGlyph, GlyphWidth, FillColor);
+
+                // Maintain flags for the previous point for correct winding number evaluation when performing
+                // scanline fill.
+                pPixelGlyph[Y * GlyphWidth + X] |= (PreviousPointValue & 0xF0);
             }
-            // DrawLine(X, Y, contourStartX, contourStartY, pPixelGlyph, PPEM, fillColor);
 
             contourStartingPointIndex = pointIndex + 1;
             pointsInContour = SwapEndianness16(pContourDescriptions->EndPtsOfContours[contourIndex]) + 1 - contourStartingPointIndex;
-            // contourWindingOrder = ComputeWindingOrder(
-            //     &expandedContourXCoordinates[contourStartingPointIndex],
-            //     &expandedContourYCoordinates[contourStartingPointIndex],
-            //     pointsInContour);
-            // Encode the winding order in the upper nibble
-            // fillColor = (contourWindingOrder << 4) | 1;
         }
 
         previousX = X;
@@ -624,39 +628,43 @@ TrueTypeParser::TrueTypeParser(const assets::BinaryData& dataToParse)
         ++pointIndex;
     }
 
-    DebugDumpGlyph(pPixelGlyph, PPEM);
+    DebugDumpGlyph(pPixelGlyph, GlyphWidth, GlyphHeight);
 
     // Call ScanlineFill() for each y-value
     // TODO: Use xMin, xMax, etc...
-    const int16_t xMin = SwapEndianness16(pFoundGlyphHeader->XMin) * EmToPixels;
-    const int16_t xMax = SwapEndianness16(pFoundGlyphHeader->XMax) * EmToPixels;
-    const int16_t yMin = SwapEndianness16(pFoundGlyphHeader->YMin) * EmToPixels;
-    const int16_t yMax = SwapEndianness16(pFoundGlyphHeader->YMax) * EmToPixels;
     for (int16_t y = yMin; y <= yMax; y++)
     {
         std::cerr << "y = " << y << std::endl;
-        uint8_t* pScanline = &pPixelGlyph[y * PPEM];
+        uint8_t* pScanline = &pPixelGlyph[y * GlyphWidth];
 
         const uint8_t FinalFillColor = 1;
-        ScanlineFill(pScanline, PPEM, 0, PPEM - 1, FinalFillColor);
-        DebugDumpGlyph(pPixelGlyph, PPEM);
+        ScanlineFill(pScanline, GlyphWidth, FinalFillColor);
+        DebugDumpGlyph(pPixelGlyph, GlyphWidth, GlyphHeight);
     }
     
 #if 0
     // Iterate over glyphs
-    const GLYPH_Header* pCurrentGlyphHeader = pFirstGlyphHeader;
-    const uint16_t NumGlyphs = SwapEndianness16(pMaxpHeader->NumGlyphs);
+    const GLYPH_Header* pCurrentGlyphHeader = m_pFirstGlyphHeader;
+    const uint16_t NumGlyphs = SwapEndianness16(m_pMaxpHeader->NumGlyphs);
     for (uint16_t i = 0; i < NumGlyphs; ++i)
     {
-        const uint32_t GlyphOffset = SwapEndianness(pLocaHeader->offsets[i]);
-        pSegmentMap = GetOffsetFrom<GLYPH_Header>(pFirstGlyphHeader, GlyphOffset);
+        const uint32_t GlyphOffset = SwapEndianness(m_pLocaHeader->offsets[i]);
+        pSegmentMap = GetOffsetFrom<GLYPH_Header>(m_pFirstGlyphHeader, GlyphOffset);
     }
 #endif
 
-    m_isGood = true;
-}
+    bool* pGlyphBitMatrix = new bool[GlyphWidth * GlyphHeight];
+    for (int16_t y = GlyphHeight - 1; y >= 0; --y) // One flat loop instead maybe?
+    {
+        for (int16_t x = 0; x < GlyphWidth; ++x)
+        {
+            const size_t Index = y * GlyphWidth + x;
+            pGlyphBitMatrix[Index] = pPixelGlyph[Index] == 0 ? false : true;
+        }
+    }
 
-bool TrueTypeParser::IsGood() 
-{
-    return m_isGood;
+    auto newGlyph = Glyph{ GlyphWidth, GlyphHeight, pGlyphBitMatrix };
+    delete[] pPixelGlyph;
+
+    return newGlyph;
 }

@@ -3,12 +3,11 @@
 #include <math.h>
 #include <sputter/system/system.h>
 
-// REMOVEME
-#include <iostream>
+#include <iostream> // REMOVEME
 
 namespace 
 {
-    int16_t LineFunction(int16_t x, int16_t dX, int16_t stepX2x, int16_t y, int16_t dY, uint16_t stepY2x)
+    int16_t LineFunction(int16_t x, int16_t dX, int16_t stepX2x, int16_t y, int16_t dY, int16_t stepY2x)
     {
 
         return dY * (2 * x + stepX2x) - dX * (2 * y + stepY2x);
@@ -82,29 +81,25 @@ namespace
         {
             // Locally crossing this segment from left-to-right
             (*pWindingNumber)--;
-            std::cerr << "CROSS: dY = 1, winding = " << (int)*pWindingNumber << "\n";
+            std::cerr << "CROSS: dy == 1, winding number = " << int(*pWindingNumber) << std::endl;
         }
         else if (dY == 0 && dX == 1)
         {
-            // Locally crossing this segment from bottom-to-top
-            (*pWindingNumber)++;
-            std::cerr << "CROSS: dY = 0, dX = 1, winding = " << (int)*pWindingNumber << "\n";
+            // Locally crossing this segment from bottom-to-top. Don't care about this case.
         }
         else if (dY == 0 && dX == -1)
         {
-            // Locally crossing this segment from top-to-bottom
-            (*pWindingNumber)--;
-            std::cerr << "CROSS: dY = 0, dX = -1 winding = " << (int)*pWindingNumber << "\n";
+            // Locally crossing this segment from top-to-bottom. Don't care about this case.
         }
         else if (dY == -1)
         {
             // Locally crossing this segment from right-to-left
             (*pWindingNumber)++;
-            std::cerr << "CROSS: dY = -1 winding = " << (int)*pWindingNumber << "\n";
+            std::cerr << "CROSS: dy == -1, winding number = " << int(*pWindingNumber) << std::endl;
         }
         else
         {
-            sputter::system::LogAndFail("Didn't think of this case!");
+            sputter::system::LogAndFail("Unexpected delta combination");
         }
     }
 
@@ -252,21 +247,14 @@ void sputter::render::DrawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, u
     }
 }
 
-void sputter::render::ScanlineFill(uint8_t* pScanline, uint16_t stride, int16_t xMin, int16_t xMax, uint8_t color)
+void sputter::render::ScanlineFill(uint8_t* pScanline, uint16_t stride, uint8_t color)
 {
-#if DEBUG
-    if ((xMax + 1) > stride || (xMax - xMin + 1) > stride || xMin >= stride || xMin > xMax || !pScanline)
-    {
-        system::LogAndFail("Invalid parameters in ScanlineFill");
-    }
-#endif
-
     // Compute winding numbers in pass one
     // Second pass to actually fill in the scanline
 
     int8_t windingNumber = 0;
-    uint8_t previousValue = pScanline[xMax];
-    for (int16_t x = xMax - 1; x >= xMin; --x)
+    uint8_t previousValue = pScanline[stride - 1];
+    for (int16_t x = stride - 2; x >= 0; --x)
     {
         const uint8_t currentValue = pScanline[x];
         if ((currentValue & 0xF) == 0)
@@ -277,7 +265,14 @@ void sputter::render::ScanlineFill(uint8_t* pScanline, uint16_t stride, int16_t 
                 const uint8_t RasterFlags = (previousValue >> 4) & 0xF;
                 int8_t dX, dY;
                 RasterFlagsToDeltas(RasterFlags, &dX, &dY);
+
+                int8_t oldWindingNumber = windingNumber;
                 UpdateWindingNumberChangeFromRightRayTest(dX, dY, &windingNumber);
+                if (oldWindingNumber != windingNumber)
+                {
+                    std::cerr << "x = " << x << std::endl;
+                }
+                
             }
             pScanline[x] |= (windingNumber << 4);
         }
@@ -286,8 +281,8 @@ void sputter::render::ScanlineFill(uint8_t* pScanline, uint16_t stride, int16_t 
     }
 
     uint8_t numContours = 0;
-    previousValue = pScanline[xMin];
-    for (uint16_t x = xMin + 1; x <= xMax; ++x)
+    previousValue = pScanline[0];
+    for (uint16_t x = 1; x < stride; ++x)
     {
         const uint8_t currentValue = pScanline[x];
         if ((currentValue & 0xF) == 0)
@@ -311,6 +306,4 @@ void sputter::render::ScanlineFill(uint8_t* pScanline, uint16_t stride, int16_t 
 
         previousValue = currentValue;
     }
-
-    std::cerr.flush();
 }

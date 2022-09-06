@@ -24,5 +24,5 @@ namespace sputter { namespace render {
     void DrawHorizontalLine(int16_t y, int16_t x0, int16_t x1, uint8_t* pData, uint16_t stride, uint8_t color);
     void DrawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t* pData, uint16_t stride, uint8_t color);
 
-    void ScanlineFill(uint8_t* pScanline, uint16_t stride, int16_t xMin, int16_t xMax, uint8_t color);
+    void ScanlineFill(uint8_t* pScanline, uint16_t stride, uint8_t color);
 }}
