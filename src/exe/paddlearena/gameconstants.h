@@ -40,3 +40,5 @@ const sputter::math::FPVector2D kGameConstantsBallStartDirection = sputter::math
     -sputter::math::FPOne,
     sputter::math::FPOne
     );
+
+const uint32_t kGameConstantsScoreSize = 5;

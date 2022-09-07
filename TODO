@@ -23,7 +23,8 @@ Next high-level goal: Start prototyping gameplay
 ** Check out: https://blog.hamaluik.ca/posts/simple-aabb-collision-using-minkowski-difference/
 * "Ball" - procedural cube, 3d rigidbody (!)
 * Debug + Fix collision flags not working as intended
-* Volumetric fonts
+* Volumetric fonts 
+
 * Scoring & display
 ** Need to revisit a few fundamental questions: what is the "resolution" 
    for this game? Need this for proper font rendering, and to properly

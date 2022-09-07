@@ -29,6 +29,25 @@
 
 using namespace sputter;
 
+namespace 
+{
+    void DrawScore(int x, int y, sputter::render::VolumetricTextRenderer* pTextRenderer, uint16_t score)
+    {
+        // itoa for unsigned shorts, more or less. Scores shouldn't ever get to four
+        // digits, but hey, just in case.
+        char scoreBuffer[5] = {}; // +1 for null termination
+        char* pScoreString = &scoreBuffer[sizeof(scoreBuffer) - 1];
+        do
+        {
+            pScoreString--;
+            *pScoreString = '0' + (score % 10);
+            score /= 10;
+        } while (score && (pScoreString > scoreBuffer));
+
+        pTextRenderer->DrawText(x, y, kGameConstantsScoreSize, pScoreString);
+    }
+}
+
 PaddleArena::PaddleArena(
         render::Window* pWindow,
         const std::string& assetStoragePath,
@@ -147,7 +166,8 @@ void PaddleArena::Draw()
     m_pMeshSubsystem->Draw(OrthoMatrix, viewMatrix);
 
     m_pTextRenderer->SetMatrices(OrthoMatrix, viewMatrix);
-    m_pTextRenderer->DrawText(-370, 300, 5, "0123456789");
+    DrawScore(-300, 305, m_pTextRenderer, m_pGameState->Player1Score);
+    DrawScore(200, 305, m_pTextRenderer, m_pGameState->Player2Score);
 }
 
 bool PaddleArena::StartGame()

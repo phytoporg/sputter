@@ -31,4 +31,6 @@ struct GameState
     Paddle           Player1Paddle;
     Paddle           Player2Paddle;
     Stage            Arena;
+    uint16_t         Player1Score = 0;          
+    uint16_t         Player2Score = 0;          
 };
