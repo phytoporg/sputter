@@ -611,17 +611,21 @@ Glyph TrueTypeParser::GetCharacterGlyph(char c)
             uint16_t contourStartY = expandedContourYCoordinates[contourStartingPointIndex] * EmToPixels - yMin;
             DrawContourSegment(X, Y, contourStartX, contourStartY, pPixelGlyph, GlyphWidth, Color);
 
-            contourStartingPointIndex = pointIndex + 1;
+            // Begin the next contour
+            contourStartingPointIndex = ++pointIndex;
             pointsInContour = SwapEndianness16(pContourDescriptions->EndPtsOfContours[contourIndex]) + 1 - contourStartingPointIndex;
-        }
 
-        previousX = X;
-        previousY = Y;
+            previousX = expandedContourXCoordinates[contourStartingPointIndex] * EmToPixels - xMin;
+            previousY = expandedContourYCoordinates[contourStartingPointIndex] * EmToPixels - yMin;
+        }
+        else
+        {
+            previousX = X;
+            previousY = Y;
+        }
 
         ++pointIndex;
     }
-
-    DebugDumpGlyph(pPixelGlyph, GlyphWidth, GlyphHeight);
 
     // Call ScanlineFill() for each y-value
     for (int16_t y = yMin; y <= yMax; y++)
@@ -631,9 +635,9 @@ Glyph TrueTypeParser::GetCharacterGlyph(char c)
 
         const uint8_t FinalFillColor = 1;
         ScanlineFill(pScanline, GlyphWidth, FinalFillColor);
-        DebugDumpGlyph(pPixelGlyph, GlyphWidth, GlyphHeight);
     }
     
+    // Copying this over into a bool matrix is silly
     bool* pGlyphBitMatrix = new bool[GlyphWidth * GlyphHeight];
     for (int16_t y = 0; y < GlyphHeight; ++y) // One flat loop instead maybe?
     {

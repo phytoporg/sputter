@@ -79,7 +79,7 @@ namespace
         {
             // Locally crossing this segment from left-to-right
             (*pWindingNumber)--;
-            VLOG(1) << "CROSS: dy == 1, winding number = " << int(*pWindingNumber);
+            VLOG(1) << "CROSS: dy == 1, winding number = " << int(*pWindingNumber) << "\n";
         }
         else if (dY == 0 && dX == 1)
         {
@@ -93,7 +93,7 @@ namespace
         {
             // Locally crossing this segment from right-to-left
             (*pWindingNumber)++;
-            VLOG(1) << "CROSS: dy == -1, winding number = " << int(*pWindingNumber);
+            VLOG(1) << "CROSS: dy == -1, winding number = " << int(*pWindingNumber) << "\n";
         }
         else
         {
@@ -184,58 +184,55 @@ void sputter::render::ScanlineFill(uint8_t* pScanline, uint16_t stride, uint8_t 
 
     // TODO: This can surely be done in a single pass?
 
+    uint8_t previousValue = 0; // Init to zero, in case rightmost pixel is a contour pixel
     int8_t windingNumber = 0;
-    uint8_t previousValue = pScanline[stride - 1];
-    for (int16_t x = stride - 2; x >= 0; --x)
+    int8_t contourWindingNumber = 0;
+    for (int16_t x = stride - 1; x >= 0; --x)
     {
+        // TODO: Some cleanup here, and comments explaining how this is working!
         const uint8_t currentValue = pScanline[x];
+        if ((currentValue & 0xF) == 1 && (previousValue & 0xF) == 0)
+        {
+            const uint8_t RasterFlags = (currentValue >> 4) & 0xF;
+            int8_t dX, dY;
+            RasterFlagsToDeltas(RasterFlags, &dX, &dY);
+
+            UpdateWindingNumberChangeFromRightRayTest(dX, dY, &contourWindingNumber);
+        }
+        else if ((currentValue & 0xF) == 0 && (previousValue & 0xF) == 1)
+        {
+            const uint8_t RasterFlags = (previousValue >> 4) & 0xF;
+            int8_t dX, dY;
+            RasterFlagsToDeltas(RasterFlags, &dX, &dY);
+
+            int8_t tempWindingNumber = 0;
+            UpdateWindingNumberChangeFromRightRayTest(dX, dY, &tempWindingNumber);
+            if (tempWindingNumber == contourWindingNumber)
+            {
+                windingNumber += contourWindingNumber;
+            }
+            contourWindingNumber = 0;
+        }
+
         if ((currentValue & 0xF) == 0)
         {
-            // 1 -> 0 transition
-            if ((previousValue & 0xF) == 1)
-            {
-                const uint8_t RasterFlags = (previousValue >> 4) & 0xF;
-                int8_t dX, dY;
-                RasterFlagsToDeltas(RasterFlags, &dX, &dY);
-
-                int8_t oldWindingNumber = windingNumber;
-                UpdateWindingNumberChangeFromRightRayTest(dX, dY, &windingNumber);
-                if (oldWindingNumber != windingNumber)
-                {
-                    VLOG(1) << "x = " << x << "\n";
-                }
-                
-            }
             pScanline[x] |= (windingNumber << 4);
         }
 
         previousValue = currentValue;
     }
 
-    uint8_t numContours = 0;
-    previousValue = pScanline[0];
-    for (uint16_t x = 1; x < stride; ++x)
+    for (uint16_t x = 0; x < stride; ++x)
     {
         const uint8_t currentValue = pScanline[x];
         if ((currentValue & 0xF) == 0)
         {
-            // 1 -> 0 transition
-            if ((previousValue & 0xF) == 1)
+            // Keep the sign extension!
+            const int8_t WindingNumber = currentValue >> 4;
+            if (WindingNumber != 0)
             {
-                ++numContours;
-            }
-
-            if (numContours > 0)
-            {
-                // Keep the sign extension!
-                const int8_t WindingNumber = currentValue >> 4;
-                if (WindingNumber != 0)
-                {
-                    pScanline[x] = color;
-                }
+                pScanline[x] = color;
             }
         }
-
-        previousValue = currentValue;
     }
 }
