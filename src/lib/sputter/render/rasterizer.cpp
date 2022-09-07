@@ -101,6 +101,16 @@ namespace
         }
     }
 
+    int8_t WindingNumberDeltaFromContourPixelValue(uint8_t pixelValue)
+    {
+        const uint8_t RasterFlags = (pixelValue >> 4) & 0xF;
+        int8_t dX, dY;
+        sputter::render::RasterFlagsToDeltas(RasterFlags, &dX, &dY);
+
+        int8_t windingNumber = 0; 
+        UpdateWindingNumberChangeFromRightRayTest(dX, dY, &windingNumber);
+        return windingNumber;
+    }
 }
 
 uint8_t sputter::render::SegmentToRasterFlags(int16_t x0, int16_t y0, int16_t x1, int16_t y1)
@@ -185,38 +195,41 @@ void sputter::render::ScanlineFill(uint8_t* pScanline, uint16_t stride, uint8_t 
     // TODO: This can surely be done in a single pass?
 
     uint8_t previousValue = 0; // Init to zero, in case rightmost pixel is a contour pixel
-    int8_t windingNumber = 0;
-    int8_t contourWindingNumber = 0;
+    int8_t runningWindingNumber = 0;
+    int8_t initialContourWindingNumber = 0;
     for (int16_t x = stride - 1; x >= 0; --x)
     {
-        // TODO: Some cleanup here, and comments explaining how this is working!
+        // There are three cases to handle in this loop:
+        //
+        // Case 1: A contour is one pixel wide on this scanline. The resulting winding number for this
+        // contour is singular and can be computed directly from the encountered pixel.
+        //
+        // Case 2: A contour is multiple pixels on this scanline. The initially-encountered pixel and
+        // the "exit" pixel for the countour run in the same vertical direction; the winding number
+        // contribution is the same as if the counter were a single pixel wide in that direction.
+        //
+        // Case 3: Similar to case 2, multiple pixels encountered on the scanline but the initial and
+        // exit pixels *differ* in vertical direction. In this case, the winding number contributions
+        // cancel out, leaving runningWindingNumber unchanged.
         const uint8_t currentValue = pScanline[x];
         if ((currentValue & 0xF) == 1 && (previousValue & 0xF) == 0)
         {
-            const uint8_t RasterFlags = (currentValue >> 4) & 0xF;
-            int8_t dX, dY;
-            RasterFlagsToDeltas(RasterFlags, &dX, &dY);
-
-            UpdateWindingNumberChangeFromRightRayTest(dX, dY, &contourWindingNumber);
+            // Entering a contour from the right. Check the initial contour winding number.
+            initialContourWindingNumber = WindingNumberDeltaFromContourPixelValue(currentValue);
         }
         else if ((currentValue & 0xF) == 0 && (previousValue & 0xF) == 1)
         {
-            const uint8_t RasterFlags = (previousValue >> 4) & 0xF;
-            int8_t dX, dY;
-            RasterFlagsToDeltas(RasterFlags, &dX, &dY);
-
-            int8_t tempWindingNumber = 0;
-            UpdateWindingNumberChangeFromRightRayTest(dX, dY, &tempWindingNumber);
-            if (tempWindingNumber == contourWindingNumber)
+            // Exiting a contour on its left edge.
+            int8_t exitPixelWindingNumber = WindingNumberDeltaFromContourPixelValue(previousValue);
+            if (exitPixelWindingNumber == initialContourWindingNumber)
             {
-                windingNumber += contourWindingNumber;
+                runningWindingNumber += initialContourWindingNumber;
             }
-            contourWindingNumber = 0;
         }
 
         if ((currentValue & 0xF) == 0)
         {
-            pScanline[x] |= (windingNumber << 4);
+            pScanline[x] |= (runningWindingNumber << 4);
         }
 
         previousValue = currentValue;

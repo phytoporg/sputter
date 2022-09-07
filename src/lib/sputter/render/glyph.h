@@ -11,6 +11,6 @@ namespace sputter { namespace render {
 
         uint32_t Width;
         uint32_t Height;
-        bool*    pBitMatrix;
+        uint8_t* pGlyphPixels;
     };
 }}

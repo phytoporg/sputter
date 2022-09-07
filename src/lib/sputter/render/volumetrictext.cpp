@@ -221,7 +221,7 @@ void VolumetricTextRenderer::DrawText(int32_t x, int32_t y, uint32_t size, const
         {
             for (int j = 0; j < characterGlyph.Height; ++j)
             {
-                if (characterGlyph.pBitMatrix[j * characterGlyph.Width + i] == 0)
+                if (characterGlyph.pGlyphPixels[j * characterGlyph.Width + i] == 0)
                 {
                     continue;
                 }

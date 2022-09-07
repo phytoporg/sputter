@@ -601,6 +601,7 @@ Glyph TrueTypeParser::GetCharacterGlyph(char c)
         }
 
         DrawContourSegment(previousX, previousY, X, Y, pPixelGlyph, GlyphWidth, Color);
+        DebugDumpGlyph(pPixelGlyph, GlyphWidth, GlyphHeight);
 
         if ((pointIndex - contourStartingPointIndex) == pointsInContour - 1)
         {
@@ -610,6 +611,7 @@ Glyph TrueTypeParser::GetCharacterGlyph(char c)
             uint16_t contourStartX = expandedContourXCoordinates[contourStartingPointIndex] * EmToPixels - xMin;
             uint16_t contourStartY = expandedContourYCoordinates[contourStartingPointIndex] * EmToPixels - yMin;
             DrawContourSegment(X, Y, contourStartX, contourStartY, pPixelGlyph, GlyphWidth, Color);
+            DebugDumpGlyph(pPixelGlyph, GlyphWidth, GlyphHeight);
 
             // Begin the next contour
             contourStartingPointIndex = ++pointIndex;
@@ -635,21 +637,16 @@ Glyph TrueTypeParser::GetCharacterGlyph(char c)
 
         const uint8_t FinalFillColor = 1;
         ScanlineFill(pScanline, GlyphWidth, FinalFillColor);
+        DebugDumpGlyph(pPixelGlyph, GlyphWidth, GlyphHeight);
     }
     
-    // Copying this over into a bool matrix is silly
-    bool* pGlyphBitMatrix = new bool[GlyphWidth * GlyphHeight];
-    for (int16_t y = 0; y < GlyphHeight; ++y) // One flat loop instead maybe?
+    // Remove flag bits from glyph data and place it in the returned glyph
+    const size_t GlyphArea = GlyphHeight * GlyphWidth;
+    for (size_t i = 0; i < GlyphArea; ++i)
     {
-        for (int16_t x = 0; x < GlyphWidth; ++x)
-        {
-            const size_t Index = y * GlyphWidth + x;
-            pGlyphBitMatrix[Index] = (pPixelGlyph[Index] & 0xF) == 0 ? false : true;
-        }
+        pPixelGlyph[i] &= 0x0F;
     }
 
-    auto newGlyph = Glyph{ GlyphWidth, GlyphHeight, pGlyphBitMatrix };
-    delete[] pPixelGlyph;
-
+    auto newGlyph = Glyph{ GlyphWidth, GlyphHeight, pPixelGlyph };
     return newGlyph;
 }

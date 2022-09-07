@@ -16,7 +16,7 @@ Font::~Font()
     // The font owns the glyphs. Free all of the memories !!
     for (Glyph& glyph : m_glyphCache)
     {
-        delete[] glyph.pBitMatrix;
+        delete[] glyph.pGlyphPixels;
     }
 
     delete m_pParser;
