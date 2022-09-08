@@ -203,11 +203,11 @@ bool PaddleArena::StartGame()
         kGameConstantsBallStartPosition,
         kGameConstantsBallStartDirection);
     m_pGameState->Player1Paddle.Initialize(
-        FPVector2D(20, 80),
-        FPVector3D(FixedPoint(-350), FPZero, FixedPoint(-0.5)));
+        FPVector2D(kGameConstantPaddleWidth, kGameConstantPaddleHeight),
+        kGameConstantP1PaddleStartPosition);
     m_pGameState->Player2Paddle.Initialize(
-        FPVector2D(20, 80),
-        FPVector3D(FixedPoint(350), FPZero, FixedPoint(-0.5)));
+        FPVector2D(kGameConstantPaddleWidth, kGameConstantPaddleHeight),
+        kGameConstantP2PaddleStartPosition);
     m_pGameState->Arena.Initialize(FPVector2D(800, 600));        
     m_pGameState->Camera.Translate(FPVector3D(-500, 400, -200));
 

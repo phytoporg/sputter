@@ -7,6 +7,11 @@
 
 const sputter::math::FixedPoint kGameConstantsBallSpeed = sputter::math::FixedPoint(700);
 const sputter::math::FixedPoint kGameConstantsPaddleSpeed = sputter::math::FixedPoint(400);
+const sputter::math::FixedPoint kGameConstantPaddleWidth = sputter::math::FixedPoint(20);
+const sputter::math::FixedPoint kGameConstantPaddleHeight = sputter::math::FixedPoint(80);
+
+const sputter::math::FPVector3D kGameConstantP1PaddleStartPosition = sputter::math::FPVector3D(sputter::math::FixedPoint(-350), sputter::math::FPZero, -sputter::math::FPOne / sputter::math::FPTwo);
+const sputter::math::FPVector3D kGameConstantP2PaddleStartPosition = sputter::math::FPVector3D(sputter::math::FixedPoint(350), sputter::math::FPZero, -sputter::math::FPOne / sputter::math::FPTwo);
 
 const sputter::math::FPVector2D kGameConstantsBallDimensions = sputter::math::FPVector2D(
         10, 10
