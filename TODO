@@ -1,4 +1,36 @@
 Next high-level goal: Start prototyping gameplay
+* Timer system and less sudden point reset?
+* Maintain aspect ratio !
+* Some kind of basic UI flow for actual game loop
+** Will require flushing out more font rendering bugs
+
+* Render middle of the arena
+
+* Serialization & Rollback Redux
+** Fix the memory management story
+** Come up with a real serialization solution
+** Handles rather than pointers where appropriate
+** Serializable pointers where appropriate (prototype in s_ptr)
+** Synctest support to validate, sanity check
+** Debug support for loading, saving state
+
+* Start on netplay support after maybe a *little* cleanup
+
+ENGINE AFTER GAMEPLAY SLICE:
+* Messaging/Event system so callbacks from components can happen without introducing gross dependencies everywhere? 
+* Some basic ECS cleanup
+** UUIDs, not enums?
+** Get rid of Create/ReleaseComponent() calls?
+** Allow for more than one component per object for a given component type.
+* Debug drawing
+* Hot-reloading for C++ changes
+* Hot-reloading for assets
+
+* UI
+** Not sure exactly where to start here, but starting would be good!
+
+--------------------------------------------------------------------------------
+DONE:
 * Cleaner ECS setup - use Object class + subsystem, asset providers [X]
 * Characters - procedural cubes
 ** Procedural meshes + rendering
@@ -31,29 +63,4 @@ Next high-level goal: Start prototyping gameplay
    capture the general illusion of OLD GAEM.
 ** Worry about this after the font rasterizer works :P
 
-* Full game loop (losing + winning)
-* Maintain aspect ratio !
-* Render middle of the arena
-
-* Serialization & Rollback Redux
-** Fix the memory management story
-** Come up with a real serialization solution
-** Handles rather than pointers where appropriate
-** Serializable pointers where appropriate (prototype in s_ptr)
-** Synctest support to validate, sanity check
-** Debug support for loading, saving state
-
-* Start on netplay support after maybe a *little* cleanup
-
-ENGINE AFTER GAMEPLAY SLICE:
-* Messaging/Event system so callbacks from components can happen without introducing gross dependencies everywhere? 
-* Some basic ECS cleanup
-** UUIDs, not enums?
-** Get rid of Create/ReleaseComponent() calls?
-** Allow for more than one component per object for a given component type.
-* Debug drawing
-* Hot-reloading for C++ changes
-* Hot-reloading for assets
-
-* UI
-** Not sure exactly where to start here, but starting would be good!
+* Full game loop iteration (losing + winning)
