@@ -42,3 +42,6 @@ const sputter::math::FPVector2D kGameConstantsBallStartDirection = sputter::math
     );
 
 const uint32_t kGameConstantsScoreSize = 5;
+const uint32_t kGameConstantsScoreToWin = 9;
+
+const uint32_t kGameConstantsWinMessageSize = 7;

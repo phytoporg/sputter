@@ -127,27 +127,44 @@ void PaddleArena::PostTick(math::FixedPoint deltaTime)
     m_pGameState->Player2Paddle.PostTick(deltaTime);
 
     // Do we need to reset the ball?
-    if (m_pGameState->TheBall.IsDead())
+    if (m_pGameState->TheBall.IsDead() && m_pGameState->WinningPlayer == 0)
     {
         math::FPVector3D ballServePosition;
         math::FPVector2D ballServeDirection;
         const math::FixedPoint BallY = m_pGameState->TheBall.GetPosition().GetY();
         if (BallY < math::FPZero)
         {
+            m_pGameState->Player2Score++;
+
             ballServePosition = kGameConstantsBallServePositionLeft;
             ballServeDirection = kGameConstantsBallServeDirectionLeft;
         }
         else
         {
+            m_pGameState->Player1Score++;
+
             ballServePosition = kGameConstantsBallServePositionRight;
             ballServeDirection = kGameConstantsBallServeDirectionRight;
         }
 
-        // Ideally we wait a few frames. Handle that later!
-        m_pGameState->TheBall.Reset(
-            ballServePosition,
-            ballServeDirection
-            );
+        if (m_pGameState->Player1Score > kGameConstantsScoreToWin && 
+           (m_pGameState->Player1Score - m_pGameState->Player2Score) >= 2)
+        {
+            m_pGameState->WinningPlayer = 1;
+        }
+        else if (m_pGameState->Player2Score > kGameConstantsScoreToWin && 
+                (m_pGameState->Player2Score - m_pGameState->Player1Score) >= 2)
+        {
+            m_pGameState->WinningPlayer = 2;
+        }
+        else
+        {
+            // Ideally we wait a few frames. Handle that later!
+            m_pGameState->TheBall.Reset(
+                ballServePosition,
+                ballServeDirection
+                );
+        }
     }
 }
 
@@ -168,6 +185,13 @@ void PaddleArena::Draw()
     m_pTextRenderer->SetMatrices(OrthoMatrix, viewMatrix);
     DrawScore(-300, 305, m_pTextRenderer, m_pGameState->Player1Score);
     DrawScore(200, 305, m_pTextRenderer, m_pGameState->Player2Score);
+
+    if (m_pGameState->WinningPlayer > 0)
+    {
+        const std::string WinString = 
+            m_pGameState->WinningPlayer == 1 ? "P1 WINS!" : "P2 WINS!";
+        m_pTextRenderer->DrawText(-350, 0, kGameConstantsWinMessageSize, WinString.c_str());
+    }
 }
 
 bool PaddleArena::StartGame()
