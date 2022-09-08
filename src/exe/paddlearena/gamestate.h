@@ -25,6 +25,15 @@ struct GameState
         sputter::assets::AssetStorageProvider* pStorageProvider,
         sputter::game::SubsystemProvider* pSubsystemProvider
         );
+    
+    enum class State 
+    {
+        Invalid = 0,
+        Starting,
+        Playing,
+        Ended,
+        MaxValue
+    };
 
     sputter::render::Camera Camera;
     Ball             TheBall;
@@ -34,4 +43,5 @@ struct GameState
     int16_t          Player1Score = 0;          
     int16_t          Player2Score = 0;          
     uint8_t          WinningPlayer = 0;
+    State            CurrentState = State::Invalid;
 };

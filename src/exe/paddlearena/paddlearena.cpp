@@ -112,6 +112,32 @@ void PaddleArena::Tick(math::FixedPoint deltaTime)
     m_pInputSubsystem->Tick(deltaTime);
     m_pRigidbodySubsystem->Tick(deltaTime);
 
+    const GameState::State CurrentState = m_pGameState->CurrentState;
+    if (CurrentState == GameState::State::Starting)
+    {
+        m_pTextRenderer->DrawText(-390, 0, 5, "PADDLEARENA");
+
+        // TODO: Need a way to check inputs to advance the state.
+    }
+    else if (CurrentState == GameState::State::Playing)
+    {
+        if (!m_pGameState->TheBall.IsInitialized())
+        {
+            m_pGameState->TheBall.Initialize(
+                kGameConstantsBallDimensions,
+                kGameConstantsBallStartPosition,
+                kGameConstantsBallStartDirection);
+
+            using namespace sputter::math;
+            m_pGameState->Player1Paddle.Initialize(
+                FPVector2D(kGameConstantPaddleWidth, kGameConstantPaddleHeight),
+                kGameConstantP1PaddleStartPosition);
+            m_pGameState->Player2Paddle.Initialize(
+                FPVector2D(kGameConstantPaddleWidth, kGameConstantPaddleHeight),
+                kGameConstantP2PaddleStartPosition);
+        }
+    }
+    
     m_pGameState->TheBall.Tick(deltaTime);
     m_pGameState->Arena.Tick(deltaTime);
     m_pGameState->Player1Paddle.Tick(deltaTime);
@@ -127,7 +153,8 @@ void PaddleArena::PostTick(math::FixedPoint deltaTime)
     m_pGameState->Player2Paddle.PostTick(deltaTime);
 
     // Do we need to reset the ball?
-    if (m_pGameState->TheBall.IsDead() && m_pGameState->WinningPlayer == 0)
+    if (m_pGameState->TheBall.IsDead() &&
+        m_pGameState->CurrentState == GameState::State::Playing)
     {
         math::FPVector3D ballServePosition;
         math::FPVector2D ballServeDirection;
@@ -151,11 +178,13 @@ void PaddleArena::PostTick(math::FixedPoint deltaTime)
            (m_pGameState->Player1Score - m_pGameState->Player2Score) >= 2)
         {
             m_pGameState->WinningPlayer = 1;
+            m_pGameState->CurrentState = GameState::State::Ended;
         }
         else if (m_pGameState->Player2Score > kGameConstantsScoreToWin && 
                 (m_pGameState->Player2Score - m_pGameState->Player1Score) >= 2)
         {
             m_pGameState->WinningPlayer = 2;
+            m_pGameState->CurrentState = GameState::State::Ended;
         }
         else
         {
@@ -186,7 +215,7 @@ void PaddleArena::Draw()
     DrawScore(-300, 305, m_pTextRenderer, m_pGameState->Player1Score);
     DrawScore(200, 305, m_pTextRenderer, m_pGameState->Player2Score);
 
-    if (m_pGameState->WinningPlayer > 0)
+    if (m_pGameState->CurrentState == GameState::State::Playing)
     {
         const std::string WinString = 
             m_pGameState->WinningPlayer == 1 ? "P1 WINS!" : "P2 WINS!";
@@ -198,16 +227,8 @@ bool PaddleArena::StartGame()
 {
     using namespace sputter::math;
 
-    m_pGameState->TheBall.Initialize(
-        kGameConstantsBallDimensions,
-        kGameConstantsBallStartPosition,
-        kGameConstantsBallStartDirection);
-    m_pGameState->Player1Paddle.Initialize(
-        FPVector2D(kGameConstantPaddleWidth, kGameConstantPaddleHeight),
-        kGameConstantP1PaddleStartPosition);
-    m_pGameState->Player2Paddle.Initialize(
-        FPVector2D(kGameConstantPaddleWidth, kGameConstantPaddleHeight),
-        kGameConstantP2PaddleStartPosition);
+    m_pGameState->CurrentState = GameState::State::Starting;
+
     m_pGameState->Arena.Initialize(FPVector2D(800, 600));        
     m_pGameState->Camera.Translate(FPVector3D(-500, 400, -200));
 

@@ -153,6 +153,11 @@ void Ball::PostTick(sputter::math::FixedPoint deltaTime)
     }
 }
 
+bool Ball::IsInitialized() const
+{
+    return m_isInitialized;
+}
+
 void Ball::Initialize(
     FPVector2D dimensions,
     FPVector3D location,
@@ -201,6 +206,7 @@ void Ball::Initialize(
     m_pCollisionComponent->CollisionShapes.push_back(pShape);
 
     Reset(location, startVector);
+    m_isInitialized = true;
 }
 
 void Ball::Reset(

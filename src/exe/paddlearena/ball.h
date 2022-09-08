@@ -35,6 +35,7 @@ public:
     virtual void Tick(sputter::math::FixedPoint deltaTime) override;
     virtual void PostTick(sputter::math::FixedPoint deltaTime) override;
 
+    bool IsInitialized() const;
     void Initialize(
         sputter::math::FPVector2D dimensions,
         sputter::math::FPVector3D location,
@@ -67,4 +68,5 @@ private:
     sputter::math::FPVector2D                m_travelVector;
 
     bool                                     m_isAlive = false;
+    bool                                     m_isInitialized = false;
 };
