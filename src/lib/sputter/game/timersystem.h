@@ -12,18 +12,25 @@ namespace sputter { namespace game {
         static const TimerHandle kInvalidTimerHandle = 0xFFFFFFFF;
 
         // TODO: How are functors supposed to be serialized?
-        TimerHandle CreateFrameTimer(uint32_t numFrames, TimerExpiryFunctor pfnOnExpiry);
-        bool DestroyTimer(TimerHandle timerHandle);
+        TimerHandle CreateFrameTimer(uint32_t numFrames, TimerExpiryFunctor pfnOnExpiry = nullptr);
+        TimerHandle CreateLoopingFrameTimer(uint32_t numFrames, int8_t loopCount, TimerExpiryFunctor pfnOnExpiry = nullptr);
+        bool ClearTimer(TimerHandle timerHandle);
+
+        void Tick();
 
     private:
         struct TimerEntry
         {
             TimerHandle Handle = kInvalidTimerHandle;
+            TimerExpiryFunctor pfnExpiryCallback = nullptr;
             uint64_t FramesRemaining = 0;
+            int8_t LoopCount = -1; 
         };
 
+        static const uint8_t kMaxTimerEntries = 255;
+
+        TimerEntry  m_entries[kMaxTimerEntries];
         TimerHandle m_nextTimerHandle = 0;
-        static const uint8_t kMaxTimerEntries = 256;
-        TimerEntry m_entries[kMaxTimerEntries];
+        uint8_t     m_nextEntry = 0;
     };
 }}
