@@ -12,8 +12,8 @@ namespace sputter { namespace game {
         static const TimerHandle kInvalidTimerHandle = 0xFFFFFFFF;
 
         // TODO: How are functors supposed to be serialized?
-        TimerHandle CreateFrameTimer(uint32_t numFrames, TimerExpiryFunctor pfnOnExpiry = nullptr);
-        TimerHandle CreateLoopingFrameTimer(uint32_t numFrames, int8_t loopCount, TimerExpiryFunctor pfnOnExpiry = nullptr);
+        TimerHandle CreateFrameTimer(uint32_t numFrames, TimerExpiryFunctor pfnOnExpiry = nullptr, void* pUserData = nullptr);
+        TimerHandle CreateLoopingFrameTimer(uint32_t numFrames, int8_t loopCount, TimerExpiryFunctor pfnOnExpiry = nullptr, void* pUserData = nullptr);
         bool ClearTimer(TimerHandle timerHandle);
 
         void Tick();
@@ -23,6 +23,8 @@ namespace sputter { namespace game {
         {
             TimerHandle Handle = kInvalidTimerHandle;
             TimerExpiryFunctor pfnExpiryCallback = nullptr;
+            void* pUserData = nullptr;
+            uint64_t InitialFrames = 0;
             uint64_t FramesRemaining = 0;
             int8_t LoopCount = -1; 
         };

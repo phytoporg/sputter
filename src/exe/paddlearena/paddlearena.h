@@ -4,6 +4,7 @@
 
 #include <sputter/game/game.h>
 #include <sputter/game/subsystemprovider.h>
+#include <sputter/game/timersystem.h>
 
 #include <sputter/physics/rigidbodysubsystem.h>
 #include <sputter/physics/rigidbody2d.h>
@@ -62,6 +63,8 @@ private:
     PaddleArena() = delete;
     PaddleArena(const PaddleArena& other) = delete;
 
+    static void OnCountdownTimerExpired(sputter::game::TimerSystem* pTimerSystem, sputter::game::TimerSystem::TimerHandle handle, void* pUserData);
+
     sputter::physics::RigidBodySubsystem*    m_pRigidbodySubsystem;
     sputter::physics::CollisionSubsystem*    m_pCollisionSubsystem;
 
@@ -73,6 +76,8 @@ private:
     sputter::render::VolumetricTextRenderer* m_pTextRenderer;
 
     sputter::input::InputSubsystem*          m_pInputSubsystem;
+
+    sputter::game::TimerSystem               m_timerSystem;
 
     sputter::assets::AssetStorageProvider    m_storageProvider;
     sputter::game::SubsystemProvider         m_subsystemProvider;

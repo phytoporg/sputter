@@ -5,12 +5,12 @@
 using namespace sputter::game;
 using TimerHandle = TimerSystem::TimerHandle;
 
-TimerHandle TimerSystem::CreateFrameTimer(uint32_t numFrames, TimerExpiryFunctor pfnOnExpiry)
+TimerHandle TimerSystem::CreateFrameTimer(uint32_t numFrames, TimerExpiryFunctor pfnOnExpiry, void* pUserData)
 {
-    return CreateLoopingFrameTimer(numFrames, 1, pfnOnExpiry);
+    return CreateLoopingFrameTimer(numFrames, 1, pfnOnExpiry, pUserData);
 }
 
-TimerHandle TimerSystem::CreateLoopingFrameTimer(uint32_t numFrames, int8_t loopCount, TimerExpiryFunctor pfnOnExpiry)
+TimerHandle TimerSystem::CreateLoopingFrameTimer(uint32_t numFrames, int8_t loopCount, TimerExpiryFunctor pfnOnExpiry, void* pUserData)
 {
     if (m_nextEntry >= kMaxTimerEntries || numFrames == 0)
     {
@@ -20,6 +20,8 @@ TimerHandle TimerSystem::CreateLoopingFrameTimer(uint32_t numFrames, int8_t loop
     TimerEntry& entry = m_entries[m_nextEntry];
     entry.Handle = m_nextTimerHandle;
     entry.pfnExpiryCallback = pfnOnExpiry;
+    entry.pUserData = pUserData;
+    entry.InitialFrames = numFrames;
     entry.FramesRemaining = numFrames;
     entry.LoopCount = loopCount;
 
@@ -56,25 +58,33 @@ void TimerSystem::Tick()
         if (entry.FramesRemaining > 0)
         {
             entry.FramesRemaining--;
-            if (entry.LoopCount > 0)
+            if (entry.FramesRemaining == 0)
             {
-                entry.LoopCount--;
-            }
-
-            if (entry.FramesRemaining == 0 && entry.pfnExpiryCallback)
-            {
-                entry.pfnExpiryCallback(this, entry.Handle, nullptr);
-            }
-
-            if (entry.LoopCount == 0)
-            {
-                // Retire the timer
-                entry.Handle = kInvalidTimerHandle;
-                if (i < (m_nextEntry - 1))
+                if (entry.FramesRemaining == 0 && entry.pfnExpiryCallback)
                 {
-                    std::swap(entry, m_entries[m_nextEntry - 1]);
+                    entry.pfnExpiryCallback(this, entry.Handle, entry.pUserData);
                 }
-                m_nextEntry--;
+
+                if (entry.LoopCount > 0)
+                {
+                    entry.LoopCount--;
+                }
+
+                if (entry.LoopCount == 0)
+                {
+                    // Retire the timer
+                    entry.Handle = kInvalidTimerHandle;
+                    if (i < (m_nextEntry - 1))
+                    {
+                        std::swap(entry, m_entries[m_nextEntry - 1]);
+                    }
+                    m_nextEntry--;
+                }
+                else
+                {
+                    // More loops to go, reset frames remaining
+                    entry.FramesRemaining = entry.InitialFrames;
+                }
             }
         }
     }

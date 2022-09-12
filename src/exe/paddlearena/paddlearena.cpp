@@ -24,6 +24,8 @@
 
 #include <sputter/input/inputsubsystem.h>
 
+#include <sputter/system/system.h>
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -115,13 +117,24 @@ void PaddleArena::Tick(math::FixedPoint deltaTime)
     const GameState::State CurrentState = m_pGameState->CurrentState;
     if (CurrentState == GameState::State::Starting)
     {
-        m_pTextRenderer->DrawText(-390, 0, 5, "PADDLEARENA");
+        m_pTextRenderer->DrawText(-380, 10, 5, "PADDLEARENA");
 
         // TODO: Need a way to check inputs to advance the state.
-    }
-    else if (CurrentState == GameState::State::Playing)
-    {
-        if (!m_pGameState->TheBall.IsInitialized())
+        if (m_pGameState->CountdownTimerHandle == game::TimerSystem::kInvalidTimerHandle)
+        {
+            const int8_t LoopCount = 3;
+            const uint32_t TimerFrames = 60; // 1sec
+            m_pGameState->CountdownTimerHandle = m_timerSystem.CreateLoopingFrameTimer(TimerFrames, LoopCount, OnCountdownTimerExpired, this);
+        }
+
+        const char CountdownChar = '0' + static_cast<char>(m_pGameState->CountdownTimeRemaining);
+        char pCountdownString[2] = { CountdownChar, '\0' };;
+
+        if (m_pGameState->CountdownTimeRemaining > 0)
+        {
+            m_pTextRenderer->DrawText(-20, -130, 6, pCountdownString);
+        }
+        else
         {
             m_pGameState->TheBall.Initialize(
                 kGameConstantsBallDimensions,
@@ -135,13 +148,20 @@ void PaddleArena::Tick(math::FixedPoint deltaTime)
             m_pGameState->Player2Paddle.Initialize(
                 FPVector2D(kGameConstantPaddleWidth, kGameConstantPaddleHeight),
                 kGameConstantP2PaddleStartPosition);
+
+            m_pGameState->CurrentState = GameState::State::Playing;
         }
     }
+
+    if (CurrentState == GameState::State::Playing)
+    {
+        m_pGameState->TheBall.Tick(deltaTime);
+        m_pGameState->Arena.Tick(deltaTime);
+        m_pGameState->Player1Paddle.Tick(deltaTime);
+        m_pGameState->Player2Paddle.Tick(deltaTime);
+    }
     
-    m_pGameState->TheBall.Tick(deltaTime);
-    m_pGameState->Arena.Tick(deltaTime);
-    m_pGameState->Player1Paddle.Tick(deltaTime);
-    m_pGameState->Player2Paddle.Tick(deltaTime);
+    m_timerSystem.Tick();
 }
 
 void PaddleArena::PostTick(math::FixedPoint deltaTime)
@@ -215,7 +235,7 @@ void PaddleArena::Draw()
     DrawScore(-300, 305, m_pTextRenderer, m_pGameState->Player1Score);
     DrawScore(200, 305, m_pTextRenderer, m_pGameState->Player2Score);
 
-    if (m_pGameState->CurrentState == GameState::State::Playing)
+    if (m_pGameState->CurrentState == GameState::State::Ended)
     {
         const std::string WinString = 
             m_pGameState->WinningPlayer == 1 ? "P1 WINS!" : "P2 WINS!";
@@ -252,4 +272,18 @@ bool PaddleArena::LoadGameState(void** pBuffer, size_t size)
 bool PaddleArena::AdvanceFrame()
 {
     return false;
+}
+
+void PaddleArena::OnCountdownTimerExpired(sputter::game::TimerSystem* pTimerSystem, sputter::game::TimerSystem::TimerHandle handle, void* pUserData)
+{
+    auto pArena = reinterpret_cast<PaddleArena*>(pUserData);
+
+    pArena->m_pGameState->CountdownTimeRemaining--;
+    if (pArena->m_pGameState->CountdownTimeRemaining == 0)
+    {
+        if (!pTimerSystem->ClearTimer(handle))
+        {
+            LOG(WARNING) << "Could not clear countdown timer handle\n";
+        }
+    }
 }
