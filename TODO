@@ -4,7 +4,10 @@ Next high-level goal: Start prototyping gameplay
 ** Will require flushing out more font rendering bugs, possibly a non-volumetric
    rendering option for glyphs (render-to-texture?)
 
-* Render middle of the arena
+* Choose between couch versus and playing the AI
+* A real AI that sucks less
+
+* Render middle of the arena <-- nah?
 
 * Serialization & Rollback Redux
 ** Fix the memory management story
