@@ -46,7 +46,7 @@ namespace
             score /= 10;
         } while (score && (pScoreString > scoreBuffer));
 
-        pTextRenderer->DrawText(x, y, kGameConstantsScoreSize, pScoreString);
+        pTextRenderer->DrawText(x, y, gameconstants::ScoreSize, pScoreString);
     }
 }
 
@@ -128,7 +128,7 @@ void PaddleArena::Tick(math::FixedPoint deltaTime)
         }
 
         const char CountdownChar = '0' + static_cast<char>(m_pGameState->CountdownTimeRemaining);
-        char pCountdownString[2] = { CountdownChar, '\0' };;
+        char pCountdownString[2] = { CountdownChar, '\0' };
 
         if (m_pGameState->CountdownTimeRemaining > 0)
         {
@@ -137,17 +137,17 @@ void PaddleArena::Tick(math::FixedPoint deltaTime)
         else
         {
             m_pGameState->TheBall.Initialize(
-                kGameConstantsBallDimensions,
-                kGameConstantsBallStartPosition,
-                kGameConstantsBallStartDirection);
+                gameconstants::BallDimensions,
+                gameconstants::BallStartPosition,
+                gameconstants::BallStartDirection);
 
             using namespace sputter::math;
             m_pGameState->Player1Paddle.Initialize(
-                FPVector2D(kGameConstantPaddleWidth, kGameConstantPaddleHeight),
-                kGameConstantP1PaddleStartPosition);
+                FPVector2D(gameconstants::PaddleWidth, gameconstants::PaddleHeight),
+                gameconstants::P1PaddleStartPosition);
             m_pGameState->Player2Paddle.Initialize(
-                FPVector2D(kGameConstantPaddleWidth, kGameConstantPaddleHeight),
-                kGameConstantP2PaddleStartPosition);
+                FPVector2D(gameconstants::PaddleWidth, gameconstants::PaddleHeight),
+                gameconstants::P2PaddleStartPosition);
 
             m_pGameState->CurrentState = GameState::State::Playing;
         }
@@ -183,24 +183,24 @@ void PaddleArena::PostTick(math::FixedPoint deltaTime)
         {
             m_pGameState->Player2Score++;
 
-            ballServePosition = kGameConstantsBallServePositionLeft;
-            ballServeDirection = kGameConstantsBallServeDirectionLeft;
+            ballServePosition = gameconstants::BallServePositionLeft;
+            ballServeDirection = gameconstants::BallServeDirectionLeft;
         }
         else
         {
             m_pGameState->Player1Score++;
 
-            ballServePosition = kGameConstantsBallServePositionRight;
-            ballServeDirection = kGameConstantsBallServeDirectionRight;
+            ballServePosition = gameconstants::BallServePositionRight;
+            ballServeDirection = gameconstants::BallServeDirectionRight;
         }
 
-        if (m_pGameState->Player1Score > kGameConstantsScoreToWin && 
+        if (m_pGameState->Player1Score > gameconstants::ScoreToWin && 
            (m_pGameState->Player1Score - m_pGameState->Player2Score) >= 2)
         {
             m_pGameState->WinningPlayer = 1;
             m_pGameState->CurrentState = GameState::State::Ended;
         }
-        else if (m_pGameState->Player2Score > kGameConstantsScoreToWin && 
+        else if (m_pGameState->Player2Score > gameconstants::ScoreToWin && 
                 (m_pGameState->Player2Score - m_pGameState->Player1Score) >= 2)
         {
             m_pGameState->WinningPlayer = 2;
@@ -219,27 +219,34 @@ void PaddleArena::PostTick(math::FixedPoint deltaTime)
 
 void PaddleArena::Draw()
 {
-    // TODO: This belongs in a camera?
     static const glm::mat4 OrthoMatrix =
        glm::ortho(
            0.0f, 
-           static_cast<float>(m_pWindow->GetWidth()),
-           static_cast<float>(m_pWindow->GetHeight()),
+           gameconstants::OrthoWidth,
+           gameconstants::OrthoHeight,
            0.0f,
-           -1000.0f, 1000.0f);
+           0.0f, 1000.0f);
+
+    // TODO: Put in window init & resize handler, express in terms of desired
+    // aspect ratio
+    glViewport(0, 0, m_pWindow->GetWidth(), m_pWindow->GetHeight());
 
     const glm::mat4 viewMatrix = m_pGameState->Camera.ViewMatrix4d();
     m_pMeshSubsystem->Draw(OrthoMatrix, viewMatrix);
 
     m_pTextRenderer->SetMatrices(OrthoMatrix, viewMatrix);
-    DrawScore(-300, 305, m_pTextRenderer, m_pGameState->Player1Score);
-    DrawScore(200, 305, m_pTextRenderer, m_pGameState->Player2Score);
+    DrawScore(gameconstants::P1ScorePositionX, gameconstants::ScorePositionY, m_pTextRenderer, m_pGameState->Player1Score);
+    DrawScore(gameconstants::P2ScorePositionX, gameconstants::ScorePositionY, m_pTextRenderer, m_pGameState->Player2Score);
 
     if (m_pGameState->CurrentState == GameState::State::Ended)
     {
         const std::string WinString = 
             m_pGameState->WinningPlayer == 1 ? "P1 WINS!" : "P2 WINS!";
-        m_pTextRenderer->DrawText(-350, 0, kGameConstantsWinMessageSize, WinString.c_str());
+        m_pTextRenderer->DrawText(
+            gameconstants::WinMessagePositionX,
+            gameconstants::WinMessagePositionY,
+            gameconstants::WinMessageSize,
+            WinString.c_str());
     }
 }
 

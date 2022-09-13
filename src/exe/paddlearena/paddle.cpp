@@ -138,7 +138,7 @@ void Paddle::Tick(FixedPoint deltaTime)
 
     if (velocity.Length() > FPZero)
     {
-        TranslatePaddle(velocity.Normalized() * kGameConstantsPaddleSpeed * deltaTime);
+        TranslatePaddle(velocity.Normalized() * gameconstants::PaddleSpeed * deltaTime);
     }
 }
 

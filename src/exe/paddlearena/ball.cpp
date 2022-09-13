@@ -83,7 +83,7 @@ void Ball::Tick(sputter::math::FixedPoint deltaTime)
         return;
     }
 
-    const FixedPoint Speed = kGameConstantsBallSpeed;
+    const FixedPoint Speed = gameconstants::BallSpeed;
     if (m_travelVector.Length() > FPZero)
     {
         const FPVector2D TravelNormalized(m_travelVector.Normalized());
