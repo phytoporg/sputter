@@ -83,7 +83,7 @@ PaddleArena::PaddleArena(
 
     const std::vector<sputter::input::InputMapEntry> p1InputMap = 
         { 
-          { static_cast<uint32_t>(GLFW_KEY_W),   static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_UP) },
+          { static_cast<uint32_t>(GLFW_KEY_W), static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_UP) },
           { static_cast<uint32_t>(GLFW_KEY_S), static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_DOWN) },
           { static_cast<uint32_t>(GLFW_KEY_A), static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_LEFT) },
           { static_cast<uint32_t>(GLFW_KEY_D), static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_RIGHT) },
@@ -117,12 +117,16 @@ void PaddleArena::Tick(math::FixedPoint deltaTime)
     const GameState::State CurrentState = m_pGameState->CurrentState;
     if (CurrentState == GameState::State::Starting)
     {
-        m_pTextRenderer->DrawText(-380, 10, 5, "PADDLEARENA");
+        m_pTextRenderer->DrawText(
+            gameconstants::GameTitlePositionX,
+            gameconstants::GameTitlePositionY,
+            gameconstants::GameTitleSize,
+            gameconstants::GameTitleString);
 
         // TODO: Need a way to check inputs to advance the state.
         if (m_pGameState->CountdownTimerHandle == game::TimerSystem::kInvalidTimerHandle)
         {
-            const int8_t LoopCount = 3;
+            const int8_t LoopCount = gameconstants::StartCountdownSeconds;
             const uint32_t TimerFrames = 60; // 1sec
             m_pGameState->CountdownTimerHandle = m_timerSystem.CreateLoopingFrameTimer(TimerFrames, LoopCount, OnCountdownTimerExpired, this);
         }
@@ -132,7 +136,11 @@ void PaddleArena::Tick(math::FixedPoint deltaTime)
 
         if (m_pGameState->CountdownTimeRemaining > 0)
         {
-            m_pTextRenderer->DrawText(-20, -130, 6, pCountdownString);
+            m_pTextRenderer->DrawText(
+                gameconstants::StartCountdownPositionX,
+                gameconstants::StartCountdownPositionY,
+                gameconstants::StartCountdownSize,
+                pCountdownString);
         }
         else
         {
@@ -256,8 +264,8 @@ bool PaddleArena::StartGame()
 
     m_pGameState->CurrentState = GameState::State::Starting;
 
-    m_pGameState->Arena.Initialize(FPVector2D(800, 600));        
-    m_pGameState->Camera.Translate(FPVector3D(-500, 400, -200));
+    m_pGameState->Arena.Initialize(gameconstants::ArenaDimensions);        
+    m_pGameState->Camera.Translate(gameconstants::InitialCameraPosition);
 
     return true;
 }

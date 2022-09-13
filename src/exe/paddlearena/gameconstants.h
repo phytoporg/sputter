@@ -10,13 +10,17 @@ namespace gameconstants
     // Rendering settings
     const float OrthoWidth = 1100.0f; // TODO: 480p
     const float OrthoHeight = 1000.0f;
+    const auto InitialCameraPosition = sputter::math::FPVector3D(-500, 400, -200);
 
     // Game settings and constants
 
+    // Arena config
+    const auto ArenaDimensions = sputter::math::FPVector2D(800, 600);
+
     // Ball config
-    const sputter::math::FixedPoint BallSpeed = sputter::math::FixedPoint(700);
-    const sputter::math::FixedPoint PaddleSpeed = sputter::math::FixedPoint(400);
-    const sputter::math::FPVector2D BallDimensions = sputter::math::FPVector2D(
+    const auto BallSpeed = sputter::math::FixedPoint(700);
+    const auto PaddleSpeed = sputter::math::FixedPoint(400);
+    const auto BallDimensions = sputter::math::FPVector2D(
             10, 10
         );
     const sputter::math::FPVector3D BallStartPosition = sputter::math::FPVector3D(
@@ -55,10 +59,15 @@ namespace gameconstants
     const sputter::math::FixedPoint PaddleWidth = sputter::math::FixedPoint(20);
     const sputter::math::FixedPoint PaddleHeight = sputter::math::FixedPoint(80);
 
+    // Game loop config
+    const uint32_t StartCountdownSeconds = 3;
+
     // Game text config
     const uint32_t ScoreSize = 5;
     const uint32_t ScoreToWin = 9;
     const uint32_t WinMessageSize = 7;
+    const uint32_t StartCountdownSize = 6;
+    const uint32_t GameTitleSize = 5;
 
     const int32_t ScorePositionY = 305;
     const int32_t P1ScorePositionX = -300;
@@ -66,4 +75,13 @@ namespace gameconstants
 
     const int32_t WinMessagePositionX = -350;
     const int32_t WinMessagePositionY = 0;
+
+    const int32_t StartCountdownPositionX = -20;
+    const int32_t StartCountdownPositionY = -130;
+
+    const int32_t GameTitlePositionX = -380;
+    const int32_t GameTitlePositionY = 10;
+
+    // Strings
+    static const char* GameTitleString = "PADDLEARENA";
 }
