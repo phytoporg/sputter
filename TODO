@@ -1,8 +1,8 @@
 Next high-level goal: Start prototyping gameplay
-* Timer system and less sudden point reset?
 * Maintain aspect ratio !
 * Some kind of basic UI flow for actual game loop
-** Will require flushing out more font rendering bugs
+** Will require flushing out more font rendering bugs, possibly a non-volumetric
+   rendering option for glyphs (render-to-texture?)
 
 * Render middle of the arena
 
@@ -64,3 +64,4 @@ DONE:
 ** Worry about this after the font rasterizer works :P
 
 * Full game loop iteration (losing + winning)
+* Timer system
