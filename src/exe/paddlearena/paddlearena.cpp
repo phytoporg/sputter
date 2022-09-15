@@ -50,6 +50,7 @@ namespace
     }
 }
 
+#include <iostream> // REMOVEME
 PaddleArena::PaddleArena(
         render::Window* pWindow,
         const std::string& assetStoragePath,
@@ -105,6 +106,18 @@ PaddleArena::PaddleArena(
     m_pGameState = allocator.Create<GameState>(&m_storageProvider, &m_subsystemProvider);
 
     m_pTextRenderer = new sputter::render::VolumetricTextRenderer(&m_assetStorage, &m_shaderStorage, &m_fontStorage);
+
+    m_pWindow->SetDimensionConstraints(gameconstants::MinWidth, gameconstants::MinHeight, -1, -1);
+
+    // Set up window resizing handler
+    sputter::render::Window::WindowResizeCallback onResize = [this](sputter::render::Window* pWindow, uint32_t width, uint32_t height)
+    {
+        glViewport(0, 0, width, width * gameconstants::TargetAspectRatio);
+    };
+
+    // Contrive an initial "resize" event before setting the callback
+    onResize(m_pWindow, m_pWindow->GetWidth(), m_pWindow->GetHeight());
+    m_pWindow->SetWindowResizeCallback(onResize);
 }
 
 PaddleArena::~PaddleArena() {}
@@ -237,7 +250,7 @@ void PaddleArena::Draw()
 
     // TODO: Put in window init & resize handler, express in terms of desired
     // aspect ratio
-    glViewport(0, 0, m_pWindow->GetWidth(), m_pWindow->GetHeight());
+    // glViewport(0, 0, m_pWindow->GetWidth(), m_pWindow->GetHeight());
 
     const glm::mat4 viewMatrix = m_pGameState->Camera.ViewMatrix4d();
     m_pMeshSubsystem->Draw(OrthoMatrix, viewMatrix);

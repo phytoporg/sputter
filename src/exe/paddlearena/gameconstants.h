@@ -7,9 +7,12 @@
 
 namespace gameconstants 
 {
-    // Rendering settings
-    const float OrthoWidth = 1100.0f; // TODO: 480p
+    // Rendering settings (TODO: 480p?)
+    const float OrthoWidth = 1100.0f;
     const float OrthoHeight = 1000.0f;
+    const float TargetAspectRatio = OrthoHeight / OrthoWidth;
+    const float MinWidth   = 640;
+    const float MinHeight = MinWidth * TargetAspectRatio;
     const auto InitialCameraPosition = sputter::math::FPVector3D(-500, 400, -200);
 
     // Game settings and constants

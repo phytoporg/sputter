@@ -19,6 +19,8 @@
 #include <sputter/system/system.h>
 #include <sputter/system/time.h>
 
+#include "gameconstants.h"
+
 #include <iostream>
 
 using namespace sputter;
@@ -39,7 +41,7 @@ int main(int argc, char** argv)
         stateRegion.GetRegionBase(),
         stateRegion.GetRegionSize());
 
-    render::Window window("Test window");
+    render::Window window("PADDLEARENA", gameconstants::OrthoWidth, gameconstants::OrthoHeight);
     PaddleArena game(&window, argv[1], allocator);
 
     game.StartGame();
