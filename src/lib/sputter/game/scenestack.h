@@ -14,6 +14,8 @@ namespace sputter { namespace game {
         // and down the stack.
         SceneStack(IScene** ppSceneArray, uint32_t numScenes);
 
+        void Initialize();
+
         bool PushToNextScene(IScene** ppNextSceneOut = nullptr);
         bool PopToPreviousScene(IScene** ppPreviousSceneOut = nullptr);
 

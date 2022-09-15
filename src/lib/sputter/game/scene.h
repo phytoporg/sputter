@@ -6,8 +6,6 @@ namespace sputter { namespace game {
     class IScene
     {
     public:
-        Scene();
-
         virtual void Initialize() = 0;
         virtual void Uninitialize() = 0;
 
