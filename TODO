@@ -1,13 +1,22 @@
 Next high-level goal: Start prototyping gameplay
-* Maintain aspect ratio !
 * Some kind of basic UI flow for actual game loop
+** Main menu w/Title, "Vs. AI" | "Vs. Player" | "Online" (greyed out as appropriate)
+** Need a notion of scenes (main menu -> game and back)
+*** Refactor PaddleArena to deal with scenes and scene management, gameplay into a game instance
+** Need a less convoluted way to get player inputs for UI
+** Just need keyboard/controller-friendly interface for now. 
 ** Will require flushing out more font rendering bugs, possibly a non-volumetric
-   rendering option for glyphs (render-to-texture?)
+   rendering option for glyphs (render-to-texture? quad instances + texture atlas?)
 
 * Choose between couch versus and playing the AI
 * A real AI that sucks less
 
 * Render middle of the arena <-- nah?
+
+* More gameplay iteration
+** Proper serve mechanic, at the very least
+** Smoother game loop
+** Support for rematch/exit
 
 * Serialization & Rollback Redux
 ** Fix the memory management story
@@ -28,9 +37,6 @@ ENGINE AFTER GAMEPLAY SLICE:
 * Debug drawing
 * Hot-reloading for C++ changes
 * Hot-reloading for assets
-
-* UI
-** Not sure exactly where to start here, but starting would be good!
 
 --------------------------------------------------------------------------------
 DONE:
@@ -68,3 +74,4 @@ DONE:
 
 * Full game loop iteration (losing + winning)
 * Timer system
+* Maintain aspect ratio !
