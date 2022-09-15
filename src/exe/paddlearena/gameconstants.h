@@ -30,12 +30,12 @@ namespace gameconstants
     const auto BallStartPosition = sputter::math::FPVector3D(
         sputter::math::FPZero,
         sputter::math::FPZero,
-        -sputter::math::FPOne / sputter::math::FPTwo);
+        -sputter::math::FPOneHalf);
 
     const auto BallServePositionLeft = sputter::math::FPVector3D(
         sputter::math::FixedPoint(-300),
         sputter::math::FPZero,
-        -sputter::math::FPOne / sputter::math::FPTwo);
+        -sputter::math::FPOneHalf);
     const auto BallServeDirectionLeft = sputter::math::FPVector2D(
         sputter::math::FPOne,
         sputter::math::FPOne
@@ -44,7 +44,7 @@ namespace gameconstants
     const auto BallServePositionRight = sputter::math::FPVector3D(
         sputter::math::FixedPoint(300),
         sputter::math::FPZero,
-        -sputter::math::FPOne / sputter::math::FPTwo);
+        -sputter::math::FPOneHalf);
 
     const auto BallServeDirectionRight = sputter::math::FPVector2D(
         -sputter::math::FPOne,
