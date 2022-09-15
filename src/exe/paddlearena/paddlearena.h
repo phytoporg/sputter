@@ -3,6 +3,7 @@
 #include <sputter/memory/fixedmemoryallocator.h>
 
 #include <sputter/game/game.h>
+#include <sputter/game/scenestack.h>
 #include <sputter/game/subsystemprovider.h>
 #include <sputter/game/timersystem.h>
 
@@ -65,24 +66,25 @@ private:
 
     static void OnCountdownTimerExpired(sputter::game::TimerSystem* pTimerSystem, sputter::game::TimerSystem::TimerHandle handle, void* pUserData);
 
-    sputter::physics::RigidBodySubsystem*    m_pRigidbodySubsystem;
-    sputter::physics::CollisionSubsystem*    m_pCollisionSubsystem;
-
-    sputter::render::ShaderStorage           m_shaderStorage;
-    sputter::render::FontStorage             m_fontStorage;
-
-    sputter::render::MeshSubsystem*          m_pMeshSubsystem;
-    sputter::render::Window*                 m_pWindow;
-    sputter::render::VolumetricTextRenderer* m_pTextRenderer;
-
-    sputter::input::InputSubsystem*          m_pInputSubsystem;
+    sputter::game::SceneStack*               m_pSceneStack = nullptr;
 
     sputter::game::TimerSystem               m_timerSystem;
+
+    sputter::assets::AssetStorage            m_assetStorage;
+    sputter::render::ShaderStorage           m_shaderStorage;
+    sputter::render::FontStorage             m_fontStorage;
 
     sputter::assets::AssetStorageProvider    m_storageProvider;
     sputter::game::SubsystemProvider         m_subsystemProvider;
 
-    sputter::assets::AssetStorage            m_assetStorage;
+    sputter::physics::RigidBodySubsystem*    m_pRigidbodySubsystem = nullptr;
+    sputter::physics::CollisionSubsystem*    m_pCollisionSubsystem = nullptr;
+
+    sputter::render::MeshSubsystem*          m_pMeshSubsystem = nullptr;
+    sputter::render::Window*                 m_pWindow = nullptr;
+    sputter::render::VolumetricTextRenderer* m_pTextRenderer = nullptr;
+
+    sputter::input::InputSubsystem*          m_pInputSubsystem = nullptr;
 
     GameState*                               m_pGameState;
 };
