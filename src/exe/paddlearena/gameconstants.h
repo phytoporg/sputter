@@ -7,16 +7,17 @@
 
 namespace gameconstants 
 {
-    // Rendering settings (TODO: 480p?)
+    // Rendering settings
     const float OrthoWidth = 1100.0f;
     const float OrthoHeight = 1000.0f;
     const float TargetAspectRatio = OrthoHeight / OrthoWidth;
     const float MinWidth   = 640;
     const float MinHeight = MinWidth * TargetAspectRatio;
-    const auto InitialCameraPosition = sputter::math::FPVector3D(-500, 400, -200);
+
+    // Center the camera over the center of the plane
+    const auto InitialCameraPosition = sputter::math::FPVector3D(-static_cast<int>(OrthoWidth) / 2, static_cast<int>(OrthoHeight) / 2, -200);
 
     // Game settings and constants
-
     // Arena config
     const auto ArenaDimensions = sputter::math::FPVector2D(800, 600);
 
@@ -26,41 +27,44 @@ namespace gameconstants
     const auto BallDimensions = sputter::math::FPVector2D(
             10, 10
         );
-    const sputter::math::FPVector3D BallStartPosition = sputter::math::FPVector3D(
+    const auto BallStartPosition = sputter::math::FPVector3D(
         sputter::math::FPZero,
         sputter::math::FPZero,
         -sputter::math::FPOne / sputter::math::FPTwo);
 
-    const sputter::math::FPVector3D BallServePositionLeft = sputter::math::FPVector3D(
+    const auto BallServePositionLeft = sputter::math::FPVector3D(
         sputter::math::FixedPoint(-300),
         sputter::math::FPZero,
         -sputter::math::FPOne / sputter::math::FPTwo);
-    const sputter::math::FPVector2D BallServeDirectionLeft = sputter::math::FPVector2D(
+    const auto BallServeDirectionLeft = sputter::math::FPVector2D(
         sputter::math::FPOne,
         sputter::math::FPOne
         );
 
-    const sputter::math::FPVector3D BallServePositionRight = sputter::math::FPVector3D(
+    const auto BallServePositionRight = sputter::math::FPVector3D(
         sputter::math::FixedPoint(300),
         sputter::math::FPZero,
         -sputter::math::FPOne / sputter::math::FPTwo);
 
-    const sputter::math::FPVector2D BallServeDirectionRight = sputter::math::FPVector2D(
+    const auto BallServeDirectionRight = sputter::math::FPVector2D(
         -sputter::math::FPOne,
         sputter::math::FPOne
         );
 
-    const sputter::math::FPVector2D BallStartDirection = sputter::math::FPVector2D(
+    const auto BallStartDirection = sputter::math::FPVector2D(
         -sputter::math::FPOne,
         sputter::math::FPOne
         );
 
     // Paddle config
-    const sputter::math::FPVector3D P1PaddleStartPosition = sputter::math::FPVector3D(sputter::math::FixedPoint(-350), sputter::math::FPZero, -sputter::math::FPOne / sputter::math::FPTwo);
-    const sputter::math::FPVector3D P2PaddleStartPosition = sputter::math::FPVector3D(sputter::math::FixedPoint(350), sputter::math::FPZero, -sputter::math::FPOne / sputter::math::FPTwo);
+    const auto PaddleStartPositionDistanceX = sputter::math::FixedPoint(350);
+    const auto PaddleStartPositionDistanceY = sputter::math::FPZero;
 
-    const sputter::math::FixedPoint PaddleWidth = sputter::math::FixedPoint(20);
-    const sputter::math::FixedPoint PaddleHeight = sputter::math::FixedPoint(80);
+    const auto P1PaddleStartPosition = sputter::math::FPVector3D(-PaddleStartPositionDistanceX, PaddleStartPositionDistanceY, -sputter::math::FPOneHalf);
+    const auto P2PaddleStartPosition = sputter::math::FPVector3D(PaddleStartPositionDistanceX, PaddleStartPositionDistanceY, -sputter::math::FPOneHalf);
+
+    const auto PaddleWidth = sputter::math::FixedPoint(20);
+    const auto PaddleHeight = sputter::math::FixedPoint(80);
 
     // Game loop config
     const uint32_t StartCountdownSeconds = 3;

@@ -50,7 +50,6 @@ namespace
     }
 }
 
-#include <iostream> // REMOVEME
 PaddleArena::PaddleArena(
         render::Window* pWindow,
         const std::string& assetStoragePath,
@@ -112,7 +111,37 @@ PaddleArena::PaddleArena(
     // Set up window resizing handler
     sputter::render::Window::WindowResizeCallback onResize = [this](sputter::render::Window* pWindow, uint32_t width, uint32_t height)
     {
-        glViewport(0, 0, width, width * gameconstants::TargetAspectRatio);
+        float viewportX = 0.f;
+        float viewportY = 0.f;
+
+        // Don't map the viewport width to horizontal dimensions any larger than OrthoWidth, or the view space
+        // origin will drift to weird places.
+        float viewportWidth = width > gameconstants::OrthoWidth ? gameconstants::OrthoWidth : width;
+
+        const float WindowAspectRatio = static_cast<float>(height) / width;
+        // In cases where the window aspect ratio is smaller than the target aspect ratio, constrain the width so that
+        // the viewport height won't exceed the actual window height.
+        if (WindowAspectRatio < gameconstants::TargetAspectRatio)
+        {
+            viewportWidth = height / gameconstants::TargetAspectRatio;
+        }
+
+        if (width > viewportWidth)
+        {
+            // Center the viewport horizontally for cases where the window height is larger than the viewport height.
+            const float dWidth = width - viewportWidth;
+            viewportX = dWidth / 2.f;
+        }
+
+        float viewportHeight = viewportWidth * gameconstants::TargetAspectRatio;
+        if (height > viewportHeight)
+        {
+            // Center the viewport vertically for cases where the window height is larger than the viewport height.
+            const float dHeight = height - viewportHeight;
+            viewportY = dHeight / 2.f;
+        }
+        
+        glViewport(viewportX, viewportY, viewportWidth, viewportHeight);
     };
 
     // Contrive an initial "resize" event before setting the callback
