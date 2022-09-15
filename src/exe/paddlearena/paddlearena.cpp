@@ -111,13 +111,11 @@ PaddleArena::PaddleArena(
     // Set up window resizing handler
     sputter::render::Window::WindowResizeCallback onResize = [this](sputter::render::Window* pWindow, uint32_t width, uint32_t height)
     {
-        // Don't map the viewport width to horizontal dimensions any larger than OrthoWidth, or the view space
-        // origin will drift to weird places.
-        float viewportWidth = width > gameconstants::OrthoWidth ? gameconstants::OrthoWidth : width;
-
         const float WindowAspectRatio = static_cast<float>(height) / width;
+
         // In cases where the window aspect ratio is smaller than the target aspect ratio, constrain the width so that
         // the viewport height won't exceed the actual window height.
+        float viewportWidth = width;
         if (WindowAspectRatio < gameconstants::TargetAspectRatio)
         {
             viewportWidth = height / gameconstants::TargetAspectRatio;
