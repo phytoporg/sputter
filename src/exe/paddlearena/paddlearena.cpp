@@ -266,10 +266,6 @@ void PaddleArena::Draw()
            0.0f,
            0.0f, 1000.0f);
 
-    // TODO: Put in window init & resize handler, express in terms of desired
-    // aspect ratio
-    // glViewport(0, 0, m_pWindow->GetWidth(), m_pWindow->GetHeight());
-
     const glm::mat4 viewMatrix = m_pGameState->Camera.ViewMatrix4d();
     m_pMeshSubsystem->Draw(OrthoMatrix, viewMatrix);
 
