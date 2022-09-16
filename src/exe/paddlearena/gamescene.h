@@ -1,3 +1,5 @@
+#pragma once
+
 #include <sputter/game/scene.h>
 #include <sputter/game/subsystemprovider.h>
 #include <sputter/game/timersystem.h>

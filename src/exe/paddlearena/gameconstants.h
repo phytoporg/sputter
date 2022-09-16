@@ -74,7 +74,7 @@ namespace gameconstants
     const uint32_t ScoreToWin = 9;
     const uint32_t WinMessageSize = 7;
     const uint32_t StartCountdownSize = 6;
-    const uint32_t GameTitleSize = 5;
+    const uint32_t GetReadySize = 5;
 
     const int32_t ScorePositionY = 305;
     const int32_t P1ScorePositionX = -300;
@@ -83,12 +83,13 @@ namespace gameconstants
     const int32_t WinMessagePositionX = -350;
     const int32_t WinMessagePositionY = 0;
 
-    const int32_t StartCountdownPositionX = -20;
-    const int32_t StartCountdownPositionY = -130;
+    const int32_t StartCountdownPositionX = 10;
+    const int32_t StartCountdownPositionY = -110;
 
-    const int32_t GameTitlePositionX = -380;
-    const int32_t GameTitlePositionY = 10;
+    const int32_t GetReadyPositionX = -280;
+    const int32_t GetReadyPositionY = 30;
 
     // Strings
+    static const char* GetReadyString = "GETREADY";
     static const char* GameTitleString = "PADDLEARENA";
 }

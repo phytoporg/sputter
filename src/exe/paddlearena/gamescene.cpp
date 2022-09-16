@@ -171,10 +171,10 @@ void GameScene::TickFrame(math::FixedPoint dt)
     if (CurrentState == GameState::State::Starting)
     {
         m_pTextRenderer->DrawText(
-            gameconstants::GameTitlePositionX,
-            gameconstants::GameTitlePositionY,
-            gameconstants::GameTitleSize,
-            gameconstants::GameTitleString);
+            gameconstants::GetReadyPositionX,
+            gameconstants::GetReadyPositionY,
+            gameconstants::GetReadySize,
+            gameconstants::GetReadyString);
 
         // TODO: Need a way to check inputs to advance the state.
         if (m_pGameState->CountdownTimerHandle == game::TimerSystem::kInvalidTimerHandle)
