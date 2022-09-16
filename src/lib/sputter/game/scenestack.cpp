@@ -6,8 +6,18 @@
 using namespace sputter::game;
 
 SceneStack::SceneStack(IScene** ppSceneArray, uint32_t numScenes)
-    : m_ppSceneArray(ppSceneArray), m_numScenes(numScenes)
-{}
+{
+    if (numScenes > kMaxScenes)
+    {
+        system::LogAndFail("Creating too many scenes in scene stack.");
+    }
+
+    // Zero out m_ppSceneArray first
+    memset(m_ppSceneArray, 0, sizeof(IScene*) * kMaxScenes);
+    
+    m_numScenes = numScenes;
+    memcpy(m_ppSceneArray, ppSceneArray, sizeof(IScene*) * numScenes);
+}
 
 void SceneStack::Initialize()
 {
@@ -71,4 +81,14 @@ void SceneStack::Tick(math::FixedPoint dt)
     }
 
     m_ppSceneArray[m_currentSceneIndex]->Tick(dt);
+}
+
+void SceneStack::Draw()
+{
+    if (!m_ppSceneArray[m_currentSceneIndex])
+    {
+        system::LogAndFail("Current scene in scene stack is null");
+    }
+
+    m_ppSceneArray[m_currentSceneIndex]->Draw();
 }

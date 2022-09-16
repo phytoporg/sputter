@@ -10,5 +10,6 @@ namespace sputter { namespace game {
         virtual void Uninitialize() = 0;
 
         virtual void Tick(math::FixedPoint dt) = 0;
+        virtual void Draw() = 0;
     };
 } }

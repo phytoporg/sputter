@@ -20,11 +20,13 @@ namespace sputter { namespace game {
         bool PopToPreviousScene(IScene** ppPreviousSceneOut = nullptr);
 
         void Tick(math::FixedPoint dt);
+        void Draw();
 
     private:
         uint32_t m_currentSceneIndex = 0;
 
-        IScene** m_ppSceneArray = nullptr;
+        static const uint32_t kMaxScenes = 8;
+        IScene* m_ppSceneArray[kMaxScenes];
         uint32_t m_numScenes = 0;
     };
 }}

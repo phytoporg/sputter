@@ -48,7 +48,6 @@ public:
     virtual ~PaddleArena();
 
     virtual void Tick(sputter::math::FixedPoint deltaTime) override;
-    virtual void PostTick(sputter::math::FixedPoint deltaTime) override;
     virtual void Draw() override;
 
     virtual bool StartGame() override;
@@ -64,8 +63,6 @@ private:
     PaddleArena() = delete;
     PaddleArena(const PaddleArena& other) = delete;
 
-    static void OnCountdownTimerExpired(sputter::game::TimerSystem* pTimerSystem, sputter::game::TimerSystem::TimerHandle handle, void* pUserData);
-
     sputter::game::SceneStack*               m_pSceneStack = nullptr;
 
     sputter::game::TimerSystem               m_timerSystem;
@@ -77,14 +74,10 @@ private:
     sputter::assets::AssetStorageProvider    m_storageProvider;
     sputter::game::SubsystemProvider         m_subsystemProvider;
 
-    sputter::physics::RigidBodySubsystem*    m_pRigidbodySubsystem = nullptr;
     sputter::physics::CollisionSubsystem*    m_pCollisionSubsystem = nullptr;
 
-    sputter::render::MeshSubsystem*          m_pMeshSubsystem = nullptr;
     sputter::render::Window*                 m_pWindow = nullptr;
     sputter::render::VolumetricTextRenderer* m_pTextRenderer = nullptr;
-
-    sputter::input::InputSubsystem*          m_pInputSubsystem = nullptr;
 
     GameState*                               m_pGameState;
 };
