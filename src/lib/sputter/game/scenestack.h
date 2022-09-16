@@ -19,6 +19,8 @@ namespace sputter { namespace game {
         bool PushToNextScene(IScene** ppNextSceneOut = nullptr);
         bool PopToPreviousScene(IScene** ppPreviousSceneOut = nullptr);
 
+        const IScene* GetCurrentScene();
+
         void Tick(math::FixedPoint dt);
         void Draw();
 

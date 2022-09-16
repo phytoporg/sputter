@@ -6,6 +6,7 @@
 
 #include "paddlearena.h"
 #include "gameconstants.h"
+#include "mainmenuscene.h"
 #include "gamescene.h"
 
 #include <sputter/render/window.h>
@@ -59,8 +60,10 @@ PaddleArena::PaddleArena(
     m_pWindow->SetWindowResizeCallback(onResize);
 
     // Set up the scene stack
-    game::IScene* ppScenes[] = { new GameScene(pWindow, &m_timerSystem, &m_assetStorage, &m_storageProvider, allocator) };
-    m_pSceneStack = new game::SceneStack(ppScenes, 1);
+    m_pMainMenuScene = new MainMenuScene(this, m_pTextRenderer, &m_timerSystem);
+    m_pGameScene = new GameScene(pWindow, &m_timerSystem, &m_assetStorage, &m_storageProvider, allocator);
+    game::IScene* ppScenes[] = { m_pMainMenuScene, m_pGameScene };
+    m_pSceneStack = new game::SceneStack(ppScenes, sizeof(ppScenes) / sizeof(ppScenes[0]));
 }
 
 PaddleArena::~PaddleArena() {}
@@ -80,4 +83,14 @@ bool PaddleArena::StartGame()
 {
     m_pSceneStack->Initialize();
     return true;
+}
+
+void PaddleArena::NextSceneFromMainMenu()
+{
+    if (m_pSceneStack->GetCurrentScene() != m_pMainMenuScene)
+    {
+        system::LogAndFail("Unexpected scene calling main menu event");
+    }
+    
+    m_pSceneStack->PushToNextScene();
 }

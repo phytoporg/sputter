@@ -73,6 +73,11 @@ bool SceneStack::PopToPreviousScene(IScene** ppPreviousSceneOut)
     return true;
 }
 
+const IScene* SceneStack::GetCurrentScene()
+{
+    return m_ppSceneArray[m_currentSceneIndex];
+}
+
 void SceneStack::Tick(math::FixedPoint dt)
 {
     if (!m_ppSceneArray[m_currentSceneIndex])

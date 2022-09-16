@@ -48,10 +48,14 @@ public:
     virtual void Draw() override;
     virtual bool StartGame() override;
 
+    void NextSceneFromMainMenu();
+
 private:
     PaddleArena() = delete;
     PaddleArena(const PaddleArena& other) = delete;
 
+    sputter::game::IScene*                   m_pMainMenuScene = nullptr;
+    sputter::game::IScene*                   m_pGameScene = nullptr;
     sputter::game::SceneStack*               m_pSceneStack = nullptr;
 
     sputter::game::TimerSystem               m_timerSystem;

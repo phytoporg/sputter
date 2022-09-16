@@ -83,7 +83,7 @@ namespace gameconstants
     const int32_t WinMessagePositionX = -350;
     const int32_t WinMessagePositionY = 0;
 
-    const int32_t StartCountdownPositionX = 10;
+    const int32_t StartCountdownPositionX = -20;
     const int32_t StartCountdownPositionY = -110;
 
     const int32_t GetReadyPositionX = -280;
