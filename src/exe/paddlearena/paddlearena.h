@@ -74,10 +74,6 @@ private:
     sputter::assets::AssetStorageProvider    m_storageProvider;
     sputter::game::SubsystemProvider         m_subsystemProvider;
 
-    sputter::physics::CollisionSubsystem*    m_pCollisionSubsystem = nullptr;
-
     sputter::render::Window*                 m_pWindow = nullptr;
     sputter::render::VolumetricTextRenderer* m_pTextRenderer = nullptr;
-
-    GameState*                               m_pGameState;
 };

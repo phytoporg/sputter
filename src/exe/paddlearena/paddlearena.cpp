@@ -5,27 +5,10 @@
 #endif
 
 #include "paddlearena.h"
-#include "gamestate.h"
 #include "gameconstants.h"
 #include "gamescene.h"
 
-#include <sputter/physics/rigidbodysubsystem.h>
-
-#include <sputter/render/meshsubsystem.h>
-#include <sputter/render/shaderstorage.h>
-#include <sputter/render/texturestorage.h>
-#include <sputter/render/shader.h>
-
-#include <sputter/math/fpconstants.h>
 #include <sputter/math/fixedpoint.h>
-#include <sputter/math/fpvector2d.h>
-
-#include <sputter/assets/imagedata.h>
-#include <sputter/assets/textdata.h>
-
-#include <sputter/input/inputsubsystem.h>
-
-#include <sputter/system/system.h>
 
 using namespace sputter;
 
@@ -33,8 +16,7 @@ PaddleArena::PaddleArena(
         render::Window* pWindow,
         const std::string& assetStoragePath,
         memory::FixedMemoryAllocator allocator) 
-    : m_pGameState(nullptr),
-      m_assetStorage(assetStoragePath),
+    : m_assetStorage(assetStoragePath),
       m_pWindow(pWindow),
       m_storageProvider(&m_assetStorage)
 {
