@@ -7,28 +7,25 @@
 #include <sputter/game/subsystemprovider.h>
 #include <sputter/game/timersystem.h>
 
-#include <sputter/physics/rigidbodysubsystem.h>
-#include <sputter/physics/rigidbody2d.h>
-
-#include <sputter/physics/collisionsubsystem.h>
-#include <sputter/physics/collision.h>
-
 #include <sputter/assets/assetstorage.h>
 #include <sputter/assets/assetstorageprovider.h>
 
-#include <sputter/render/window.h>
-#include <sputter/render/spritesubsystem.h>
 #include <sputter/render/shaderstorage.h>
 #include <sputter/render/fontstorage.h>
-#include <sputter/render/volumetrictext.h>
-
-#include <sputter/input/inputsubsystem.h>
 
 #include <sputter/math/fixedpoint.h>
 
 #include <string>
 
-#include "gamestate.h"
+// Forward declarations
+namespace sputter 
+{
+    namespace render 
+    {
+        class VolumetricTextRenderer;
+        class Window;
+    }
+}
 
 enum class PaddleArenaInput {
     // Starting out with forreal pong
@@ -49,15 +46,7 @@ public:
 
     virtual void Tick(sputter::math::FixedPoint deltaTime) override;
     virtual void Draw() override;
-
     virtual bool StartGame() override;
-    virtual bool SaveGameState(
-        void** pBuffer,
-        size_t* pSize,
-        size_t* pChecksum,
-        int frame) override;
-    virtual bool LoadGameState(void** pBuffer, size_t size) override;
-    virtual bool AdvanceFrame() override;
 
 private:
     PaddleArena() = delete;

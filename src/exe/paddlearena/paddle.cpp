@@ -2,6 +2,7 @@
 #include "paddlearena.h"
 #include "objecttypes.h"
 #include "gameconstants.h"
+#include "gamestate.h"
 
 #include <sputter/assets/assetstorageprovider.h>
 

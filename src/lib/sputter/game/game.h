@@ -12,15 +12,6 @@ namespace sputter { namespace game {
 
         virtual void Tick(math::FixedPoint deltaTime) = 0;
         virtual void Draw() = 0;
-
-        // Modeled after GGPO
         virtual bool StartGame() = 0;
-        virtual bool SaveGameState(
-            void** pBuffer,
-            size_t* pSize,
-            size_t* pChecksum,
-            int frame) = 0;
-        virtual bool LoadGameState(void** pBuffer, size_t size) = 0;
-        virtual bool AdvanceFrame() = 0;
     };
 }}

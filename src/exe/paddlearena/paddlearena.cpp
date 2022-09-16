@@ -8,6 +8,8 @@
 #include "gameconstants.h"
 #include "gamescene.h"
 
+#include <sputter/render/window.h>
+#include <sputter/render/volumetrictext.h>
 #include <sputter/math/fixedpoint.h>
 
 using namespace sputter;
@@ -78,23 +80,4 @@ bool PaddleArena::StartGame()
 {
     m_pSceneStack->Initialize();
     return true;
-}
-
-bool PaddleArena::SaveGameState(
-    void** pBuffer,
-    size_t* pSize,
-    size_t* pChecksum,
-    int frame)
-{
-    return false;
-}
-
-bool PaddleArena::LoadGameState(void** pBuffer, size_t size)
-{
-    return false;
-}
-
-bool PaddleArena::AdvanceFrame()
-{
-    return false;
 }
