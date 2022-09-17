@@ -51,9 +51,12 @@ public:
     GameScene(
         sputter::render::Window* pWindow,
         sputter::game::TimerSystem* pTimerSystem,
+        sputter::render::VolumetricTextRenderer* pTextRenderer,
         sputter::assets::AssetStorage* pAssetStorage,
         sputter::assets::AssetStorageProvider* pStorageProvider,
         sputter::memory::FixedMemoryAllocator& allocator);
+
+    virtual ~GameScene();
 
     virtual void Initialize() override;
     virtual void Uninitialize() override;

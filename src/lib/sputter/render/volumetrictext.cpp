@@ -14,6 +14,7 @@
 #include <sputter/system/system.h>
 
 #include <string>
+#include <vector>
 #include <glm/glm.hpp>
 
 static const int kMaxInstances = 2000;
@@ -153,6 +154,8 @@ VolumetricTextRenderer::VolumetricTextRenderer(
 
     glBindVertexArray(0);
 }
+
+VolumetricTextRenderer::~VolumetricTextRenderer() {}
 
 void VolumetricTextRenderer::SetMatrices(const glm::mat4& projMatrix, const glm::mat4& viewMatrix)
 {

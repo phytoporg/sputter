@@ -24,6 +24,7 @@ namespace sputter { namespace render {
             ShaderStorage* pShaderStorage,
             FontStorage* pFontStorage
             );
+        ~VolumetricTextRenderer();
 
         // TODO: Shouldn't have to provide this?
         void SetMatrices(const glm::mat4& projMatrix, const glm::mat4& viewMatrix);

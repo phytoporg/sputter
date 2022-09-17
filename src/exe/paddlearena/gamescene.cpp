@@ -54,11 +54,13 @@ namespace {
 GameScene::GameScene(
     render::Window* pWindow,
     sputter::game::TimerSystem* pTimerSystem,
+    sputter::render::VolumetricTextRenderer* pTextRenderer,
     sputter::assets::AssetStorage* pAssetStorage,
     sputter::assets::AssetStorageProvider* pStorageProvider,
     memory::FixedMemoryAllocator& allocator)
     : m_pAssetStorageProvider(pStorageProvider),
-      m_pTimerSystem(pTimerSystem)
+      m_pTimerSystem(pTimerSystem),
+      m_pTextRenderer(pTextRenderer)
 {
     physics::RigidBodySubsystemSettings rigidBodySubsystemSettings;
     rigidBodySubsystemSettings.MaxRigidBodies = 5;
@@ -112,7 +114,12 @@ GameScene::GameScene(
     {
         system::LogAndFail("Failed to retrieve font storage");
     }
-    m_pTextRenderer = new render::VolumetricTextRenderer(m_pAssetStorage, pShaderStorage, pFontStorage);
+}
+
+GameScene::~GameScene()
+{
+    delete m_pMeshSubsystem;
+    delete m_pInputSubsystem;
 }
 
 void GameScene::Initialize() 
@@ -159,7 +166,6 @@ void GameScene::Draw()
             gameconstants::WinMessageSize,
             WinString.c_str());
     }
-
 }
 
 void GameScene::TickFrame(math::FixedPoint dt)

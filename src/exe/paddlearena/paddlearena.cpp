@@ -61,12 +61,33 @@ PaddleArena::PaddleArena(
 
     // Set up the scene stack
     m_pMainMenuScene = new MainMenuScene(this, m_pTextRenderer, &m_timerSystem);
-    m_pGameScene = new GameScene(pWindow, &m_timerSystem, &m_assetStorage, &m_storageProvider, allocator);
+    m_pGameScene = new GameScene(pWindow, &m_timerSystem, m_pTextRenderer, &m_assetStorage, &m_storageProvider, allocator);
     game::IScene* ppScenes[] = { m_pMainMenuScene, m_pGameScene };
     m_pSceneStack = new game::SceneStack(ppScenes, sizeof(ppScenes) / sizeof(ppScenes[0]));
 }
 
-PaddleArena::~PaddleArena() {}
+PaddleArena::~PaddleArena() 
+{
+    delete m_pSceneStack;
+    m_pSceneStack = nullptr;
+
+    if (m_pGameScene)
+    {
+        m_pGameScene->Uninitialize();
+
+        delete m_pGameScene;
+        m_pSceneStack = nullptr;
+    }
+
+    if (m_pGameScene)
+    {
+        m_pGameScene->Uninitialize();
+        delete m_pGameScene;
+        m_pGameScene = nullptr;
+    }
+
+    delete m_pTextRenderer;
+}
 
 void PaddleArena::Tick(math::FixedPoint dt)
 {
