@@ -1,4 +1,11 @@
 Next high-level goal: Start prototyping gameplay
+
+* UI WORK STATUS
+** Trying to render a button
+** Just got DrawRect boilerplate in place, needs validation
+** Plumb in basic button drawing, events, keyboard UI navigation
+** Then, start thinking about text
+
 * Some kind of basic UI flow for actual game loop
 ** Main menu w/Title, "Vs. AI" | "Vs. Player" | "Online" (greyed out as appropriate)
 ** Need a notion of scenes (main menu -> game and back)
