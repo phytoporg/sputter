@@ -21,8 +21,7 @@ bool sputter::render::geometry::MakeFixedUnitCube(
     if (numVertexPositions != kExpectedNumVertexPositions ||
         numVertexNormals   != kExpectedNumVertexPositions ||
         numVertexUVs       != kExpectedNumVertexPositions ||
-        numIndices         != kExpectedNumIndices
-        )
+        numIndices         != kExpectedNumIndices)
     {
         return false;
     }
@@ -112,8 +111,7 @@ bool sputter::render::geometry::MakeUnitCube(
     if (numVertexPositions != kExpectedNumVertexPositions ||
         numVertexNormals   != kExpectedNumVertexPositions ||
         numVertexUVs       != kExpectedNumVertexPositions ||
-        numIndices         != kExpectedNumIndices
-        )
+        numIndices         != kExpectedNumIndices)
     {
         return false;
     }
@@ -184,6 +182,64 @@ bool sputter::render::geometry::MakeUnitCube(
         6, 2, 3, 7, 6, 3,
         // Top face
         6, 5, 4, 7, 6, 4,
+    };
+    memcpy(pIndices, IndexValues, sizeof(IndexValues));
+
+    return true;
+}
+
+bool sputter::render::geometry::MakeBorderedRect(
+    int32_t x, int32_t y, int32_t width, int32_t height, int32_t borderSize, const Color& borderColor,
+    glm::ivec2* pVertexPositions, uint32_t numVertexPositions,
+    int* pIndices, uint32_t numIndices)
+{
+    static const uint32_t kExpectedNumVertexPositions = 8;
+    static const uint32_t kExpectedNumIndices = 24;
+
+    if (numVertexPositions != kExpectedNumVertexPositions ||
+        numIndices         != kExpectedNumIndices)
+    {
+        return false;
+    }
+
+    // Inner & outer vertex indices (not to scale, this is low-effort illustrative ascii art):
+    //
+    // 4---------------5
+    // |               |
+    // |  0---------1  |
+    // |  |         |  |
+    // |  3---------2  |
+    // |               |
+    // 7---------------6
+
+    // Inner vertices
+    pVertexPositions[0] = glm::ivec2(x, y);
+    pVertexPositions[1] = glm::ivec2(x + width, y);
+    pVertexPositions[2] = glm::ivec2(x + width, y + height);
+    pVertexPositions[3] = glm::ivec2(x, y + height);
+
+    // Outer vertices
+    const int32_t OuterX = x - borderSize;
+    const int32_t OuterY = y - borderSize;
+    const int32_t OuterWidth  = width + 2 * borderSize;
+    const int32_t OuterHeight = height + 2 * borderSize;
+
+    pVertexPositions[4] = glm::ivec2(OuterX, OuterY);
+    pVertexPositions[5] = glm::ivec2(OuterX + OuterWidth, OuterY);
+    pVertexPositions[6] = glm::ivec2(OuterX + OuterWidth, OuterY + OuterHeight);
+    pVertexPositions[7] = glm::ivec2(OuterX, OuterY + OuterHeight);
+
+    // Indices
+    // Assuming GL_CCW for front-facing
+    const int IndexValues[] = {
+        // Top
+        0, 5, 4, 1, 5, 0,
+        // Right
+        5, 1, 6, 1, 2, 6,
+        // Bottom
+        2, 3, 6, 3, 7, 6,
+        // Left
+        3, 0, 7, 0, 4, 7,
     };
     memcpy(pIndices, IndexValues, sizeof(IndexValues));
 

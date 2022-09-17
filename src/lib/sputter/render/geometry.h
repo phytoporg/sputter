@@ -1,5 +1,7 @@
 #pragma once
 
+#include "color.h"
+
 #include <sputter/math/fpvector3d.h>
 #include <sputter/math/fpvector2d.h>
 
@@ -17,4 +19,11 @@ namespace sputter { namespace render { namespace geometry {
         glm::vec3* pVertexNormals,   uint32_t numVertexNormals,
         glm::vec2* pVertexUVs,       uint32_t numVertexUVs,
         int* pIndices,               uint32_t numIndices);
+
+    // Not using fixed point input here since atm this is only used for UI rendering. Same reasoning
+    // for lack of UVs, Normals.
+    bool MakeBorderedRect(
+        int32_t x, int32_t y, int32_t width, int32_t height, int32_t borderSize, const Color& borderColor,
+        glm::ivec2* pVertexPositions, uint32_t numVertexPositions,
+        int* pIndices, uint32_t numIndices);
 }}}
