@@ -103,18 +103,6 @@ VolumetricTextRenderer::VolumetricTextRenderer(
         m_spPimpl->spFont = pFontStorage->FindFontByName(kFontName);
     }
 
-    // Just a single "zero" glyph for now
-    static bool ZeroGlyphBits[] = 
-        { 0, 1, 1, 1, 1, 1, 1, 0,
-          1, 1, 1, 1, 1, 1, 1, 1,
-          1, 1, 0, 0, 0, 0, 1, 1,
-          1, 1, 0, 0, 0, 0, 1, 1,
-          1, 1, 0, 0, 0, 0, 1, 1,
-          1, 1, 0, 0, 0, 0, 1, 1,
-          1, 1, 1, 1, 1, 1, 1, 1,
-          0, 1, 1, 1, 1, 1, 1, 0, 
-          };
-
     glGenVertexArrays(1, &m_spPimpl->VAO);
     glBindVertexArray(m_spPimpl->VAO);
 
