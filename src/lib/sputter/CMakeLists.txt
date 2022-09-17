@@ -13,6 +13,7 @@ message(ERROR ${PNG_INCLUDE_DIR})
 file(GLOB SOURCES 
     *.cpp 
     render/*.cpp 
+    ui/*.cpp 
     system/*.cpp 
     assets/*.cpp 
     physics/*.cpp
