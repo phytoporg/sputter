@@ -3,6 +3,7 @@
 #include "paddlearena.h"
 
 #include <sputter/render/volumetrictext.h>
+#include <sputter/render/drawshapes.h>
 
 #include <sputter/game/timersystem.h>
 
@@ -13,25 +14,22 @@ using namespace sputter;
 
 MainMenuScene::MainMenuScene(
     PaddleArena* pPaddleArena,
-    render::VolumetricTextRenderer* pVolumeTextRenderer,
-    game::TimerSystem* pTimerSystem)
+    sputter::game::TimerSystem* pTimerSystem,
+    sputter::render::VolumetricTextRenderer* pVolumeTextRenderer,
+    sputter::render::Camera* pCamera,
+    glm::mat4* pOrthoMatrix)
     : m_pVolumeTextRenderer(pVolumeTextRenderer),
       m_pTimerSystem(pTimerSystem),
-      m_pPaddleArena(pPaddleArena)
+      m_pPaddleArena(pPaddleArena),
+      m_pCamera(pCamera),
+      m_pOrthoMatrix(pOrthoMatrix)
 {}
 
 void MainMenuScene::Initialize() 
 {
-    static const glm::mat4 OrthoMatrix =
-       glm::ortho(
-           0.0f, 
-           gameconstants::OrthoWidth,
-           gameconstants::OrthoHeight,
-           0.0f,
-           0.0f, 1000.0f);
-    m_mainMenuCamera.Translate(gameconstants::InitialCameraPosition);
-    const glm::mat4 viewMatrix = m_mainMenuCamera.ViewMatrix4d();
-    m_pVolumeTextRenderer->SetMatrices(OrthoMatrix, viewMatrix);
+    m_pCamera->SetTranslation(gameconstants::InitialCameraPosition);
+    const glm::mat4 viewMatrix = m_pCamera->ViewMatrix4d();
+    m_pVolumeTextRenderer->SetMatrices(*m_pOrthoMatrix, viewMatrix);
     m_pTimerSystem->CreateFrameTimer(60, OnStartTimerExpire, this);
 }
 
@@ -46,6 +44,9 @@ void MainMenuScene::Tick(math::FixedPoint dt)
 void MainMenuScene::Draw() 
 {
     m_pVolumeTextRenderer->DrawText(-280, 0, 5, "MAINMENU");
+
+    const sputter::render::Color Red{255, 0, 0};
+    sputter::render::shapes::DrawRect(100, 100, 50, 50, 3, Red);
 }
 
 void 

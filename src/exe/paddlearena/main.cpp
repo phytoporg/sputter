@@ -35,14 +35,8 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    memory::ReservedRegion stateRegion(0x100000);
-    memory::FixedMemoryAllocator allocator(
-        "GameState",
-        stateRegion.GetRegionBase(),
-        stateRegion.GetRegionSize());
-
     render::Window window("PADDLEARENA", gameconstants::OrthoWidth, gameconstants::OrthoHeight);
-    PaddleArena game(&window, argv[1], allocator);
+    PaddleArena game(&window, argv[1]);
 
     game.StartGame();
 

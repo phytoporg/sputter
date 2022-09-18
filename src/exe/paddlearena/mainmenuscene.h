@@ -5,11 +5,14 @@
 #include <sputter/game/scene.h>
 #include <sputter/game/timersystem.h>
 
+#include <glm/glm.hpp>
+
 // Forward declarations
 namespace sputter
 {
     namespace render
     {
+        class Camera;
         class VolumetricTextRenderer;
     }
 }
@@ -21,8 +24,10 @@ class MainMenuScene : public sputter::game::IScene
 public:
     MainMenuScene(
        PaddleArena* pPaddleArena,
+       sputter::game::TimerSystem* pTimerSystem,
        sputter::render::VolumetricTextRenderer* pVolumeTextRenderer,
-       sputter::game::TimerSystem* pTimerSystem);
+       sputter::render::Camera* pCamera,
+       glm::mat4* pOrthoMatrix);
 
     virtual void Initialize() override;
     virtual void Uninitialize() override;
@@ -40,6 +45,8 @@ private:
     sputter::game::TimerSystem*                 m_pTimerSystem = nullptr;
     sputter::game::TimerSystem::TimerHandle     m_startTimerHandle = sputter::game::TimerSystem::kInvalidTimerHandle;
 
-    sputter::render::Camera                     m_mainMenuCamera;
+    sputter::render::Camera*                    m_pCamera = nullptr;
+    glm::mat4*                                  m_pOrthoMatrix = nullptr;
+
     PaddleArena*                                m_pPaddleArena = nullptr;
 };

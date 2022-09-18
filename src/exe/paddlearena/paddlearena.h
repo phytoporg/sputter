@@ -12,8 +12,11 @@
 
 #include <sputter/render/shaderstorage.h>
 #include <sputter/render/fontstorage.h>
+#include <sputter/render/camera.h>
 
 #include <sputter/math/fixedpoint.h>
+
+#include <glm/glm.hpp>
 
 #include <string>
 
@@ -40,8 +43,7 @@ class PaddleArena : public sputter::game::Game
 public:
     PaddleArena(
         sputter::render::Window* pWindow,
-        const std::string& assetStoragePath,
-        sputter::memory::FixedMemoryAllocator allocator);
+        const std::string& assetStoragePath);
     virtual ~PaddleArena();
 
     virtual void Tick(sputter::math::FixedPoint deltaTime) override;
@@ -63,6 +65,9 @@ private:
     sputter::assets::AssetStorage            m_assetStorage;
     sputter::render::ShaderStorage           m_shaderStorage;
     sputter::render::FontStorage             m_fontStorage;
+
+    sputter::render::Camera                  m_camera;
+    glm::mat4                                m_orthoMatrix;
 
     sputter::assets::AssetStorageProvider    m_storageProvider;
     sputter::game::SubsystemProvider         m_subsystemProvider;

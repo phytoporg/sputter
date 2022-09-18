@@ -20,7 +20,6 @@
 #include <GLFW/glfw3.h>
 
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 
 using namespace sputter;
 
@@ -54,21 +53,26 @@ namespace {
 GameScene::GameScene(
     render::Window* pWindow,
     sputter::game::TimerSystem* pTimerSystem,
+    sputter::render::Camera* pCamera,
+    glm::mat4* pOrthoMatrix,
     sputter::render::VolumetricTextRenderer* pTextRenderer,
     sputter::assets::AssetStorage* pAssetStorage,
-    sputter::assets::AssetStorageProvider* pStorageProvider,
-    memory::FixedMemoryAllocator& allocator)
-    : m_pAssetStorageProvider(pStorageProvider),
+    sputter::assets::AssetStorageProvider* pStorageProvider)
+    : m_reservedRegion(0x100000),
+      m_fixedAllocator("GameState", m_reservedRegion.GetRegionBase(), m_reservedRegion.GetRegionSize()),
+      m_pAssetStorageProvider(pStorageProvider),
       m_pTimerSystem(pTimerSystem),
+      m_pCamera(pCamera),
+      m_pOrthoMatrix(pOrthoMatrix),
       m_pTextRenderer(pTextRenderer)
 {
     physics::RigidBodySubsystemSettings rigidBodySubsystemSettings;
     rigidBodySubsystemSettings.MaxRigidBodies = 5;
     m_pRigidBodySubsystem = 
-        allocator.Create<physics::RigidBodySubsystem>(rigidBodySubsystemSettings);
+        m_fixedAllocator.Create<physics::RigidBodySubsystem>(rigidBodySubsystemSettings);
 
     physics::CollisionSubsystemSettings collisionSubsystemSettings;
-    m_pCollisionSubsystem = allocator.Create<sputter::physics::CollisionSubsystem>(collisionSubsystemSettings);
+    m_pCollisionSubsystem = m_fixedAllocator.Create<sputter::physics::CollisionSubsystem>(collisionSubsystemSettings);
 
     render::MeshSubsystemSettings meshSubsystemSettings;
     meshSubsystemSettings.MaxVertexCount = 20;
@@ -101,7 +105,7 @@ GameScene::GameScene(
     m_subsystemProvider.AddSubsystem(m_pMeshSubsystem);
     m_subsystemProvider.AddSubsystem(m_pInputSubsystem);
 
-    m_pGameState = allocator.Create<GameState>(m_pAssetStorageProvider, &m_subsystemProvider);
+    m_pGameState = m_fixedAllocator.Create<GameState>(m_pAssetStorageProvider, &m_subsystemProvider);
 
     auto pShaderStorage = m_pAssetStorageProvider->GetStorageByType<render::ShaderStorage>();
     if (!pShaderStorage)
@@ -126,7 +130,7 @@ void GameScene::Initialize()
 {
     m_pGameState->CurrentState = GameState::State::Starting;
     m_pGameState->Arena.Initialize(gameconstants::ArenaDimensions);        
-    m_pGameState->Camera.Translate(gameconstants::InitialCameraPosition);
+    m_pGameState->Camera.SetTranslation(gameconstants::InitialCameraPosition);
 }
 
 void GameScene::Uninitialize() 
@@ -141,18 +145,9 @@ void GameScene::Tick(sputter::math::FixedPoint dt)
 
 void GameScene::Draw()
 {
-    static const glm::mat4 OrthoMatrix =
-       glm::ortho(
-           0.0f, 
-           gameconstants::OrthoWidth,
-           gameconstants::OrthoHeight,
-           0.0f,
-           0.0f, 1000.0f);
-
     const glm::mat4 viewMatrix = m_pGameState->Camera.ViewMatrix4d();
-    m_pMeshSubsystem->Draw(OrthoMatrix, viewMatrix);
-
-    m_pTextRenderer->SetMatrices(OrthoMatrix, viewMatrix);
+    m_pMeshSubsystem->Draw(*m_pOrthoMatrix, viewMatrix);
+    m_pTextRenderer->SetMatrices(*m_pOrthoMatrix, viewMatrix);
     DrawScore(gameconstants::P1ScorePositionX, gameconstants::ScorePositionY, m_pTextRenderer, m_pGameState->Player1Score);
     DrawScore(gameconstants::P2ScorePositionX, gameconstants::ScorePositionY, m_pTextRenderer, m_pGameState->Player2Score);
 

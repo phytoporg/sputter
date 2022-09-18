@@ -28,6 +28,11 @@ void Attribute<glm::vec2>::SetAttributePointer(uint32_t slot, uint32_t stride)
     glVertexAttribPointer(slot, 2, GL_FLOAT, GL_FALSE, stride, 0);
 }
 
+template<>
+void Attribute<glm::ivec2>::SetAttributePointer(uint32_t slot, uint32_t stride)
+{
+    glVertexAttribPointer(slot, 2, GL_INT, GL_FALSE, stride, 0);
+}
 
 template<>
 void Attribute<glm::vec3>::SetAttributePointer(uint32_t slot, uint32_t stride)

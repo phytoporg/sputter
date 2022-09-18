@@ -1,6 +1,6 @@
 #include "drawshapes.h"
 #include "geometry.h"
-#include "shader.h"
+#include "shaderstorage.h"
 #include "render.h"
 #include "attribute.h"
 #include "uniform.h"
@@ -15,6 +15,10 @@
 using namespace sputter::render;
 
 static bool IsInitialized = false;
+
+static const char* kLineFragmentShaderName = "line_frag";
+static const char* kLineVertexShaderName = "line_vert";
+static const char* kLineShaderName = "line";
 static Shader* pLineShader = nullptr;
 
 static glm::mat4 ViewMatrix;
@@ -33,13 +37,13 @@ static uint32_t VAO = 0;
 
 static const uint32_t kMaxVertices = 16; // Increase if needed
 static std::vector<glm::ivec2> VertexPositions;
-static Attribute<glm::ivec2> VertexPositionAttribute;
+static Attribute<glm::ivec2>* pVertexPositionAttribute = nullptr;
 
 static const uint32_t kMaxIndices = 32; // Increase if needed
 static std::vector<uint32_t> VertexIndices;
-static IndexBuffer Indices;
+static IndexBuffer* pIndices = nullptr;
 
-bool shapes::InitializeLineRenderer(Shader* pShader, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
+bool shapes::InitializeLineRenderer(assets::AssetStorage* pAssetStorage, ShaderStorage* pShaderStorage, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 {
     // Do not allow for reinit. If any parameters need to be updated, address by adding accessors as needed.
     if (IsInitialized)
@@ -47,23 +51,34 @@ bool shapes::InitializeLineRenderer(Shader* pShader, const glm::mat4& viewMatrix
         LOG(WARNING) << "InitializeLineRenderer() called more than once";
         return false;
     }
+
+    if (!pShaderStorage->AddShaderFromShaderAssetNames(
+        pAssetStorage,
+        kLineVertexShaderName,
+        kLineFragmentShaderName,
+        kLineShaderName))
+    {
+        LOG(ERROR) << "Failed to load line shader";
+        return false;
+    }
     
-    pLineShader = pShader;
-    ViewMatrixUniformHandle = pShader->GetUniform(pViewUniformName);
+    ShaderPtr spShader = pShaderStorage->FindShaderByName(kLineShaderName);
+    pLineShader = spShader.get();
+    ViewMatrixUniformHandle = pLineShader->GetUniform(pViewUniformName);
     if (ViewMatrixUniformHandle == Shader::kInvalidHandleValue)
     {
         LOG(WARNING) << "Failed to reterieve view matrix uniform handle for line renderer.";
         return false;
     }
 
-    ProjectionMatrixUniformHandle = pShader->GetUniform(pProjectionUniformName);
+    ProjectionMatrixUniformHandle = pLineShader->GetUniform(pProjectionUniformName);
     if (ProjectionMatrixUniformHandle == Shader::kInvalidHandleValue)
     {
         LOG(WARNING) << "Failed to reterieve projection matrix uniform handle for line renderer.";
         return false;
     }
 
-    BorderColorUniformHandle = pShader->GetUniform(pBorderColorUniformName);
+    BorderColorUniformHandle = pLineShader->GetUniform(pBorderColorUniformName);
     if (BorderColorUniformHandle == Shader::kInvalidHandleValue)
     {
         LOG(WARNING) << "Failed to reterieve border color uniform handle for line renderer.";
@@ -77,16 +92,49 @@ bool shapes::InitializeLineRenderer(Shader* pShader, const glm::mat4& viewMatrix
     glBindVertexArray(VAO);
 
     VertexPositions.reserve(kMaxVertices);
-    VertexPositionAttribute.Set(VertexPositions.data(), VertexPositions.size());
-    VertexPositionAttribute.BindTo(0);
+
+    pVertexPositionAttribute = new Attribute<glm::ivec2>();
+    pVertexPositionAttribute->Set(VertexPositions.data(), VertexPositions.size());
+    pVertexPositionAttribute->BindTo(0);
 
     VertexIndices.reserve(kMaxIndices);
-    Indices.Set(VertexIndices.data(), VertexIndices.size());
+
+    pIndices = new IndexBuffer();
+    pIndices->Set(VertexIndices.data(), VertexIndices.size());
 
     glBindVertexArray(0);
 
     IsInitialized = true;
     return true;
+}
+
+void shapes::UninitializeLineRenderer()
+{
+    if (!IsInitialized)
+    {
+        LOG(WARNING) << "Attempting to uninitialize uninitialized line renderer";
+        return;
+    }
+    
+    delete pIndices;
+    pIndices = nullptr;
+
+    delete pVertexPositionAttribute;
+    pVertexPositionAttribute = nullptr;
+
+    pLineShader = nullptr;
+
+    ViewMatrixUniformHandle = Shader::kInvalidHandleValue;
+    ProjectionMatrixUniformHandle = Shader::kInvalidHandleValue;
+    BorderColorUniformHandle = Shader::kInvalidHandleValue;
+
+    glDeleteBuffers(1, &VAO);
+    VAO = 0;
+
+    VertexPositions.clear();
+    VertexIndices.clear();
+
+    IsInitialized = false;
 }
 
 // TODO: This performs a draw call per invocation-- once this is working, maybe RECTify that (ha ha)
@@ -107,12 +155,12 @@ void shapes::DrawRect(
     Uniform<glm::vec3>::Set(BorderColorUniformHandle, Vec3BorderColor);
 
     glBindVertexArray(VAO);
-    VertexPositionAttribute.BindTo(0);
+    pVertexPositionAttribute->BindTo(0);
 
-    VertexPositionAttribute.Set(VertexPositions);
-    ::Draw(Indices, DrawMode::Triangles);
+    pVertexPositionAttribute->Set(VertexPositions);
+    ::Draw(*pIndices, DrawMode::Triangles);
 
-    VertexPositionAttribute.UnbindFrom(0);
+    pVertexPositionAttribute->UnbindFrom(0);
 
     pLineShader->Unbind();
     glBindVertexArray(0);
