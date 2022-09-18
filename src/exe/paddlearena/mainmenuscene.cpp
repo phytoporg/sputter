@@ -30,7 +30,7 @@ void MainMenuScene::Initialize()
     m_pCamera->SetTranslation(gameconstants::InitialCameraPosition);
     const glm::mat4 viewMatrix = m_pCamera->ViewMatrix4d();
     m_pVolumeTextRenderer->SetMatrices(*m_pOrthoMatrix, viewMatrix);
-    m_pTimerSystem->CreateFrameTimer(60, OnStartTimerExpire, this);
+    m_pTimerSystem->CreateFrameTimer(120, OnStartTimerExpire, this);
 }
 
 void MainMenuScene::Uninitialize() 
@@ -45,8 +45,8 @@ void MainMenuScene::Draw()
 {
     m_pVolumeTextRenderer->DrawText(-280, 0, 5, "MAINMENU");
 
-    const sputter::render::Color Red{255, 0, 0};
-    sputter::render::shapes::DrawRect(100, 100, 50, 50, 3, Red);
+    const sputter::render::Color White{255, 255, 255};
+    sputter::render::shapes::DrawRect(-100, 100, 100, 100, 3, White);
 }
 
 void 
