@@ -23,7 +23,7 @@ namespace sputter { namespace render { namespace geometry {
     // Not using fixed point input here since atm this is only used for UI rendering. Same reasoning
     // for lack of UVs, Normals.
     bool MakeBorderedRect(
-        int32_t x, int32_t y, int32_t width, int32_t height, int32_t borderSize, const Color& borderColor,
+        int32_t x, int32_t y, int32_t width, int32_t height, int32_t borderSize,
         glm::ivec2* pVertexPositions, uint32_t numVertexPositions,
         int* pIndices, uint32_t numIndices);
 }}}

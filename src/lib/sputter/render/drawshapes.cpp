@@ -40,7 +40,7 @@ static std::vector<glm::ivec2> VertexPositions;
 static Attribute<glm::ivec2>* pVertexPositionAttribute = nullptr;
 
 static const uint32_t kMaxIndices = 32; // Increase if needed
-static std::vector<uint32_t> VertexIndices;
+static std::vector<int> VertexIndices;
 static IndexBuffer* pIndices = nullptr;
 
 bool shapes::InitializeLineRenderer(assets::AssetStorage* pAssetStorage, ShaderStorage* pShaderStorage, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
@@ -157,7 +157,16 @@ void shapes::DrawRect(
     glBindVertexArray(VAO);
     pVertexPositionAttribute->BindTo(0);
 
-    pVertexPositionAttribute->Set(VertexPositions);
+    const uint32_t NumVertices = 8;
+    VertexPositions.resize(NumVertices);
+
+    const uint32_t NumIndices = 24;
+    VertexIndices.resize(NumIndices);
+    geometry::MakeBorderedRect(x, y, width, height, borderSize, VertexPositions.data(), NumVertices, VertexIndices.data(), NumIndices);
+
+    pVertexPositionAttribute->Set(VertexPositions.data(), NumVertices);
+    pIndices->Set(VertexIndices.data(), NumIndices);
+
     ::Draw(*pIndices, DrawMode::Triangles);
 
     pVertexPositionAttribute->UnbindFrom(0);

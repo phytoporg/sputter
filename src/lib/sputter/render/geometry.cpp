@@ -189,7 +189,7 @@ bool sputter::render::geometry::MakeUnitCube(
 }
 
 bool sputter::render::geometry::MakeBorderedRect(
-    int32_t x, int32_t y, int32_t width, int32_t height, int32_t borderSize, const Color& borderColor,
+    int32_t x, int32_t y, int32_t width, int32_t height, int32_t borderSize,
     glm::ivec2* pVertexPositions, uint32_t numVertexPositions,
     int* pIndices, uint32_t numIndices)
 {
