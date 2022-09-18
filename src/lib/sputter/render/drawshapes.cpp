@@ -27,10 +27,10 @@ static glm::mat4 ProjectionMatrix;
 static const char* pViewUniformName = "view";
 static uint32_t ViewMatrixUniformHandle = Shader::kInvalidHandleValue;
 
-static const char* pProjectionUniformName = "proj";
+static const char* pProjectionUniformName = "projection";
 static uint32_t ProjectionMatrixUniformHandle = Shader::kInvalidHandleValue;
 
-static const char* pBorderColorUniformName = "color";
+static const char* pBorderColorUniformName = "borderColor";
 static uint32_t BorderColorUniformHandle = Shader::kInvalidHandleValue;
 
 static uint32_t VAO = 0;
