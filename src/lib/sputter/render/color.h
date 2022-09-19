@@ -7,10 +7,15 @@
 namespace sputter { namespace render { 
     struct Color
     {
-        uint8_t Red;
-        uint8_t Green;
-        uint8_t Blue;
+        uint8_t R;
+        uint8_t G;
+        uint8_t B;
 
         glm::vec3 ToVec3() const;
+
+        static Color Red;
+        static Color Blue;
+        static Color Green;
+        static Color White;
     };
 }}

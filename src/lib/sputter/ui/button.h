@@ -13,18 +13,18 @@ namespace sputter { namespace ui {
         Button(Element* pParent);
 
         virtual void Tick(float dt) override;
-        virtual void Draw() override;
-
         virtual void HandleEvent(uint32_t eventCode, void* pEventData) override;
 
-        void SetBorderWidth(uint8_t borderWidth);
+        void SetBorderSize(uint8_t borderSize);
 
         void SetBorderColor(uint8_t r, uint8_t g, uint8_t b);
         void SetBorderColor(const render::Color& color);
 
-    private:
-        uint8_t       m_borderWidth;
+    protected:
+        virtual void DrawInternal() override;
 
-        render::Color m_borderColor;
+    private:
+        uint8_t       m_borderSize = 1;
+        render::Color m_borderColor = render::Color::White;
     };
 }}

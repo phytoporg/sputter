@@ -16,7 +16,12 @@ void Screen::Tick(float dt)
     // TODO
 }
 
-void Screen::Draw() 
+void Screen::DrawInternal() 
+{
+    // Nothing to draw for the screen
+}
+
+void Screen::HandleEvent(uint32_t eventCode, void* pEventData)
 {
     // TODO
 }

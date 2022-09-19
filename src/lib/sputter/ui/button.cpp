@@ -1,6 +1,8 @@
 #include "button.h"
 #include "element.h"
 
+#include <sputter/render/drawshapes.h>
+
 using namespace sputter::ui;
 
 Button::Button(Element* pParent)
@@ -12,27 +14,31 @@ void Button::Tick(float dt)
     // TODO
 }
 
-void Button::Draw()
-{
-    // TODO
-}
-
 void Button::HandleEvent(uint32_t eventCode, void* pEventData)
 {
     // TODO
 }
 
-void Button::SetBorderWidth(uint8_t borderWidth)
+void Button::SetBorderSize(uint8_t borderSize)
 {
-    // TODO
+    m_borderSize = borderSize;
 }
 
 void Button::SetBorderColor(uint8_t r, uint8_t g, uint8_t b)
 {
-    // TODO
+    m_borderColor = render::Color{r, g, b};
 }
 
 void Button::SetBorderColor(const render::Color& color)
 {
-    // TODO
+    m_borderColor = color;
+}
+
+void Button::DrawInternal()
+{
+    const auto AbsolutePosition = GetAbsolutePosition();
+    sputter::render::shapes::DrawRect(
+        AbsolutePosition.GetX(), AbsolutePosition.GetY(),
+        GetWidth(), GetHeight(),
+        m_borderSize, m_borderColor );
 }

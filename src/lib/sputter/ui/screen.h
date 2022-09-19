@@ -20,7 +20,10 @@ namespace sputter { namespace ui {
         virtual ~Screen();
 
         virtual void Tick(float dt) override;
-        virtual void Draw() override;
+        virtual void HandleEvent(uint32_t eventCode, void* pEventData) override;
+
+    protected:
+        virtual void DrawInternal() override;
 
     private:
         render::Window* m_pWindow = nullptr;
