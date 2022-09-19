@@ -18,8 +18,7 @@ namespace sputter
             virtual ~Element();
 
             virtual void Draw();
-
-            virtual void Tick(float dt) = 0;
+            virtual void Tick(float dt);
             virtual void HandleEvent(uint32_t eventCode, void* pEventData) = 0;
 
             // These positions are relative to the parent element
@@ -44,6 +43,9 @@ namespace sputter
             // Called by Draw(). Implement any specific drawing logic for this element type
             // here that is not common to all elements.
             virtual void DrawInternal() = 0;
+
+            // Same deal here
+            virtual void TickInternal(float dt) = 0;
 
         private:
             Element* m_pParent = nullptr;

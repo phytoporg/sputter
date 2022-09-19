@@ -38,6 +38,17 @@ void Element::Draw()
     }
 }
 
+void Element::Tick(float dt) 
+{
+    TickInternal(dt);
+
+    // Tick all children
+    for (uint32_t i = 0; i < m_numChildren; ++i)
+    {
+        m_children[i]->Tick(dt);
+    }
+}
+
 void Element::SetPosition(uint32_t x, uint32_t y)
 {
     m_positionX = x;

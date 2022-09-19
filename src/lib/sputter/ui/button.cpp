@@ -9,11 +9,6 @@ Button::Button(Element* pParent)
     : Element(pParent)
 {}
 
-void Button::Tick(float dt)
-{
-    // TODO
-}
-
 void Button::HandleEvent(uint32_t eventCode, void* pEventData)
 {
     // TODO
@@ -42,3 +37,9 @@ void Button::DrawInternal()
         GetWidth(), GetHeight(),
         m_borderSize, m_borderColor );
 }
+
+void Button::TickInternal(float dt)
+{
+    // TODO
+}
+

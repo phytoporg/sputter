@@ -19,11 +19,11 @@ namespace sputter { namespace ui {
         Screen(render::Window* pWindow);
         virtual ~Screen();
 
-        virtual void Tick(float dt) override;
         virtual void HandleEvent(uint32_t eventCode, void* pEventData) override;
 
     protected:
         virtual void DrawInternal() override;
+        virtual void TickInternal(float dt) override;
 
     private:
         render::Window* m_pWindow = nullptr;

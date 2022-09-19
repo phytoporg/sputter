@@ -12,7 +12,6 @@ namespace sputter { namespace ui {
     public:
         Button(Element* pParent);
 
-        virtual void Tick(float dt) override;
         virtual void HandleEvent(uint32_t eventCode, void* pEventData) override;
 
         void SetBorderSize(uint8_t borderSize);
@@ -22,6 +21,7 @@ namespace sputter { namespace ui {
 
     protected:
         virtual void DrawInternal() override;
+        virtual void TickInternal(float dt) override;
 
     private:
         uint8_t       m_borderSize = 1;

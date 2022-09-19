@@ -61,6 +61,7 @@ void MainMenuScene::Uninitialize()
 
 void MainMenuScene::Tick(math::FixedPoint dt) 
 {
+    m_pScreen->Tick((float)dt);
 }
 
 void MainMenuScene::Draw() 

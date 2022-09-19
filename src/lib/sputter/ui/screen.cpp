@@ -11,7 +11,7 @@ Screen::~Screen()
     // TODO: Destroy element hierarchy?
 }
 
-void Screen::Tick(float dt) 
+void Screen::TickInternal(float dt) 
 {
     // TODO
 }
