@@ -35,14 +35,16 @@ void MainMenuScene::Initialize()
     m_pCamera->SetTranslation(gameconstants::InitialCameraPosition);
     const glm::mat4 viewMatrix = m_pCamera->ViewMatrix4d();
     m_pVolumeTextRenderer->SetMatrices(*m_pOrthoMatrix, viewMatrix);
+
+    // TODO: Remove this timeout; transition should happen on button press.
     m_pTimerSystem->CreateFrameTimer(120, OnStartTimerExpire, this);
 
     m_pScreen = new ui::Screen(m_pWindow);
     m_pVersusAiButton = new ui::Button(m_pScreen);
-    m_pVersusAiButton->SetPosition(-100, -100);
-    m_pVersusAiButton->SetDimensions(200, 50);
-    m_pVersusAiButton->SetBorderSize(3);
-    m_pVersusAiButton->SetBorderColor(render::Color::White);
+    m_pVersusAiButton->SetPosition(gameconstants::VersusAiButtonPositionX, gameconstants::VersusAiButtonPositionY);
+    m_pVersusAiButton->SetDimensions(gameconstants::VersusAiButtonDimensionX, gameconstants::VersusAiButtonDimensionY);
+    m_pVersusAiButton->SetBorderSize(gameconstants::MainMenuButtonBorderSize);
+    m_pVersusAiButton->SetBorderColor(gameconstants::MainMenuButtonBorderColor);
 }
 
 void MainMenuScene::Uninitialize() 
@@ -66,7 +68,11 @@ void MainMenuScene::Tick(math::FixedPoint dt)
 
 void MainMenuScene::Draw() 
 {
-    m_pVolumeTextRenderer->DrawText(-380, 100, 5, "PADDLEARENA");
+    m_pVolumeTextRenderer->DrawText(
+        gameconstants::MainMenuGameTitlePositionX,
+        gameconstants::MainMenuGameTitlePositionY,
+        gameconstants::MainMenuGameTitleSize,
+        gameconstants::GameTitleString);
     m_pScreen->Draw();
 }
 

@@ -5,6 +5,8 @@
 #include <sputter/math/fpvector2d.h>
 #include <sputter/math/fpvector3d.h>
 
+#include <sputter/render/color.h>
+
 namespace gameconstants 
 {
     // Rendering settings
@@ -92,4 +94,17 @@ namespace gameconstants
     // Strings
     static const char* GetReadyString = "GETREADY";
     static const char* GameTitleString = "PADDLEARENA";
+
+    // Main menu constants
+    const int32_t VersusAiButtonPositionX = -100;
+    const int32_t VersusAiButtonPositionY = -100;
+    const uint32_t VersusAiButtonDimensionX = 100;
+    const uint32_t VersusAiButtonDimensionY = 50;
+
+    const uint32_t MainMenuButtonBorderSize = 3;
+    const auto MainMenuButtonBorderColor = sputter::render::Color::White;
+
+    const int32_t MainMenuGameTitlePositionX = -380;
+    const int32_t MainMenuGameTitlePositionY = 100;
+    const int32_t MainMenuGameTitleSize = 5;
 }
