@@ -30,16 +30,16 @@ static uint32_t ViewMatrixUniformHandle = Shader::kInvalidHandleValue;
 static const char* pProjectionUniformName = "projection";
 static uint32_t ProjectionMatrixUniformHandle = Shader::kInvalidHandleValue;
 
-static const char* pBorderColorUniformName = "borderColor";
-static uint32_t BorderColorUniformHandle = Shader::kInvalidHandleValue;
-
 static uint32_t VAO = 0;
 
-static const uint32_t kMaxVertices = 16; // Increase if needed
+static const uint32_t kMaxVertices = 64; // Increase if needed
 static std::vector<glm::ivec2> VertexPositions;
 static Attribute<glm::ivec2>* pVertexPositionAttribute = nullptr;
 
-static const uint32_t kMaxIndices = 32; // Increase if needed
+static std::vector<glm::vec3> VertexColors;
+static Attribute<glm::vec3>*  pVertexColorAttribute = nullptr;
+
+static const uint32_t kMaxIndices = 128; // Increase if needed
 static std::vector<int> VertexIndices;
 static IndexBuffer* pIndices = nullptr;
 
@@ -78,13 +78,6 @@ bool shapes::InitializeLineRenderer(assets::AssetStorage* pAssetStorage, ShaderS
         return false;
     }
 
-    BorderColorUniformHandle = pLineShader->GetUniform(pBorderColorUniformName);
-    if (BorderColorUniformHandle == Shader::kInvalidHandleValue)
-    {
-        LOG(WARNING) << "Failed to reterieve border color uniform handle for line renderer.";
-        return false;
-    }
-
     ViewMatrix = viewMatrix;
     ProjectionMatrix = projectionMatrix;
 
@@ -92,10 +85,15 @@ bool shapes::InitializeLineRenderer(assets::AssetStorage* pAssetStorage, ShaderS
     glBindVertexArray(VAO);
 
     VertexPositions.reserve(kMaxVertices);
+    VertexColors.reserve(kMaxVertices);
 
     pVertexPositionAttribute = new Attribute<glm::ivec2>();
     pVertexPositionAttribute->Set(VertexPositions.data(), VertexPositions.size());
     pVertexPositionAttribute->BindTo(0);
+
+    pVertexColorAttribute = new Attribute<glm::vec3>();
+    pVertexColorAttribute->Set(VertexColors.data(), VertexColors.size());
+    pVertexColorAttribute->BindTo(1);
 
     VertexIndices.reserve(kMaxIndices);
 
@@ -122,19 +120,62 @@ void shapes::UninitializeLineRenderer()
     delete pVertexPositionAttribute;
     pVertexPositionAttribute = nullptr;
 
+    delete pVertexColorAttribute;
+    pVertexColorAttribute = nullptr;
+
     pLineShader = nullptr;
 
     ViewMatrixUniformHandle = Shader::kInvalidHandleValue;
     ProjectionMatrixUniformHandle = Shader::kInvalidHandleValue;
-    BorderColorUniformHandle = Shader::kInvalidHandleValue;
 
     glDeleteBuffers(1, &VAO);
     VAO = 0;
 
     VertexPositions.clear();
+    VertexColors.clear();
     VertexIndices.clear();
 
     IsInitialized = false;
+}
+
+void shapes::FlushLineRenderer()
+{
+    if (!IsInitialized)
+    {
+        system::LogAndFail("Line rendere is not initialized in FlushLineRenderer()");
+    }
+
+    if (VertexPositions.empty())
+    {
+        // Nothing to do
+        return;
+    }
+
+    pLineShader->Bind();
+
+    Uniform<glm::mat4>::Set(ViewMatrixUniformHandle, ViewMatrix);
+    Uniform<glm::mat4>::Set(ProjectionMatrixUniformHandle, ProjectionMatrix);
+
+    glBindVertexArray(VAO);
+    pVertexPositionAttribute->BindTo(0);
+    pVertexColorAttribute->BindTo(1);
+
+    pVertexPositionAttribute->Set(VertexPositions.data(), VertexPositions.size());
+    pVertexColorAttribute->Set(VertexColors.data(), VertexColors.size());
+    pIndices->Set(VertexIndices.data(), VertexIndices.size());
+
+    ::Draw(*pIndices, DrawMode::Triangles);
+
+    pVertexPositionAttribute->UnbindFrom(0);
+    pVertexColorAttribute->UnbindFrom(1);
+
+    pLineShader->Unbind();
+    glBindVertexArray(0);
+
+    // Reset data for the next draw call
+    VertexPositions.clear(); // Do we need to call resize(0) instead?
+    VertexColors.clear();
+    VertexIndices.clear();
 }
 
 // TODO: This performs a draw call per invocation-- once this is working, maybe RECTify that (ha ha)
@@ -146,31 +187,39 @@ void shapes::DrawRect(
         system::LogAndFail("Line renderer not initialized in DrawRect()");
     }
 
-    pLineShader->Bind();
-
-    Uniform<glm::mat4>::Set(ViewMatrixUniformHandle, ViewMatrix);
-    Uniform<glm::mat4>::Set(ProjectionMatrixUniformHandle, ProjectionMatrix);
-
-    const glm::vec3& Vec3BorderColor = borderColor.ToVec3();
-    Uniform<glm::vec3>::Set(BorderColorUniformHandle, Vec3BorderColor);
-
-    glBindVertexArray(VAO);
-    pVertexPositionAttribute->BindTo(0);
-
     const uint32_t NumVertices = 8;
-    VertexPositions.resize(NumVertices);
+    if (VertexPositions.size() + NumVertices > kMaxVertices)
+    {
+        system::LogAndFail("Attempting to draw too many vertices. Reconsider kMaxVertices.");
+    }
+    
+    const uint32_t PreviousNumPositions = VertexPositions.size();
+    VertexPositions.resize(VertexPositions.size() + NumVertices);
+    VertexColors.resize(VertexColors.size() + NumVertices);
+
+    if (VertexPositions.size( )!= VertexColors.size())
+    {
+        system::LogAndFail("Color and position vectors should be the same size.");
+    }
 
     const uint32_t NumIndices = 24;
-    VertexIndices.resize(NumIndices);
-    geometry::MakeBorderedRect(x, y, width, height, borderSize, VertexPositions.data(), NumVertices, VertexIndices.data(), NumIndices);
+    if (VertexIndices.size() + NumIndices > kMaxIndices)
+    {
+        system::LogAndFail("Attempting to draw with too many index values. Reconsider kMaxIndices.");
+    }
+    const uint32_t PreviousNumIndices = VertexIndices.size();
+    VertexIndices.resize(VertexIndices.size() + NumIndices);
+    geometry::MakeBorderedRect(x, y, width, height, borderSize, &VertexPositions[PreviousNumPositions], NumVertices, &VertexIndices[PreviousNumIndices], NumIndices);
 
-    pVertexPositionAttribute->Set(VertexPositions.data(), NumVertices);
-    pIndices->Set(VertexIndices.data(), NumIndices);
+    // Offset the indices by PrevNumPositions
+    for (uint32_t i = PreviousNumIndices; i < VertexIndices.size(); ++i)
+    {
+        VertexIndices[i] += PreviousNumPositions;
+    }
 
-    ::Draw(*pIndices, DrawMode::Triangles);
-
-    pVertexPositionAttribute->UnbindFrom(0);
-
-    pLineShader->Unbind();
-    glBindVertexArray(0);
+    // Set up the color elements
+    for (uint32_t i = PreviousNumPositions; i < VertexPositions.size(); ++i)
+    {
+        VertexColors[i] = borderColor.ToVec3();
+    }
 }

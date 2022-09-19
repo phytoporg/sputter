@@ -98,7 +98,7 @@ namespace gameconstants
     // Main menu constants
     const int32_t VersusAiButtonPositionX = -100;
     const int32_t VersusAiButtonPositionY = -100;
-    const uint32_t VersusAiButtonDimensionX = 100;
+    const uint32_t VersusAiButtonDimensionX = 200;
     const uint32_t VersusAiButtonDimensionY = 50;
 
     const uint32_t MainMenuButtonBorderSize = 3;

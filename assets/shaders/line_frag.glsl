@@ -1,8 +1,8 @@
 #version 450 core
-uniform vec3 borderColor;
+in vec3 out_pixelColor;
 out vec4 FragColor;
 
 void main() 
 {
-    FragColor = vec4(borderColor, 1.0);
+    FragColor = vec4(out_pixelColor, 1.0);
 }

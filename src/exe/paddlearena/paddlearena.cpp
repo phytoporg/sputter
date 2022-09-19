@@ -96,6 +96,7 @@ void PaddleArena::Tick(math::FixedPoint dt)
 void PaddleArena::Draw()
 {
     m_pSceneStack->Draw();
+    render::shapes::FlushLineRenderer();
 }
 
 bool PaddleArena::StartGame()
