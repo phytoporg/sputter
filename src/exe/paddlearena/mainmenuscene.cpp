@@ -42,9 +42,15 @@ void MainMenuScene::Initialize()
     m_pScreen = new ui::Screen(m_pWindow);
     m_pVersusAiButton = new ui::Button(m_pScreen);
     m_pVersusAiButton->SetPosition(gameconstants::VersusAiButtonPositionX, gameconstants::VersusAiButtonPositionY);
-    m_pVersusAiButton->SetDimensions(gameconstants::VersusAiButtonDimensionX, gameconstants::VersusAiButtonDimensionY);
+    m_pVersusAiButton->SetDimensions(gameconstants::MainMenuButtonDimensionX, gameconstants::MainMenuButtonDimensionY);
     m_pVersusAiButton->SetBorderSize(gameconstants::MainMenuButtonBorderSize);
     m_pVersusAiButton->SetBorderColor(gameconstants::MainMenuButtonBorderColor);
+
+    m_pVersusPlayerButton = new ui::Button(m_pScreen);
+    m_pVersusPlayerButton->SetPosition(gameconstants::VersusAiButtonPositionX, gameconstants::VersusAiButtonPositionY - gameconstants::MainMenuButtonMarginTop);
+    m_pVersusPlayerButton->SetDimensions(gameconstants::MainMenuButtonDimensionX, gameconstants::MainMenuButtonDimensionY);
+    m_pVersusPlayerButton->SetBorderSize(gameconstants::MainMenuButtonBorderSize);
+    m_pVersusPlayerButton->SetBorderColor(gameconstants::MainMenuButtonBorderColor);
 }
 
 void MainMenuScene::Uninitialize() 
@@ -52,10 +58,14 @@ void MainMenuScene::Uninitialize()
     if (m_pScreen)
     {
         m_pScreen->RemoveChild(m_pVersusAiButton);
+        m_pScreen->RemoveChild(m_pVersusPlayerButton);
     }
     
     delete m_pVersusAiButton;
     m_pVersusAiButton = nullptr;
+
+    delete m_pVersusPlayerButton;
+    m_pVersusPlayerButton = nullptr;
 
     delete m_pScreen;
     m_pScreen = nullptr;

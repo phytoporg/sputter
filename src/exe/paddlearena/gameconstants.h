@@ -98,9 +98,10 @@ namespace gameconstants
     // Main menu constants
     const int32_t VersusAiButtonPositionX = -100;
     const int32_t VersusAiButtonPositionY = -100;
-    const uint32_t VersusAiButtonDimensionX = 200;
-    const uint32_t VersusAiButtonDimensionY = 50;
 
+    const uint32_t MainMenuButtonDimensionX = 200;
+    const uint32_t MainMenuButtonDimensionY = 50;
+    const uint32_t MainMenuButtonMarginTop = 100;
     const uint32_t MainMenuButtonBorderSize = 3;
     const auto MainMenuButtonBorderColor = sputter::render::Color::White;
 

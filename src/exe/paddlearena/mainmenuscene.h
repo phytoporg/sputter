@@ -59,6 +59,7 @@ private:
 
     sputter::ui::Screen*                        m_pScreen = nullptr;
     sputter::ui::Button*                        m_pVersusAiButton = nullptr;
+    sputter::ui::Button*                        m_pVersusPlayerButton = nullptr;
 
     PaddleArena*                                m_pPaddleArena = nullptr;
 };
