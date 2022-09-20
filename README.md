@@ -1,5 +1,5 @@
 # sputter
-Small game engine
+Small game engine with a focus on small footprint and deterministic simulation.
 
 ## Building
 
