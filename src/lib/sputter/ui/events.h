@@ -4,10 +4,17 @@
 
 namespace sputter { namespace ui {
     enum class Event : uint8_t {
-        EventInvalid = 0,
-        EventKeyDown,
-        EventKeyUp,
-        EventFocusBegin,
-        EventFocusEnd,
+        Invalid = 0,
+        KeyDown,
+        KeyUp,
+        FocusBegin,
+        FocusEnd,
+        EventMax
+    };
+
+    enum class Key : uint8_t {
+        Invalid = 0,
+        Up,
+        Down
     };
 }}

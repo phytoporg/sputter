@@ -1,6 +1,7 @@
 #pragma once
 
 #include "element.h"
+#include "events.h"
 
 // Forward declarations
 namespace sputter
@@ -26,6 +27,12 @@ namespace sputter { namespace ui {
         virtual void TickInternal(float dt) override;
 
     private:
-        render::Window* m_pWindow = nullptr;
+        void HandleKeyEvent(int key, int action);
+
+        // TODO: Consider making this configurable
+        Key*            m_pKeyMapping = nullptr;
+        render::Window* m_pWindow     = nullptr;
+
+        Element*        m_pElementInFocus = nullptr;
     };
 }}

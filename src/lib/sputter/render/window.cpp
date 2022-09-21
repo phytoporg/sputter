@@ -69,7 +69,7 @@ void Window::SetWindowResizeCallback(WindowResizeCallback onResize)
     m_fnWindowResizeCallback = onResize;
 }
 
-void Window::SetWindowKeyCallback(WindowKeyCallback onKey)
+void Window::SetKeyCallback(WindowKeyCallback onKey)
 {
     m_fnWindowKeyCallback = onKey;
 }

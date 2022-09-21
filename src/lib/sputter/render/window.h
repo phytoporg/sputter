@@ -24,7 +24,7 @@ namespace sputter { namespace render {
             void SetWindowResizeCallback(const WindowResizeCallback onResize);
 
             using WindowKeyCallback = std::function<void(Window*, int, int)>;
-            void SetWindowKeyCallback(const WindowKeyCallback onKey);
+            void SetKeyCallback(const WindowKeyCallback onKey);
 
             // Pass in -1 for any unconstrained parameters
             void SetDimensionConstraints(
