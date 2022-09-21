@@ -21,7 +21,7 @@ void Screen::DrawInternal()
     // Nothing to draw for the screen
 }
 
-void Screen::HandleEvent(uint32_t eventCode, void* pEventData)
+void Screen::HandleEvent(uint8_t eventCode, void* pEventData)
 {
     // TODO
 }

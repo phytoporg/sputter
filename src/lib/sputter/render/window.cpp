@@ -53,6 +53,7 @@ Window::Window(const std::string& windowTitle, uint32_t w, uint32_t h)
     // Set up thunks
     glfwSetWindowUserPointer(m_pWindow, this);
     glfwSetWindowSizeCallback(m_pWindow, WindowResizeThunk);
+    glfwSetKeyCallback(m_pWindow, WindowKeyThunk);
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
@@ -66,6 +67,11 @@ Window::~Window()
 void Window::SetWindowResizeCallback(WindowResizeCallback onResize)
 {
     m_fnWindowResizeCallback = onResize;
+}
+
+void Window::SetWindowKeyCallback(WindowKeyCallback onKey)
+{
+    m_fnWindowKeyCallback = onKey;
 }
 
 void Window::SetDimensionConstraints(int minWidth, int minHeight, int maxWidth, int maxHeight)
@@ -130,7 +136,26 @@ void Window::WindowResizeThunk(GLFWwindow* pWindow, int width, int height)
 
         if (pUserWindow->m_fnWindowResizeCallback)
         {
-            pUserWindow->m_fnWindowResizeCallback(pUserWindow, pUserWindow->m_width, pUserWindow->m_height);
+            pUserWindow->m_fnWindowResizeCallback(
+                pUserWindow, pUserWindow->m_width, pUserWindow->m_height);
+        }
+    }
+}
+
+void Window::WindowKeyThunk(GLFWwindow* pWindow,
+    int key, int scancode, int action, int mods)
+{
+    if (!pWindow)
+    {
+        system::LogAndFail("Null window pointer in window key thunk!");
+    }
+
+    auto pUserWindow = static_cast<Window*>(glfwGetWindowUserPointer(pWindow));
+    if (pUserWindow)
+    {
+        if (pUserWindow->m_fnWindowKeyCallback)
+        {
+            pUserWindow->m_fnWindowKeyCallback(pUserWindow, key, action);
         }
     }
 }

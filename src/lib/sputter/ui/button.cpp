@@ -9,7 +9,7 @@ Button::Button(Element* pParent)
     : Element(pParent)
 {}
 
-void Button::HandleEvent(uint32_t eventCode, void* pEventData)
+void Button::HandleEvent(uint8_t eventCode, void* pEventData)
 {
     // TODO
 }

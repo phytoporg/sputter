@@ -19,7 +19,7 @@ namespace sputter { namespace ui {
         Screen(render::Window* pWindow);
         virtual ~Screen();
 
-        virtual void HandleEvent(uint32_t eventCode, void* pEventData) override;
+        virtual void HandleEvent(uint8_t eventCode, void* pEventData) override;
 
     protected:
         virtual void DrawInternal() override;

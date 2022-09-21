@@ -19,7 +19,7 @@ namespace sputter
 
             virtual void Draw();
             virtual void Tick(float dt);
-            virtual void HandleEvent(uint32_t eventCode, void* pEventData) = 0;
+            virtual void HandleEvent(uint8_t eventCode, void* pEventData) = 0;
 
             // These positions are relative to the parent element
             void SetPosition(uint32_t x, uint32_t y);

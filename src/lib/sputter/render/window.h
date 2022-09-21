@@ -23,8 +23,13 @@ namespace sputter { namespace render {
             using WindowResizeCallback = std::function<void(Window*, uint32_t, uint32_t)>;
             void SetWindowResizeCallback(const WindowResizeCallback onResize);
 
+            using WindowKeyCallback = std::function<void(Window*, int, int)>;
+            void SetWindowKeyCallback(const WindowKeyCallback onKey);
+
             // Pass in -1 for any unconstrained parameters
-            void SetDimensionConstraints(int minWidth, int minHeight, int maxWidth, int maxHeight);
+            void SetDimensionConstraints(
+                int minWidth, int minHeight,
+                int maxWidth, int maxHeight);
 
             void EnableInputs();
             bool GetKeyState(uint32_t keyCode);
@@ -40,6 +45,10 @@ namespace sputter { namespace render {
         private:
             static void WindowResizeThunk(GLFWwindow* pWindow, int width, int height);
             WindowResizeCallback m_fnWindowResizeCallback;
+
+            static void WindowKeyThunk(GLFWwindow* pWindow,
+                int key, int scancode, int action, int mods);
+            WindowKeyCallback m_fnWindowKeyCallback;
 
             // Tracks whether glfw is initialized. Not sure if this belongs here?
             static bool m_isInitialized;

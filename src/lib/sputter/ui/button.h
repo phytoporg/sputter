@@ -12,7 +12,7 @@ namespace sputter { namespace ui {
     public:
         Button(Element* pParent);
 
-        virtual void HandleEvent(uint32_t eventCode, void* pEventData) override;
+        virtual void HandleEvent(uint8_t eventCode, void* pEventData) override;
 
         void SetBorderSize(uint8_t borderSize);
 
