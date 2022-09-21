@@ -1,4 +1,5 @@
 #include "element.h"
+#include "events.h"
 
 #include <cstring>
 
@@ -112,6 +113,9 @@ bool Element::AddChild(Element* pChildElement)
 
     m_children[m_numChildren] = pChildElement;
     ++m_numChildren;
+
+    // Signal the concrete implementation
+    HandleEvent(EventToParameter(Event::ChildAdded), pChildElement);
     
     return true;
 }
@@ -143,6 +147,9 @@ bool Element::RemoveChild(Element* pChildElement)
     --m_numChildren;
     m_children[elementIndex] = m_children[m_numChildren];
     m_children[m_numChildren] = nullptr;
+
+    // Signal the concrete implementation
+    HandleEvent(EventToParameter(Event::ChildRemoved), pChildElement);
     
     return true;
 }

@@ -73,5 +73,5 @@ void Screen::HandleKeyEvent(int key, int action)
         return;
     }
     
-    m_pElementInFocus->HandleEvent(static_cast<uint8_t>(keyEvent), static_cast<void*>(&keyPressed));
+    m_pElementInFocus->HandleEvent(EventToParameter(keyEvent), KeyPointerToParameter(&keyPressed));
 }
