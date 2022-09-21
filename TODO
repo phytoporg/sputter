@@ -1,9 +1,8 @@
 Next high-level goal: Start prototyping gameplay
 
 * UI WORK STATUS
-** Trying to render a button
-** Just got DrawRect boilerplate in place, needs validation
-** Plumb in basic button drawing, events, keyboard UI navigation
+** Plumb in basic events, keyboard UI navigation
+*** Need to think through how focus works. Screen to handle Add/RemoveChild event?
 ** Then, start thinking about text
 
 * Some kind of basic UI flow for actual game loop
