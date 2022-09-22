@@ -13,7 +13,7 @@ namespace sputter { namespace ui {
     class Button : public Element
     {
     public:
-        Button(Element* pParent, Theme* pTheme);
+        Button(Element* pParent, Theme* pTheme, const char* pText = nullptr);
 
         virtual void HandleEvent(uint8_t eventCode, void* pEventData) override;
 
@@ -34,5 +34,8 @@ namespace sputter { namespace ui {
 
         Theme*        m_pTheme = nullptr; 
         Button*       m_pNavLinks[4];
+
+        static const uint32_t kMaxTextLength = 256;
+        char m_text[kMaxTextLength];
     };
 }}

@@ -10,12 +10,18 @@
 
 using namespace sputter::ui;
 
-Button::Button(Element* pParent, Theme* pTheme)
+Button::Button(Element* pParent, Theme* pTheme, const char* pText)
     : Element(pParent),
       m_pTheme(pTheme)
 {
     memset(m_pNavLinks, 0, sizeof(m_pNavLinks));
     m_borderColor = m_pTheme->UnfocusedBorderColor;
+
+    memset(m_text, 0, sizeof(m_text));
+    if (pText)
+    {
+        strncpy(&m_text[0], pText, kMaxTextLength);
+    }
 }
 
 void Button::HandleEvent(uint8_t eventCode, void* pEventData)

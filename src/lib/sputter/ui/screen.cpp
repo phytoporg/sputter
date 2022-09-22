@@ -4,7 +4,6 @@
 #include <sputter/system/system.h>
 
 #include <GLFW/glfw3.h>
-#include <type_traits>
 
 using namespace sputter;
 using namespace sputter::ui;
