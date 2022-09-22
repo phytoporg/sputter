@@ -1,7 +1,7 @@
 # sputter
 A game engine with a focus on small footprint and deterministic simulation.
 
-The project didn't quite start with a "small footprint" goal in mind so there's going to be some work to do there once there's an actual, shippable game in place. 
+The project didn't quite start with a "small footprint" goal in mind so there's going to be some work to do there once there's an actual, shippable game in place. In the meantime, I'm doing my best not to introduce additional third-party dependencies.
 
 "Deterministic simulation" means to allow for identical memory representations for game state across all supported platforms, and identical outcomes for each time step given a set of player inputs. I'm looking to use sputter to create multiplayer-first games with latency-hiding rollback netcode at its core.
 
