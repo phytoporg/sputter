@@ -1,13 +1,4 @@
-Next high-level goal: Start prototyping gameplay
-
-* UI WORK STATUS
-** Plumb in basic events, keyboard UI navigation
-*** Need to think through how focus works. Screen to handle Add/RemoveChild event?
-** Then, start thinking about text
-
-* BUGBUG:
-** On MUTHUR, all gamb objects are red for some reason after copying over shaders.
-
+Next high-level goal: Gameplay vertical slice
 * Some kind of basic UI flow for actual game loop
 ** Main menu w/Title, "Vs. AI" | "Vs. Player" | "Online" (greyed out as appropriate)
 ** Need a notion of scenes (main menu -> game and back)
@@ -17,15 +8,21 @@ Next high-level goal: Start prototyping gameplay
 ** Will require flushing out more font rendering bugs, possibly a non-volumetric
    rendering option for glyphs (render-to-texture? quad instances + texture atlas?)
 
-* Choose between couch versus and playing the AI
-* A real AI that sucks less
+* UI WORK STATUS
+** Plumb in basic events, keyboard UI navigation [DONE]
+*** Focus management [DONE]
 
-* Render middle of the arena <-- nah?
+** Then, start thinking about text
+
+* BUGBUG:
+** On MUTHUR, all game objects are red for some reason after copying over shaders.
+
+* A real AI that sucks less
 
 * More gameplay iteration
 ** Proper serve mechanic, at the very least
 ** Smoother game loop
-** Support for rematch/exit
+** Support for pause menu w/rematch,exit
 
 * Serialization & Rollback Redux
 ** Fix the memory management story
