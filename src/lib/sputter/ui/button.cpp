@@ -29,12 +29,12 @@ void Button::HandleEvent(uint8_t eventCode, void* pEventData)
     {
         m_borderColor = m_pTheme->UnfocusedBorderColor;
     }
-    else if (event == EventCode::KeyUp)
+    else if (event == EventCode::KeyDown)
     {
-        const Key KeyReleased = *static_cast<Key*>(pEventData);
-        if (KeyReleased <= Key::Invalid || KeyReleased >= Key::KeyMax)
+        const Key KeyPressed = *static_cast<Key*>(pEventData);
+        if (KeyPressed <= Key::Invalid || KeyPressed >= Key::KeyMax)
         {
-            LOG(ERROR) << "Unhandled key release value made it to the button handler";
+            LOG(ERROR) << "Unhandled key press value made it to the button handler";
             return;
         }
 
@@ -45,8 +45,8 @@ void Button::HandleEvent(uint8_t eventCode, void* pEventData)
         };
 
         // If we get this, we should be the element in focus
-        const uint8_t KeyReleasedIndex = static_cast<uint8_t>(KeyReleased);
-        const uint8_t NavLinkIndex = static_cast<uint8_t>(KeyToDirectionMap[KeyReleasedIndex]) - 1;
+        const uint8_t KeyPressedIndex = static_cast<uint8_t>(KeyPressed);
+        const uint8_t NavLinkIndex = static_cast<uint8_t>(KeyToDirectionMap[KeyPressedIndex]) - 1;
         Button* pNavButton = m_pNavLinks[NavLinkIndex];
         if (pNavButton)
         {

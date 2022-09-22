@@ -94,9 +94,13 @@ void Screen::HandleKeyEvent(int key, int action)
     EventCode keyEvent = EventCode::Invalid;
 
     Key keyPressed = m_pKeyMapping[key];
-    if (action == GLFW_PRESS || action == GLFW_REPEAT)
+    if (action == GLFW_PRESS)
     {
         keyEvent = EventCode::KeyDown;
+    }
+    else if (action == GLFW_REPEAT)
+    {
+        keyEvent = EventCode::KeyHeld;
     }
     else if (action == GLFW_RELEASE)
     {

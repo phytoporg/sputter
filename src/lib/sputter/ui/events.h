@@ -6,6 +6,7 @@ namespace sputter { namespace ui {
     enum class EventCode : uint8_t {
         Invalid = 0,
         KeyDown,
+        KeyHeld,
         KeyUp,
         FocusBegin,
         FocusEnd,
