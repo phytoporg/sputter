@@ -3,7 +3,8 @@
 #include <sputter/render/window.h>
 #include <sputter/system/system.h>
 
- #include <GLFW/glfw3.h>
+#include <GLFW/glfw3.h>
+#include <type_traits>
 
 using namespace sputter;
 using namespace sputter::ui;
@@ -15,10 +16,12 @@ Screen::Screen(render::Window* pWindow)
     m_pKeyMapping = new Key[GLFW_KEY_LAST];
     m_pKeyMapping[GLFW_KEY_UP]   = Key::Up;
     m_pKeyMapping[GLFW_KEY_DOWN] = Key::Down;
+    m_pKeyMapping[GLFW_KEY_W]    = Key::Up;
+    m_pKeyMapping[GLFW_KEY_S]    = Key::Down;
 
-    // Need this layer of indirection because the glfw user pointer is already taken by our
-    // render::Window pointer. Handlers could be inlined here in lambdas, but I'd prefer to keep
-    // the constructor succinct and clear.
+    // Need this layer of indirection because the glfw user pointer is 
+    // already taken by our render::Window pointer. Handlers could be inlined 
+    // here in lambdas, but I'd prefer to keep the constructor succinct and clear.
     m_pWindow->SetKeyCallback([this](render::Window* pWindow, int key, int action) {
         HandleKeyEvent(key, action);
     });
@@ -26,6 +29,8 @@ Screen::Screen(render::Window* pWindow)
 
 Screen::~Screen()
 {
+    m_pWindow->SetKeyCallback(0);
+
     delete[] m_pKeyMapping;
     m_pKeyMapping = nullptr;
 
@@ -44,7 +49,38 @@ void Screen::DrawInternal()
 
 void Screen::HandleEvent(uint8_t eventCode, void* pEventData)
 {
-    // TODO
+    const EventCode event = ParameterToEventCode(eventCode);
+    if (event == EventCode::ChildAdded)
+    {
+        if (!m_pElementInFocus)
+        {
+            m_pElementInFocus = static_cast<Element*>(pEventData);
+            m_pElementInFocus->QueueEvent({EventCode::FocusBegin});
+        }
+    }
+    else if (event == EventCode::ChildRemoved)
+    {
+        if (m_pElementInFocus == static_cast<Element*>(pEventData))
+        {
+            m_pElementInFocus->QueueEvent({EventCode::FocusEnd});
+        }
+
+        m_pElementInFocus = nullptr;
+
+        // TODO: Who gets focus now, though?
+    }
+    else if (event == EventCode::FocusBegin)
+    {
+        Element* pNewFocusElement = static_cast<Element*>(pEventData);
+        if (pNewFocusElement != m_pElementInFocus)
+        {
+            m_pElementInFocus->QueueEvent({EventCode::FocusEnd});
+            m_pElementInFocus = pNewFocusElement;
+
+            // No payload required for non-root elements.
+            m_pElementInFocus->QueueEvent({EventCode::FocusBegin});
+        }
+    }
 }
 
 void Screen::HandleKeyEvent(int key, int action)
@@ -55,23 +91,29 @@ void Screen::HandleKeyEvent(int key, int action)
         return;
     }
 
-    Event keyEvent = Event::Invalid;
+    EventCode keyEvent = EventCode::Invalid;
 
     Key keyPressed = m_pKeyMapping[key];
     if (action == GLFW_PRESS || action == GLFW_REPEAT)
     {
-        keyEvent = Event::KeyDown;
+        keyEvent = EventCode::KeyDown;
     }
     else if (action == GLFW_RELEASE)
     {
-        keyEvent = Event::KeyUp;
+        keyEvent = EventCode::KeyUp;
     }
 
-    if (keyEvent == Event::Invalid)
+    if (keyEvent == EventCode::Invalid)
     {
         LOG(ERROR) << "Unexpected key action";
         return;
     }
+
+    if (keyPressed == Key::Invalid)
+    {
+        // Unhandled key event
+        return;
+    }
     
-    m_pElementInFocus->HandleEvent(EventToParameter(keyEvent), KeyPointerToParameter(&keyPressed));
+    m_pElementInFocus->HandleEvent(EventCodeToParameter(keyEvent), &keyPressed);
 }

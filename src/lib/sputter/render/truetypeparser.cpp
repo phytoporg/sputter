@@ -481,11 +481,12 @@ Glyph TrueTypeParser::GetCharacterGlyph(char c)
         return Glyph::kInvalidGlyph;
     }
 
-    const GLYPH_ContoursDescription* pContourDescriptions = GetOffsetFrom<GLYPH_ContoursDescription>(pFoundGlyphHeader, sizeof(*pFoundGlyphHeader));
-    const GLYPH_InstructionsDescription* pInstructionDescriptions = GetOffsetFrom<GLYPH_InstructionsDescription>(pContourDescriptions, NumberOfContours * 2);
+    const uint16_t* pEndPtsOfContours = &pFoundGlyphHeader->EndPtsOfContours[0];
+    const GLYPH_InstructionsDescription* pInstructionDescriptions =
+        GetOffsetFrom<GLYPH_InstructionsDescription>(pEndPtsOfContours, NumberOfContours * 2);
 
     // Add one, since the entries in EndPtsOfContours represent point *indices*
-    const uint16_t NumberOfPoints = SwapEndianness16(pContourDescriptions->EndPtsOfContours[NumberOfContours - 1]) + 1;
+    const uint16_t NumberOfPoints = SwapEndianness16(pEndPtsOfContours[NumberOfContours - 1]) + 1;
     GLYPH_PointData pointData;
     pointData.pFlags = GetOffsetFrom<uint8_t>(pInstructionDescriptions, pInstructionDescriptions->InstructionLength + 2);
 
@@ -582,7 +583,7 @@ Glyph TrueTypeParser::GetCharacterGlyph(char c)
     int16_t previousX = expandedContourXCoordinates[0] * EmToPixels - xMin;
     int16_t previousY = expandedContourYCoordinates[0] * EmToPixels - yMin;
 
-    uint16_t pointsInContour = SwapEndianness16(pContourDescriptions->EndPtsOfContours[0]) + 1;
+    uint16_t pointsInContour = SwapEndianness16(pEndPtsOfContours[0]) + 1;
     uint16_t pointIndex = 1;
     uint16_t contourIndex = 0;
 
@@ -615,7 +616,7 @@ Glyph TrueTypeParser::GetCharacterGlyph(char c)
 
             // Begin the next contour
             contourStartingPointIndex = ++pointIndex;
-            pointsInContour = SwapEndianness16(pContourDescriptions->EndPtsOfContours[contourIndex]) + 1 - contourStartingPointIndex;
+            pointsInContour = SwapEndianness16(pEndPtsOfContours[contourIndex]) + 1 - contourStartingPointIndex;
 
             previousX = expandedContourXCoordinates[contourStartingPointIndex] * EmToPixels - xMin;
             previousY = expandedContourYCoordinates[contourStartingPointIndex] * EmToPixels - yMin;

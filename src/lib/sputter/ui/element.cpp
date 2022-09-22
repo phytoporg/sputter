@@ -41,6 +41,14 @@ void Element::Draw()
 
 void Element::Tick(float dt) 
 {
+    // Handle events prior to ticking
+    while (!m_eventQueue.empty())
+    {
+        const Event& event = m_eventQueue.front();
+        HandleEvent(EventCodeToParameter(event.Code), event.pData);
+        m_eventQueue.pop_front();
+    }
+
     TickInternal(dt);
 
     // Tick all children
@@ -48,6 +56,11 @@ void Element::Tick(float dt)
     {
         m_children[i]->Tick(dt);
     }
+}
+
+void Element::QueueEvent(const Event& ev)
+{
+    m_eventQueue.push_back(ev);
 }
 
 void Element::SetPosition(uint32_t x, uint32_t y)
@@ -115,7 +128,7 @@ bool Element::AddChild(Element* pChildElement)
     ++m_numChildren;
 
     // Signal the concrete implementation
-    HandleEvent(EventToParameter(Event::ChildAdded), pChildElement);
+    QueueEvent({EventCode::ChildAdded, pChildElement});
     
     return true;
 }
@@ -149,7 +162,12 @@ bool Element::RemoveChild(Element* pChildElement)
     m_children[m_numChildren] = nullptr;
 
     // Signal the concrete implementation
-    HandleEvent(EventToParameter(Event::ChildRemoved), pChildElement);
+    QueueEvent({EventCode::ChildRemoved, pChildElement});
     
     return true;
+}
+
+Element* Element::GetParent()
+{
+    return m_pParent;
 }

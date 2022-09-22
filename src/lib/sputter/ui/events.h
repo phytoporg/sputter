@@ -3,7 +3,7 @@
 #include <cstdint>
 
 namespace sputter { namespace ui {
-    enum class Event : uint8_t {
+    enum class EventCode : uint8_t {
         Invalid = 0,
         KeyDown,
         KeyUp,
@@ -13,13 +13,22 @@ namespace sputter { namespace ui {
         ChildRemoved,
         EventMax
     };
+
     // TODO: Is this really necessary?
-    uint8_t EventToParameter(Event event);
+    uint8_t EventCodeToParameter(EventCode event);
+    EventCode ParameterToEventCode(uint8_t param);
 
     enum class Key : uint8_t {
         Invalid = 0,
         Up,
-        Down
+        Down,
+        KeyMax
     };
     void* KeyPointerToParameter(Key* key);
+
+    struct Event
+    {
+        EventCode Code = EventCode::Invalid;
+        void*     pData = nullptr;;
+    };
 }}

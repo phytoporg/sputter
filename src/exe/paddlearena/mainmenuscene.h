@@ -5,6 +5,8 @@
 #include <sputter/game/scene.h>
 #include <sputter/game/timersystem.h>
 
+#include <sputter/ui/theme.h>
+
 #include <glm/glm.hpp>
 
 // Forward declarations
@@ -57,6 +59,7 @@ private:
     sputter::render::Camera*                    m_pCamera = nullptr;
     glm::mat4*                                  m_pOrthoMatrix = nullptr;
 
+    sputter::ui::Theme                          m_uiTheme;
     sputter::ui::Screen*                        m_pScreen = nullptr;
     sputter::ui::Button*                        m_pVersusAiButton = nullptr;
     sputter::ui::Button*                        m_pVersusPlayerButton = nullptr;

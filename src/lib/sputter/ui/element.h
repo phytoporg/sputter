@@ -2,12 +2,15 @@
 
 #include <sputter/math/vector2i.h>
 
+#include <deque>
+
 #include <cstdint>
 
 namespace sputter 
 {
     namespace ui
     {
+        struct Event;
         class Element
         {
         public:
@@ -17,9 +20,11 @@ namespace sputter
 
             virtual ~Element();
 
-            virtual void Draw();
-            virtual void Tick(float dt);
-            virtual void HandleEvent(uint8_t eventCode, void* pEventData) = 0;
+            void Draw();
+            void Tick(float dt);
+            void QueueEvent(const Event& event);
+
+            virtual void HandleEvent(uint8_t eventCode, void* pEventData = nullptr) = 0;
 
             // These positions are relative to the parent element
             void SetPosition(uint32_t x, uint32_t y);
@@ -38,6 +43,8 @@ namespace sputter
 
             bool AddChild(Element* pChildElement);
             bool RemoveChild(Element* pChildElement); // Not recursive!
+
+            Element* GetParent();
 
         protected:
             // Called by Draw(). Implement any specific drawing logic for this element type
@@ -60,6 +67,8 @@ namespace sputter
             static const uint32_t kMaxChildren = 4;
             Element* m_children[kMaxChildren];
             uint32_t m_numChildren = 0;
+
+            std::deque<Event> m_eventQueue;
         };
     }
 }

@@ -28,7 +28,10 @@ MainMenuScene::MainMenuScene(
       m_pPaddleArena(pPaddleArena),
       m_pCamera(pCamera),
       m_pOrthoMatrix(pOrthoMatrix)
-{}
+{
+    m_uiTheme.FocusedBorderColor = render::Color::White;
+    m_uiTheme.UnfocusedBorderColor = render::Color::Gray;
+}
 
 void MainMenuScene::Initialize() 
 {
@@ -37,20 +40,33 @@ void MainMenuScene::Initialize()
     m_pVolumeTextRenderer->SetMatrices(*m_pOrthoMatrix, viewMatrix);
 
     // TODO: Remove this timeout; transition should happen on button press.
-    m_pTimerSystem->CreateFrameTimer(120, OnStartTimerExpire, this);
+    m_pTimerSystem->CreateFrameTimer(512, OnStartTimerExpire, this);
 
     m_pScreen = new ui::Screen(m_pWindow);
-    m_pVersusAiButton = new ui::Button(m_pScreen);
-    m_pVersusAiButton->SetPosition(gameconstants::VersusAiButtonPositionX, gameconstants::VersusAiButtonPositionY);
-    m_pVersusAiButton->SetDimensions(gameconstants::MainMenuButtonDimensionX, gameconstants::MainMenuButtonDimensionY);
+    m_pVersusAiButton = new ui::Button(m_pScreen, &m_uiTheme);
+    m_pVersusAiButton->SetPosition(
+        gameconstants::VersusAiButtonPositionX,
+        gameconstants::VersusAiButtonPositionY);
+    m_pVersusAiButton->SetDimensions(
+        gameconstants::MainMenuButtonDimensionX,
+        gameconstants::MainMenuButtonDimensionY);
     m_pVersusAiButton->SetBorderSize(gameconstants::MainMenuButtonBorderSize);
-    m_pVersusAiButton->SetBorderColor(gameconstants::MainMenuButtonBorderColor);
 
-    m_pVersusPlayerButton = new ui::Button(m_pScreen);
-    m_pVersusPlayerButton->SetPosition(gameconstants::VersusAiButtonPositionX, gameconstants::VersusAiButtonPositionY - gameconstants::MainMenuButtonMarginTop);
-    m_pVersusPlayerButton->SetDimensions(gameconstants::MainMenuButtonDimensionX, gameconstants::MainMenuButtonDimensionY);
+    m_pVersusPlayerButton = new ui::Button(m_pScreen, &m_uiTheme);
+    m_pVersusPlayerButton->SetPosition(
+        gameconstants::VersusAiButtonPositionX,
+        gameconstants::VersusAiButtonPositionY -
+        gameconstants::MainMenuButtonMarginTop);
+    m_pVersusPlayerButton->SetDimensions(
+        gameconstants::MainMenuButtonDimensionX,
+        gameconstants::MainMenuButtonDimensionY);
     m_pVersusPlayerButton->SetBorderSize(gameconstants::MainMenuButtonBorderSize);
-    m_pVersusPlayerButton->SetBorderColor(gameconstants::MainMenuButtonBorderColor);
+
+    {
+        using namespace sputter::ui;
+        m_pVersusAiButton->SetNavigationLink(m_pVersusPlayerButton, NavigationDirections::Down);
+        m_pVersusPlayerButton->SetNavigationLink(m_pVersusAiButton, NavigationDirections::Up);
+    }
 }
 
 void MainMenuScene::Uninitialize() 

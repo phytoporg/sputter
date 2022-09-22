@@ -17,5 +17,6 @@ namespace sputter { namespace render {
         static Color Blue;
         static Color Green;
         static Color White;
+        static Color Gray;
     };
 }}

@@ -177,10 +177,6 @@ struct GLYPH_Header
     int16_t    YMin;
     int16_t    XMax;
     int16_t    YMax;
-};
-
-struct GLYPH_ContoursDescription
-{
     uint16_t   EndPtsOfContours[];
 };
 
@@ -240,7 +236,9 @@ struct HHEA_Header
 // LOCA - Index to location
 struct LOCA_Header
 {
-    uint32_t    Offsets[];
+    // Giving one element to address the fact that flexible array members
+    // can't be alone in struct definitions D:
+    uint32_t    Offsets[1];
 };
 
 // MAXP - Maximum profile
