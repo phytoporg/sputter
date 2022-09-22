@@ -36,9 +36,13 @@
 *.swo
 *~
 
+# lsp
+compile_commands.json
+
 # cmake
 build/
 Testing/
+.cache/
 
 # vscode
 .vscode/
