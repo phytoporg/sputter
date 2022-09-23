@@ -1,4 +1,8 @@
 Next high-level goal: Gameplay vertical slice
+
+BUGBUG: Fix space being rendered as !
+Missing an edge case in processing font tables, see: https://stackoverflow.com/questions/12591439/how-to-render-zero-width-glyphs-in-ttf
+
 * Some kind of basic UI flow for actual game loop
 ** Main menu w/Title, "Vs. AI" | "Vs. Player" | "Online" (greyed out as appropriate)
 ** Need a notion of scenes (main menu -> game and back)
