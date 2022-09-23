@@ -10,6 +10,7 @@ namespace sputter { namespace ui {
         render::Color FocusedBorderColor;
 
         // Buttons
+        render::Color ButtonDownAndDisabledBorderColor;
         // TODO: Render button backgrounds. Not going to work with these until that's
         // in place.
         //

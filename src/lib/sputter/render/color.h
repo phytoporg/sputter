@@ -14,6 +14,7 @@ namespace sputter { namespace render {
         glm::vec3 ToVec3() const;
 
         static Color Red;
+        static Color DarkRed;
         static Color Blue;
         static Color Green;
         static Color White;

@@ -88,8 +88,17 @@ void Button::HandleEvent(uint8_t eventCodeParameter, void* pEventData)
 
         m_buttonState = ButtonState::Down;
 
-        // For just a little extra differentiation
-        m_borderColor = m_pTheme->UnfocusedBorderColor;
+        // TODO: Should indicate disabled state more clearly and without requiring user
+        // interaction! Need some form of feedback right now, though.
+        if (m_buttonDisabled)
+        {
+            m_borderColor = m_pTheme->ButtonDownAndDisabledBorderColor;
+        }
+        else
+        {
+            // For just a little extra differentiation
+            m_borderColor = m_pTheme->UnfocusedBorderColor;
+        }
     }
     else if (eventCode == EventCode::Deactivate)
     {
@@ -105,7 +114,7 @@ void Button::HandleEvent(uint8_t eventCodeParameter, void* pEventData)
         m_borderColor = m_pTheme->FocusedBorderColor;
 
         // This resolves to a button press event !
-        if (m_fnButtonPressed)
+        if (!m_buttonDisabled && m_fnButtonPressed)
         {
             m_fnButtonPressed();
         }
@@ -139,6 +148,11 @@ void Button::SetFontRenderer(render::VolumetricTextRenderer* pTextRenderer)
 void Button::SetButtonPressedCallback(const ButtonPressedCallback onButtonPressed)
 {
     m_fnButtonPressed = onButtonPressed;
+}
+
+void Button::SetButtonIsDisabled(bool isDisabled)
+{
+    m_buttonDisabled = isDisabled;
 }
 
 void Button::DrawInternal()

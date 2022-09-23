@@ -31,6 +31,7 @@ MainMenuScene::MainMenuScene(
 {
     m_uiTheme.FocusedBorderColor = render::Color::White;
     m_uiTheme.UnfocusedBorderColor = render::Color::Gray;
+    m_uiTheme.ButtonDownAndDisabledBorderColor = render::Color::Red;
 }
 
 void MainMenuScene::Initialize() 
@@ -63,6 +64,7 @@ void MainMenuScene::Initialize()
         gameconstants::MainMenuButtonDimensionX,
         gameconstants::MainMenuButtonDimensionY);
     m_pVersusPlayerButton->SetBorderSize(gameconstants::MainMenuButtonBorderSize);
+    m_pVersusPlayerButton->SetButtonIsDisabled(true);
 
     {
         using namespace sputter::ui;

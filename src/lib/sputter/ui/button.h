@@ -39,6 +39,8 @@ namespace sputter { namespace ui {
         using ButtonPressedCallback = std::function<void()>;
         void SetButtonPressedCallback(const ButtonPressedCallback onButtonPressed);
 
+        void SetButtonIsDisabled(bool isDisabled);
+
     protected:
         virtual void DrawInternal() override;
         virtual void TickInternal(float dt) override;
@@ -46,12 +48,13 @@ namespace sputter { namespace ui {
     private:
         void SignalRootElement(const Event& event);
         enum class ButtonState : uint8_t {
-            Disabled = 0,
+            Invalid = 0,
             Idle,
             Down,
             ButtonStateMax
         };
         ButtonState                     m_buttonState = ButtonState::Idle;
+        bool                            m_buttonDisabled = false;
 
         ButtonPressedCallback           m_fnButtonPressed;
 
