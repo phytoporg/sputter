@@ -30,6 +30,7 @@ namespace sputter { namespace render {
         void SetMatrices(const glm::mat4& projMatrix, const glm::mat4& viewMatrix);
 
         void DrawText(int32_t x, int32_t y, uint32_t size, const char* pText);
+        void DrawTextCentered(int32_t xLeft, int32_t xRight, int32_t yMid, uint32_t size, const char* pText);
 
     private:
         struct PImpl;

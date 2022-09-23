@@ -7,6 +7,15 @@
 #include <cstdint>
 
 #include <sputter/render/color.h>
+#include <sputter/render/volumetrictext.h>
+
+namespace sputter 
+{
+    namespace render
+    {
+        class VolumetricTextRenderer;
+    }
+}
 
 namespace sputter { namespace ui {
     struct Event;
@@ -22,6 +31,10 @@ namespace sputter { namespace ui {
         // Not confident this is a great way to accomplish this, but at least it's simple.
         void SetNavigationLink(Button* pOtherButton, NavigationDirections direction);
 
+        // TODO: Font rendering should be statically available. Also, shouldn't use a volumetric
+        // text renderer.
+        void SetFontRenderer(render::VolumetricTextRenderer* pTextRenderer);
+
     protected:
         virtual void DrawInternal() override;
         virtual void TickInternal(float dt) override;
@@ -32,8 +45,9 @@ namespace sputter { namespace ui {
         uint8_t       m_borderSize = 1;
         render::Color m_borderColor = render::Color::White;
 
-        Theme*        m_pTheme = nullptr; 
-        Button*       m_pNavLinks[4];
+        Theme*                          m_pTheme = nullptr; 
+        Button*                         m_pNavLinks[4];
+        render::VolumetricTextRenderer* m_pTextRenderer;
 
         static const uint32_t kMaxTextLength = 256;
         char m_text[kMaxTextLength];

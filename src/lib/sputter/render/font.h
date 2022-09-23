@@ -17,6 +17,7 @@ namespace sputter { namespace render {
 
         const std::string& GetName() const;
         bool GetGlyph(char character, Glyph* pOut);
+        bool GetGlyphMetrics(char character, GlyphMetrics* pOut);
 
     private:
         std::string        m_name;

@@ -208,7 +208,7 @@ void VolumetricTextRenderer::DrawText(int32_t x, int32_t y, uint32_t size, const
             system::LogAndFail("Could not get character glyph.");
         }
 
-        if (currentGlyphOffsetX >= 0)
+        if (currentGlyphOffsetX > 0)
         {
             currentGlyphOffsetX += characterGlyph.Metrics.BearingX;
         }
@@ -248,4 +248,45 @@ void VolumetricTextRenderer::DrawText(int32_t x, int32_t y, uint32_t size, const
 
     m_spPimpl->UnbindAttributes();
     m_spPimpl->spShader->Unbind();
+}
+
+void VolumetricTextRenderer::DrawTextCentered(int32_t xLeft, int32_t xRight, int32_t yMid, uint32_t size, const char* pText)
+{
+    if (xRight <= xLeft)
+    {
+        LOG(ERROR) << "DrawTextCenteredHorizontal: xRight must be larger than xLeft";
+        return;
+    }
+
+    uint32_t maxHeight = 0;
+    uint32_t currentGlyphOffsetX = 0;
+    const char* pCurrentCharacter = pText;
+    while (*pCurrentCharacter)
+    {
+        GlyphMetrics glyphMetrics;
+        if (!m_spPimpl->spFont->GetGlyphMetrics(*pCurrentCharacter, &glyphMetrics))
+        {
+            system::LogAndFail("Could not get character glyph metrics.");
+        }
+
+        if (currentGlyphOffsetX > 0)
+        {
+            currentGlyphOffsetX += glyphMetrics.BearingX;
+        }
+
+        maxHeight = maxHeight > glyphMetrics.Height ? maxHeight : glyphMetrics.Height;
+        currentGlyphOffsetX += glyphMetrics.Width;
+        pCurrentCharacter++;
+    }
+
+    const int32_t xSpan = xRight - xLeft;
+    if (xSpan < currentGlyphOffsetX * size)
+    {
+        LOG(ERROR) << "DrawTextCenteredHorizontal: Text is too large to fit between xLeft and xRight";
+        return;
+    }
+
+    int32_t startX = xLeft + (xSpan - currentGlyphOffsetX * size) / 2;
+    int32_t startY = yMid - (maxHeight / 2);
+    DrawText(startX, startY, size, pText);
 }

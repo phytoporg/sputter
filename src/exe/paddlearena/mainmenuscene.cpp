@@ -43,7 +43,8 @@ void MainMenuScene::Initialize()
     m_pTimerSystem->CreateFrameTimer(512, OnStartTimerExpire, this);
 
     m_pScreen = new ui::Screen(m_pWindow);
-    m_pVersusAiButton = new ui::Button(m_pScreen, &m_uiTheme);
+    m_pVersusAiButton = new ui::Button(m_pScreen, &m_uiTheme, "VS AI");
+    m_pVersusAiButton->SetFontRenderer(m_pVolumeTextRenderer);
     m_pVersusAiButton->SetPosition(
         gameconstants::VersusAiButtonPositionX,
         gameconstants::VersusAiButtonPositionY);
@@ -52,7 +53,8 @@ void MainMenuScene::Initialize()
         gameconstants::MainMenuButtonDimensionY);
     m_pVersusAiButton->SetBorderSize(gameconstants::MainMenuButtonBorderSize);
 
-    m_pVersusPlayerButton = new ui::Button(m_pScreen, &m_uiTheme);
+    m_pVersusPlayerButton = new ui::Button(m_pScreen, &m_uiTheme, "VS PLAYER");
+    m_pVersusPlayerButton->SetFontRenderer(m_pVolumeTextRenderer);
     m_pVersusPlayerButton->SetPosition(
         gameconstants::VersusAiButtonPositionX,
         gameconstants::VersusAiButtonPositionY -

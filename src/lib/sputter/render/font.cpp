@@ -57,3 +57,9 @@ bool Font::GetGlyph(char character, Glyph* pOut)
     *pOut = m_glyphCache[characterIndex];    
     return true;
 }
+
+bool Font::GetGlyphMetrics(char character, GlyphMetrics* pOut)
+{
+    *pOut = m_pParser->GetCharacterGlyphMetrics(character);
+    return true;
+}

@@ -81,13 +81,28 @@ void Button::SetNavigationLink(Button* pOtherButton, NavigationDirections direct
     }
 }
 
+void Button::SetFontRenderer(render::VolumetricTextRenderer* pTextRenderer)
+{
+    m_pTextRenderer = pTextRenderer;
+}
+
 void Button::DrawInternal()
 {
     const auto AbsolutePosition = GetAbsolutePosition();
     sputter::render::shapes::DrawRect(
         AbsolutePosition.GetX(), AbsolutePosition.GetY(),
         GetWidth(), GetHeight(),
-        m_borderSize, m_borderColor );
+        m_borderSize, m_borderColor);
+
+    if (m_text[0] && m_pTextRenderer)
+    {
+        const uint32_t kButtonTextSize = 1;
+        m_pTextRenderer->DrawTextCentered(
+        AbsolutePosition.GetX(),
+        AbsolutePosition.GetX() + GetWidth(),
+        AbsolutePosition.GetY() + (GetHeight() / 2),
+        kButtonTextSize, m_text);
+    }
 }
 
 void Button::TickInternal(float dt)
