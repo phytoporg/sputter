@@ -8,3 +8,15 @@ EventCode sputter::ui::ParameterToEventCode(uint8_t param) { return static_cast<
 // This has the possibility to be dangerous, but our event calls are completely synchronous
 // so risk is minimal.
 void* sputter::ui::KeyPointerToParameter(Key* pKey) { return static_cast<void*>(pKey); }
+bool sputter::ui::IsDirectionKey(Key key) 
+{
+    switch(key) 
+    {
+        case Key::Up:
+        case Key::Down:
+            return true;
+        default: break;
+    }
+
+    return false;
+}

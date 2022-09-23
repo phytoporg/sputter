@@ -10,6 +10,11 @@
 
 using namespace sputter::ui;
 
+// Small displacements for button down state
+const int32_t kButtonDownDisplacementX = -1;
+const int32_t kButtonDownDisplacementY = -1;
+const sputter::math::Vector2i kButtonDownDisplacement(kButtonDownDisplacementX, kButtonDownDisplacementY);
+
 Button::Button(Element* pParent, Theme* pTheme, const char* pText)
     : Element(pParent),
       m_pTheme(pTheme)
@@ -24,19 +29,20 @@ Button::Button(Element* pParent, Theme* pTheme, const char* pText)
     }
 }
 
-void Button::HandleEvent(uint8_t eventCode, void* pEventData)
+void Button::HandleEvent(uint8_t eventCodeParameter, void* pEventData)
 {
-    EventCode event = ParameterToEventCode(eventCode);
-    if (event == EventCode::FocusBegin)
+    EventCode eventCode = ParameterToEventCode(eventCodeParameter);
+    if (eventCode == EventCode::FocusBegin)
     {
         m_borderColor = m_pTheme->FocusedBorderColor;
     }
-    else if (event == EventCode::FocusEnd)
+    else if (eventCode == EventCode::FocusEnd)
     {
         m_borderColor = m_pTheme->UnfocusedBorderColor;
     }
-    else if (event == EventCode::KeyDown)
+    else if (eventCode == EventCode::KeyDown)
     {
+        // Not that receiving key events implies that this is the element in focus.
         const Key KeyPressed = *static_cast<Key*>(pEventData);
         if (KeyPressed <= Key::Invalid || KeyPressed >= Key::KeyMax)
         {
@@ -44,20 +50,64 @@ void Button::HandleEvent(uint8_t eventCode, void* pEventData)
             return;
         }
 
-        static const NavigationDirections KeyToDirectionMap[static_cast<uint8_t>(Key::KeyMax)] = {
-            NavigationDirections::Invalid,
-            NavigationDirections::Up,
-            NavigationDirections::Down
-        };
-
-        // If we get this, we should be the element in focus
-        const uint8_t KeyPressedIndex = static_cast<uint8_t>(KeyPressed);
-        const uint8_t NavLinkIndex = static_cast<uint8_t>(KeyToDirectionMap[KeyPressedIndex]) - 1;
-        Button* pNavButton = m_pNavLinks[NavLinkIndex];
-        if (pNavButton)
+        if (IsDirectionKey(KeyPressed))
         {
-            Event event{ EventCode::FocusBegin, pNavButton };
-            SignalRootElement(event);
+            static const NavigationDirections KeyToDirectionMap[static_cast<uint8_t>(Key::KeyMax)] = {
+                NavigationDirections::Invalid,
+                NavigationDirections::Up,
+                NavigationDirections::Down
+            };
+
+            const uint8_t KeyPressedIndex = static_cast<uint8_t>(KeyPressed);
+            const uint8_t NavLinkIndex = static_cast<uint8_t>(KeyToDirectionMap[KeyPressedIndex]) - 1;
+            Button* pNavButton = m_pNavLinks[NavLinkIndex];
+            if (pNavButton)
+            {
+                SignalRootElement(Event{ EventCode::FocusBegin, pNavButton });
+            }
+        }
+        else if (KeyPressed == Key::Activate && m_buttonState == ButtonState::Idle)
+        {
+            QueueEvent(Event{ EventCode::Activate });
+        }
+    }
+    else if (eventCode == EventCode::KeyUp)
+    {
+        if (m_buttonState == ButtonState::Down)
+        {
+            QueueEvent(Event{ EventCode::Deactivate });
+        }
+    }
+    else if (eventCode == EventCode::Activate)
+    {
+        if (m_buttonState != ButtonState::Idle)
+        {
+            LOG(ERROR) << "Button received activation event while not idle";
+            return;
+        }
+
+        m_buttonState = ButtonState::Down;
+
+        // For just a little extra differentiation
+        m_borderColor = m_pTheme->UnfocusedBorderColor;
+    }
+    else if (eventCode == EventCode::Deactivate)
+    {
+        if (m_buttonState != ButtonState::Down)
+        {
+            LOG(ERROR) << "Button received deactivation event while not held down";
+            return;
+        }
+
+        m_buttonState = ButtonState::Idle;
+
+        // For just a little extra differentiation
+        m_borderColor = m_pTheme->FocusedBorderColor;
+
+        // This resolves to a button press event !
+        if (m_fnButtonPressed)
+        {
+            m_fnButtonPressed();
         }
     }
 }
@@ -86,11 +136,19 @@ void Button::SetFontRenderer(render::VolumetricTextRenderer* pTextRenderer)
     m_pTextRenderer = pTextRenderer;
 }
 
+void Button::SetButtonPressedCallback(const ButtonPressedCallback onButtonPressed)
+{
+    m_fnButtonPressed = onButtonPressed;
+}
+
 void Button::DrawInternal()
 {
     const auto AbsolutePosition = GetAbsolutePosition();
+    const auto PositionToRender = AbsolutePosition + 
+        (m_buttonState == ButtonState::Down ?
+            kButtonDownDisplacement : math::Vector2i::Zero);
     sputter::render::shapes::DrawRect(
-        AbsolutePosition.GetX(), AbsolutePosition.GetY(),
+        PositionToRender.GetX(), PositionToRender.GetY(),
         GetWidth(), GetHeight(),
         m_borderSize, m_borderColor);
 
@@ -98,9 +156,9 @@ void Button::DrawInternal()
     {
         const uint32_t kButtonTextSize = 1;
         m_pTextRenderer->DrawTextCentered(
-        AbsolutePosition.GetX(),
-        AbsolutePosition.GetX() + GetWidth(),
-        AbsolutePosition.GetY() + (GetHeight() / 2),
+        PositionToRender.GetX(),
+        PositionToRender.GetX() + GetWidth(),
+        PositionToRender.GetY() + (GetHeight() / 2),
         kButtonTextSize, m_text);
     }
 }

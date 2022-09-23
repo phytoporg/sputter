@@ -12,6 +12,8 @@ namespace sputter { namespace ui {
         FocusEnd,
         ChildAdded,
         ChildRemoved,
+        Activate,
+        Deactivate,
         EventMax
     };
 
@@ -23,9 +25,13 @@ namespace sputter { namespace ui {
         Invalid = 0,
         Up,
         Down,
+        // Presses a button in focus for example, but I want more of a catch-all name for 
+        // future scenarios, so "Activate" for now.
+        Activate,
         KeyMax
     };
     void* KeyPointerToParameter(Key* key);
+    bool IsDirectionKey(Key key);
 
     struct Event
     {

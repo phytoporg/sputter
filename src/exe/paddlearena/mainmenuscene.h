@@ -39,6 +39,8 @@ public:
        sputter::render::Camera* pCamera,
        glm::mat4* pOrthoMatrix);
 
+    virtual ~MainMenuScene();
+
     virtual void Initialize() override;
     virtual void Uninitialize() override;
 
@@ -46,15 +48,9 @@ public:
     virtual void Draw() override;
 
 private:
-    static void OnStartTimerExpire(
-        sputter::game::TimerSystem* pTimerSystem,
-        sputter::game::TimerSystem::TimerHandle timerHandle,
-        void* pUserData);
-
     sputter::render::Window*                    m_pWindow = nullptr;
     sputter::render::VolumetricTextRenderer*    m_pVolumeTextRenderer = nullptr;
     sputter::game::TimerSystem*                 m_pTimerSystem = nullptr;
-    sputter::game::TimerSystem::TimerHandle     m_startTimerHandle = sputter::game::TimerSystem::kInvalidTimerHandle;
 
     sputter::render::Camera*                    m_pCamera = nullptr;
     glm::mat4*                                  m_pOrthoMatrix = nullptr;

@@ -39,9 +39,6 @@ void MainMenuScene::Initialize()
     const glm::mat4 viewMatrix = m_pCamera->ViewMatrix4d();
     m_pVolumeTextRenderer->SetMatrices(*m_pOrthoMatrix, viewMatrix);
 
-    // TODO: Remove this timeout; transition should happen on button press.
-    m_pTimerSystem->CreateFrameTimer(512, OnStartTimerExpire, this);
-
     m_pScreen = new ui::Screen(m_pWindow);
     m_pVersusAiButton = new ui::Button(m_pScreen, &m_uiTheme, "VS AI");
     m_pVersusAiButton->SetFontRenderer(m_pVolumeTextRenderer);
@@ -52,6 +49,9 @@ void MainMenuScene::Initialize()
         gameconstants::MainMenuButtonDimensionX,
         gameconstants::MainMenuButtonDimensionY);
     m_pVersusAiButton->SetBorderSize(gameconstants::MainMenuButtonBorderSize);
+    m_pVersusAiButton->SetButtonPressedCallback([this](){
+        m_pPaddleArena->NextSceneFromMainMenu();
+    });
 
     m_pVersusPlayerButton = new ui::Button(m_pScreen, &m_uiTheme, "VS PLAYER");
     m_pVersusPlayerButton->SetFontRenderer(m_pVolumeTextRenderer);
@@ -71,14 +71,8 @@ void MainMenuScene::Initialize()
     }
 }
 
-void MainMenuScene::Uninitialize() 
+MainMenuScene::~MainMenuScene()
 {
-    if (m_pScreen)
-    {
-        m_pScreen->RemoveChild(m_pVersusAiButton);
-        m_pScreen->RemoveChild(m_pVersusPlayerButton);
-    }
-    
     delete m_pVersusAiButton;
     m_pVersusAiButton = nullptr;
 
@@ -89,8 +83,22 @@ void MainMenuScene::Uninitialize()
     m_pScreen = nullptr;
 }
 
+void MainMenuScene::Uninitialize() 
+{
+    if (m_pScreen)
+    {
+        m_pScreen->RemoveChild(m_pVersusAiButton);
+        m_pScreen->RemoveChild(m_pVersusPlayerButton);
+    }
+}
+
 void MainMenuScene::Tick(math::FixedPoint dt) 
 {
+    if (!m_pScreen)
+    {
+        system::LogAndFail("Screen is unexpectedly null in MainMenuScene");
+    }
+
     m_pScreen->Tick((float)dt);
 }
 
@@ -102,15 +110,4 @@ void MainMenuScene::Draw()
         gameconstants::MainMenuGameTitleSize,
         gameconstants::GameTitleString);
     m_pScreen->Draw();
-}
-
-void 
-MainMenuScene::OnStartTimerExpire(
-    game::TimerSystem* pTimerSystem,
-    game::TimerSystem::TimerHandle timerHandle,
-    void* pUserData)
-{
-    auto pScene = static_cast<MainMenuScene*>(pUserData);
-    pScene->m_startTimerHandle = game::TimerSystem::kInvalidTimerHandle;
-    pScene->m_pPaddleArena->NextSceneFromMainMenu();
 }

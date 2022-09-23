@@ -13,10 +13,12 @@ Screen::Screen(render::Window* pWindow)
       m_pKeyMapping(nullptr)
 {
     m_pKeyMapping = new Key[GLFW_KEY_LAST];
-    m_pKeyMapping[GLFW_KEY_UP]   = Key::Up;
-    m_pKeyMapping[GLFW_KEY_DOWN] = Key::Down;
-    m_pKeyMapping[GLFW_KEY_W]    = Key::Up;
-    m_pKeyMapping[GLFW_KEY_S]    = Key::Down;
+    m_pKeyMapping[GLFW_KEY_UP]    = Key::Up;
+    m_pKeyMapping[GLFW_KEY_DOWN]  = Key::Down;
+    m_pKeyMapping[GLFW_KEY_W]     = Key::Up;
+    m_pKeyMapping[GLFW_KEY_S]     = Key::Down;
+    m_pKeyMapping[GLFW_KEY_ENTER] = Key::Activate;
+    m_pKeyMapping[GLFW_KEY_SPACE] = Key::Activate;
 
     // Need this layer of indirection because the glfw user pointer is 
     // already taken by our render::Window pointer. Handlers could be inlined 
