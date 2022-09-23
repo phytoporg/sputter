@@ -3,14 +3,20 @@
 #include <cstdint>
 
 namespace sputter { namespace render {
+    struct GlyphMetrics
+    {
+        uint32_t BearingX = 0;
+        uint32_t Width    = 0;
+        uint32_t Height   = 0;
+    };
+
     struct Glyph
     {
         static const Glyph kInvalidGlyph;
 
         bool IsValid() const;
 
-        uint32_t Width;
-        uint32_t Height;
-        uint8_t* pGlyphPixels;
+        GlyphMetrics Metrics;
+        uint8_t*     pGlyphPixels = nullptr;
     };
 }}

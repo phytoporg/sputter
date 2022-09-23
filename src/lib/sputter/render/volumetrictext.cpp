@@ -208,11 +208,16 @@ void VolumetricTextRenderer::DrawText(int32_t x, int32_t y, uint32_t size, const
             system::LogAndFail("Could not get character glyph.");
         }
 
-        for (int i = 0; i < characterGlyph.Width; ++i)
+        if (currentGlyphOffsetX >= 0)
         {
-            for (int j = 0; j < characterGlyph.Height; ++j)
+            currentGlyphOffsetX += characterGlyph.Metrics.BearingX;
+        }
+
+        for (int i = 0; i < characterGlyph.Metrics.Width; ++i)
+        {
+            for (int j = 0; j < characterGlyph.Metrics.Height; ++j)
             {
-                if (characterGlyph.pGlyphPixels[j * characterGlyph.Width + i] == 0)
+                if (characterGlyph.pGlyphPixels[j * characterGlyph.Metrics.Width + i] == 0)
                 {
                     continue;
                 }
@@ -230,8 +235,7 @@ void VolumetricTextRenderer::DrawText(int32_t x, int32_t y, uint32_t size, const
             }
         }
 
-        // 1 separates the characters. Should be configurable?
-        currentGlyphOffsetX += characterGlyph.Width + 1;
+        currentGlyphOffsetX += characterGlyph.Metrics.Width;
         pCurrentCharacter++;
     }
 

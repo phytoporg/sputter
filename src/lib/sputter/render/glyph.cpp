@@ -10,7 +10,6 @@ bool Glyph::IsValid() const
 }
 
 const Glyph Glyph::kInvalidGlyph = Glyph{
-    static_cast<uint32_t>(-1),
-    static_cast<uint32_t>(-1),
+    GlyphMetrics{ static_cast<uint32_t>(-1), static_cast<uint32_t>(-1), static_cast<uint32_t>(-1) },
     nullptr
     };

@@ -16,8 +16,11 @@ namespace sputter { namespace render {
 
         // TODO: things to retrieve after parsing
         Glyph GetCharacterGlyph(char c);
+        GlyphMetrics GetCharacterGlyphMetrics(char c);
 
     private:
+        const GLYPH_Header* FindGlyphHeader(char c);
+
         bool                      m_isGood;
 
         CMAP_SegmentMapPointers   m_CmapSegmentMapPointers;

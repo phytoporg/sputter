@@ -8,6 +8,9 @@
 #include <sputter/assets/binarydata.h>
 #include <sputter/system/system.h>
 
+// Placeholder! Gotta actually read this value from the horizontal metrics table.
+const uint32_t kPlaceholderBearingX = 1;
+
 constexpr uint32_t FOURCC(const char* pString)
 {
     return pString[0] | (pString[1] << 8) | (pString[2] << 16) | (pString[3] << 24);
@@ -440,40 +443,7 @@ bool TrueTypeParser::IsGood()
 
 Glyph TrueTypeParser::GetCharacterGlyph(char c)
 {
-    const uint32_t NumCmapSegmentsX2 = SwapEndianness16(m_pCmapSegmentMap->SegCountX2);
-    const uint32_t NumCmapSegments = NumCmapSegmentsX2 / 2;
-
-    const uint16_t GlyphCharacter = static_cast<uint16_t>(c);
-    uint16_t glyphId = 0xFFFF; // Invalid
-    for (uint16_t i = 0; i < NumCmapSegments; ++i)
-    {
-        const uint16_t SegmentStart = SwapEndianness16(m_CmapSegmentMapPointers.pStartCodes[i]);
-        const uint16_t SegmentEnd = SwapEndianness16(m_CmapSegmentMapPointers.pEndCodes[i]);
-
-        if (GlyphCharacter <= SegmentEnd && GlyphCharacter >= SegmentStart)
-        {
-            const uint16_t IdOffset = SwapEndianness16(m_CmapSegmentMapPointers.pIdRangeOffsets[i]);
-
-            // Indexing trick from the spec
-            const uint16_t GlyphIndex = SwapEndianness16(*(IdOffset / 2 + (GlyphCharacter - SegmentStart) + &m_CmapSegmentMapPointers.pIdRangeOffsets[i]));
-            if (m_CmapSegmentMapPointers.pGlyphIdArray[GlyphIndex] == 0)
-            {
-                glyphId = GlyphCharacter + SwapEndianness16(m_CmapSegmentMapPointers.pIdDeltas[i]);
-            }
-            else
-            {
-                glyphId = SwapEndianness16(GlyphIndex);
-            }
-        }
-        else if (GlyphCharacter > SegmentEnd || SegmentEnd == 0xFFFF)
-        {
-            break;
-        }
-    }
-
-    // Grab the offset for this glyph
-    const uint32_t GlyphOffset = SwapEndianness32(m_pLocaHeader->Offsets[glyphId]);
-    const GLYPH_Header* pFoundGlyphHeader = GetOffsetFrom<GLYPH_Header>(m_pFirstGlyphHeader, GlyphOffset);
+    const GLYPH_Header* pFoundGlyphHeader = FindGlyphHeader(c);
     const uint16_t NumberOfContours = SwapEndianness16(pFoundGlyphHeader->NumberOfContours);
     if (SwapEndianness16(NumberOfContours) < 0)
     {
@@ -648,6 +618,70 @@ Glyph TrueTypeParser::GetCharacterGlyph(char c)
         pPixelGlyph[i] &= 0x0F;
     }
 
-    auto newGlyph = Glyph{ GlyphWidth, GlyphHeight, pPixelGlyph };
+    auto newGlyph = Glyph{
+        GlyphMetrics{ kPlaceholderBearingX, GlyphWidth, GlyphHeight },
+        pPixelGlyph 
+    };
+
     return newGlyph;
+}
+
+GlyphMetrics TrueTypeParser::GetCharacterGlyphMetrics(char c)
+{
+    const GLYPH_Header* pFoundGlyphHeader = FindGlyphHeader(c);
+
+    // Grab the offset for this glyph
+    const uint8_t PointSize = 24; // TODO: parameterize
+    const uint16_t PPI = 100;
+    const uint32_t PPEM = PointSize * PPI / 72.0f;
+    const uint16_t UnitsPerEm = SwapEndianness16(m_pHeadHeader->UnitsPerEm);
+    const float EmToPixels = static_cast<float>(PPEM) / UnitsPerEm;
+
+    const int16_t xMin = SwapEndianness16(pFoundGlyphHeader->XMin) * EmToPixels;
+    const int16_t xMax = SwapEndianness16(pFoundGlyphHeader->XMax) * EmToPixels;
+    const int16_t yMin = SwapEndianness16(pFoundGlyphHeader->YMin) * EmToPixels;
+    const int16_t yMax = SwapEndianness16(pFoundGlyphHeader->YMax) * EmToPixels;
+    const uint16_t GlyphHeight = yMax - yMin + 1;
+    const uint16_t GlyphWidth = xMax - xMin + 1;
+
+    return GlyphMetrics{ kPlaceholderBearingX, GlyphWidth, GlyphHeight };
+}
+
+const GLYPH_Header* TrueTypeParser::FindGlyphHeader(char c)
+{
+    const uint32_t NumCmapSegmentsX2 = SwapEndianness16(m_pCmapSegmentMap->SegCountX2);
+    const uint32_t NumCmapSegments = NumCmapSegmentsX2 / 2;
+
+    const uint16_t GlyphCharacter = static_cast<uint16_t>(c);
+    uint16_t glyphId = 0xFFFF; // Invalid
+    for (uint16_t i = 0; i < NumCmapSegments; ++i)
+    {
+        const uint16_t SegmentStart = SwapEndianness16(m_CmapSegmentMapPointers.pStartCodes[i]);
+        const uint16_t SegmentEnd = SwapEndianness16(m_CmapSegmentMapPointers.pEndCodes[i]);
+
+        if (GlyphCharacter <= SegmentEnd && GlyphCharacter >= SegmentStart)
+        {
+            const uint16_t IdOffset = SwapEndianness16(m_CmapSegmentMapPointers.pIdRangeOffsets[i]);
+
+            // Indexing trick from the spec
+            const uint16_t GlyphIndex = SwapEndianness16(*(IdOffset / 2 + (GlyphCharacter - SegmentStart) + &m_CmapSegmentMapPointers.pIdRangeOffsets[i]));
+            if (m_CmapSegmentMapPointers.pGlyphIdArray[GlyphIndex] == 0)
+            {
+                glyphId = GlyphCharacter + SwapEndianness16(m_CmapSegmentMapPointers.pIdDeltas[i]);
+            }
+            else
+            {
+                glyphId = SwapEndianness16(GlyphIndex);
+            }
+        }
+        else if (GlyphCharacter > SegmentEnd || SegmentEnd == 0xFFFF)
+        {
+            break;
+        }
+    }
+
+    const uint32_t GlyphOffset = SwapEndianness32(m_pLocaHeader->Offsets[glyphId]);
+    const GLYPH_Header* pFoundGlyphHeader = GetOffsetFrom<GLYPH_Header>(m_pFirstGlyphHeader, GlyphOffset);
+
+    return pFoundGlyphHeader;
 }
