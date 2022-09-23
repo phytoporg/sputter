@@ -673,6 +673,7 @@ const GLYPH_Header* TrueTypeParser::FindGlyphHeader(char c)
             {
                 glyphId = SwapEndianness16(GlyphIndex);
             }
+            break;
         }
         else if (GlyphCharacter > SegmentEnd || SegmentEnd == 0xFFFF)
         {
