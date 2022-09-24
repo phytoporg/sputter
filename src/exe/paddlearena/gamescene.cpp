@@ -238,8 +238,8 @@ void GameScene::PostTickFrame(math::FixedPoint dt)
     {
         math::FPVector3D ballServePosition;
         math::FPVector2D ballServeDirection;
-        const math::FixedPoint BallY = m_pGameState->TheBall.GetPosition().GetY();
-        if (BallY < math::FPZero)
+        const math::FixedPoint BallX = m_pGameState->TheBall.GetPosition().GetX();
+        if (BallX < math::FPZero)
         {
             m_pGameState->Player2Score++;
 
