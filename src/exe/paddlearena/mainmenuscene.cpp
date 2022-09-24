@@ -30,6 +30,7 @@ MainMenuScene::MainMenuScene(
       m_pOrthoMatrix(pOrthoMatrix)
 {
     m_uiTheme.FocusedBorderColor = render::Color::White;
+    m_uiTheme.ButtonBorderSize = gameconstants::MainMenuButtonBorderSize;
     m_uiTheme.UnfocusedBorderColor = render::Color::Gray;
     m_uiTheme.ButtonDownAndDisabledBorderColor = render::Color::Red;
 }
@@ -49,7 +50,6 @@ void MainMenuScene::Initialize()
     m_pVersusAiButton->SetDimensions(
         gameconstants::MainMenuButtonDimensionX,
         gameconstants::MainMenuButtonDimensionY);
-    m_pVersusAiButton->SetBorderSize(gameconstants::MainMenuButtonBorderSize);
     m_pVersusAiButton->SetButtonPressedCallback([this](){
         m_pPaddleArena->NextSceneFromMainMenu();
     });
@@ -63,7 +63,6 @@ void MainMenuScene::Initialize()
     m_pVersusPlayerButton->SetDimensions(
         gameconstants::MainMenuButtonDimensionX,
         gameconstants::MainMenuButtonDimensionY);
-    m_pVersusPlayerButton->SetBorderSize(gameconstants::MainMenuButtonBorderSize);
     m_pVersusPlayerButton->SetButtonIsDisabled(true);
 
     {

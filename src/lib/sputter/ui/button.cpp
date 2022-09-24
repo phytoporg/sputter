@@ -21,6 +21,7 @@ Button::Button(Element* pParent, Theme* pTheme, const char* pText)
 {
     memset(m_pNavLinks, 0, sizeof(m_pNavLinks));
     m_borderColor = m_pTheme->UnfocusedBorderColor;
+    m_borderSize  = m_pTheme->ButtonBorderSize;
 
     memset(m_text, 0, sizeof(m_text));
     if (pText)
@@ -121,11 +122,6 @@ void Button::HandleEvent(uint8_t eventCodeParameter, void* pEventData)
     }
 }
 
-void Button::SetBorderSize(uint8_t borderSize)
-{
-    m_borderSize = borderSize;
-}
-
 void Button::SetNavigationLink(Button* pOtherButton, NavigationDirections direction)
 {
     if (direction <= NavigationDirections::Invalid || direction >= NavigationDirections::DirectionMax)
@@ -180,21 +176,4 @@ void Button::DrawInternal()
 void Button::TickInternal(float dt)
 {
     // TODO
-}
-
-void Button::SignalRootElement(const Event& event)
-{
-    Element* pRoot = this;
-    while(true)
-    {
-        Element* pParent = pRoot->GetParent();
-        if (!pParent)
-        {
-            break;
-        }
-        
-        pRoot = pRoot->GetParent();
-    }
-
-    pRoot->QueueEvent(event);
 }

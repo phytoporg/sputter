@@ -63,6 +63,12 @@ void Element::QueueEvent(const Event& ev)
     m_eventQueue.push_back(ev);
 }
 
+void Element::SetPosition(const math::Vector2i& position)
+{
+    m_positionX = position.GetX();
+    m_positionY = position.GetY();
+}
+
 void Element::SetPosition(uint32_t x, uint32_t y)
 {
     m_positionX = x;
@@ -77,6 +83,12 @@ void Element::SetPositionX(uint32_t x)
 void Element::SetPositionY(uint32_t y)
 {
     m_positionY = y;
+}
+
+void Element::SetDimensions(const math::Vector2i& dimensions)
+{
+    m_width = dimensions.GetX();
+    m_height = dimensions.GetY();
 }
 
 void Element::SetDimensions(uint32_t width, uint32_t height)
@@ -170,4 +182,21 @@ bool Element::RemoveChild(Element* pChildElement)
 Element* Element::GetParent()
 {
     return m_pParent;
+}
+
+void Element::SignalRootElement(const Event& event)
+{
+    Element* pRoot = this;
+    while(true)
+    {
+        Element* pParent = pRoot->GetParent();
+        if (!pParent)
+        {
+            break;
+        }
+        
+        pRoot = pRoot->GetParent();
+    }
+
+    pRoot->QueueEvent(event);
 }

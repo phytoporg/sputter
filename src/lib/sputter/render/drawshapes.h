@@ -15,6 +15,10 @@ namespace sputter {
     namespace render {
         class ShaderStorage;
     }
+
+    namespace math {
+        class Vector2i;
+    }
 }
 
 namespace sputter { namespace render { namespace shapes {
@@ -24,4 +28,5 @@ namespace sputter { namespace render { namespace shapes {
     void FlushLineRenderer();
 
     void DrawRect(int32_t x, int32_t y, int32_t width, int32_t height, int32_t borderSize, const Color& borderColor);
+    void DrawRect(const math::Vector2i& position, const math::Vector2i& dimensions, int32_t borderSize, const Color& borderColor);
 }}}

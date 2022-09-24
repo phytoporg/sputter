@@ -27,10 +27,12 @@ namespace sputter
             virtual void HandleEvent(uint8_t eventCode, void* pEventData = nullptr) = 0;
 
             // These positions are relative to the parent element
+            void SetPosition(const math::Vector2i& position);
             void SetPosition(uint32_t x, uint32_t y);
             void SetPositionX(uint32_t x);
             void SetPositionY(uint32_t y);
 
+            void SetDimensions(const math::Vector2i& dimensions);
             void SetDimensions(uint32_t width, uint32_t height);
             void SetWidth(uint32_t width);
             void SetHeight(uint32_t height);
@@ -53,6 +55,8 @@ namespace sputter
 
             // Same deal here
             virtual void TickInternal(float dt) = 0;
+
+            void SignalRootElement(const Event& event);
 
         private:
             Element* m_pParent = nullptr;

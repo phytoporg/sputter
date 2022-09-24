@@ -10,6 +10,7 @@
 #include <vector>
 #include <string>
 
+#include <sputter/math/vector2i.h>
 #include <sputter/system/system.h>
 
 using namespace sputter::render;
@@ -222,4 +223,9 @@ void shapes::DrawRect(
     {
         VertexColors[i] = borderColor.ToVec3();
     }
+}
+
+void shapes::DrawRect(const math::Vector2i& position, const math::Vector2i& dimensions, int32_t borderSize, const Color& borderColor)
+{
+    DrawRect(position.GetX(), position.GetY(), dimensions.GetX(), dimensions.GetY(), borderSize, borderColor);
 }

@@ -27,8 +27,6 @@ namespace sputter { namespace ui {
 
         virtual void HandleEvent(uint8_t eventCodeParameter, void* pEventData) override;
 
-        void SetBorderSize(uint8_t borderSize);
-        
         // Not confident this is a great way to accomplish this, but at least it's simple.
         void SetNavigationLink(Button* pOtherButton, NavigationDirections direction);
 
@@ -46,7 +44,6 @@ namespace sputter { namespace ui {
         virtual void TickInternal(float dt) override;
 
     private:
-        void SignalRootElement(const Event& event);
         enum class ButtonState : uint8_t {
             Invalid = 0,
             Idle,
