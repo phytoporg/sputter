@@ -114,7 +114,7 @@ bool PaddleArena::StartGame()
 
     // Set up the scene stack
     m_pMainMenuScene = new MainMenuScene(m_pWindow, this, &m_timerSystem, m_pTextRenderer, &m_camera, &m_orthoMatrix);
-    m_pGameScene = new GameScene(m_pWindow, &m_timerSystem, &m_camera, &m_orthoMatrix, m_pTextRenderer, &m_assetStorage, &m_storageProvider);
+    m_pGameScene = new GameScene(m_pWindow, this, &m_timerSystem, &m_camera, &m_orthoMatrix, m_pTextRenderer, &m_assetStorage, &m_storageProvider);
     game::IScene* ppScenes[] = { m_pMainMenuScene, m_pGameScene };
     m_pSceneStack = new game::SceneStack(ppScenes, sizeof(ppScenes) / sizeof(ppScenes[0]));
     m_pSceneStack->Initialize();
@@ -130,4 +130,14 @@ void PaddleArena::NextSceneFromMainMenu()
     }
     
     m_pSceneStack->PushToNextScene();
+}
+
+void PaddleArena::PreviousSceneFromGame()
+{
+    if (m_pSceneStack->GetCurrentScene() != m_pGameScene)
+    {
+        system::LogAndFail("Unexpected scene calling main menu event");
+    }
+    
+    m_pSceneStack->PopToPreviousScene();
 }

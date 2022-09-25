@@ -23,10 +23,6 @@ namespace sputter
     {
         class Screen;
         class Button;
-
-// TODO: REMOVEME
-        class ModalPopup;
-// TODO: REMOVEME
     }
 }
 
@@ -65,7 +61,4 @@ private:
     sputter::ui::Button*                        m_pVersusPlayerButton = nullptr;
 
     PaddleArena*                                m_pPaddleArena = nullptr;
-
-    // TODO: REMOVEME
-    sputter::ui::ModalPopup*                    m_pModalPopup = nullptr;
 };

@@ -15,10 +15,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-// TODO: REMOVEME
-#include <sputter/ui/modalpopup.h>
-// TODO: REMOVEME
-
 using namespace sputter;
 
 MainMenuScene::MainMenuScene(
@@ -39,10 +35,6 @@ MainMenuScene::MainMenuScene(
     m_uiTheme.ButtonBorderSize = gameconstants::MainMenuButtonBorderSize;
     m_uiTheme.UnfocusedBorderColor = render::Color::Gray;
     m_uiTheme.ButtonDownAndDisabledBorderColor = render::Color::Red;
-
-    // REMOVEME
-    m_uiTheme.ModalBorderSize = 4;
-    m_uiTheme.ModalBackgroundColor = render::Color::Black;
 }
 
 void MainMenuScene::Initialize() 
@@ -50,6 +42,12 @@ void MainMenuScene::Initialize()
     m_pCamera->SetTranslation(gameconstants::InitialCameraPosition);
     const glm::mat4 viewMatrix = m_pCamera->ViewMatrix4d();
     m_pVolumeTextRenderer->SetMatrices(*m_pOrthoMatrix, viewMatrix);
+
+    if (m_pScreen)
+    {
+        m_pScreen->SetVisibility(true);
+        return;
+    }
 
     m_pScreen = new ui::Screen(m_pWindow);
     m_pVersusAiButton = new ui::Button(m_pScreen, &m_uiTheme, "VS AI");
@@ -80,17 +78,6 @@ void MainMenuScene::Initialize()
         m_pVersusAiButton->SetNavigationLink(m_pVersusPlayerButton, NavigationDirections::Down);
         m_pVersusPlayerButton->SetNavigationLink(m_pVersusAiButton, NavigationDirections::Up);
     }
-
-    // REMOVEME
-    const sputter::math::Vector2i Position(-200, -200);
-    const sputter::math::Vector2i Dimensions(400, 400);
-    const sputter::math::Vector2i ButtonDimensions(120, 50);
-    char* ppButtonTextEntries[] = { "Button1", "Button2" };
-    m_pModalPopup = new sputter::ui::ModalPopup(
-        m_pScreen, &m_uiTheme, m_pVolumeTextRenderer,
-        Position, Dimensions, ButtonDimensions,
-        (const char**)ppButtonTextEntries, 2, "title");
-    // REMOVEME
 }
 
 MainMenuScene::~MainMenuScene()
@@ -109,8 +96,7 @@ void MainMenuScene::Uninitialize()
 {
     if (m_pScreen)
     {
-        m_pScreen->RemoveChild(m_pVersusAiButton);
-        m_pScreen->RemoveChild(m_pVersusPlayerButton);
+        m_pScreen->SetVisibility(false);
     }
 }
 

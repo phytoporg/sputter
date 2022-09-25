@@ -1,6 +1,7 @@
 #include "gamescene.h"
 #include "gameconstants.h"
 #include "gamestate.h"
+#include "paddlearena.h"
 
 #include <sputter/assets/assetstorageprovider.h>
 
@@ -17,20 +18,13 @@
 
 #include <sputter/input/inputsubsystem.h>
 
+#include <sputter/ui/modalpopup.h>
+
 #include <GLFW/glfw3.h>
 
 #include <glm/glm.hpp>
 
 using namespace sputter;
-
-// TODO: Migrate most of this to a game instance class
-enum class PaddleArenaInput {
-    // Starting out with forreal pong
-    INPUT_MOVE_UP,
-    INPUT_MOVE_DOWN,
-    INPUT_MOVE_LEFT,
-    INPUT_MOVE_RIGHT
-};
 
 namespace {
     void DrawScore(int x, int y, sputter::render::VolumetricTextRenderer* pTextRenderer, uint16_t score)
@@ -52,6 +46,7 @@ namespace {
 
 GameScene::GameScene(
     render::Window* pWindow,
+    PaddleArena* pPaddleArena,
     sputter::game::TimerSystem* pTimerSystem,
     sputter::render::Camera* pCamera,
     glm::mat4* pOrthoMatrix,
@@ -64,7 +59,9 @@ GameScene::GameScene(
       m_pTimerSystem(pTimerSystem),
       m_pCamera(pCamera),
       m_pOrthoMatrix(pOrthoMatrix),
-      m_pTextRenderer(pTextRenderer)
+      m_pTextRenderer(pTextRenderer),
+      m_pWindow(pWindow),
+      m_pPaddleArena(pPaddleArena)
 {
     physics::RigidBodySubsystemSettings rigidBodySubsystemSettings;
     rigidBodySubsystemSettings.MaxRigidBodies = 5;
@@ -89,9 +86,13 @@ GameScene::GameScene(
     const std::vector<sputter::input::InputMapEntry> p1InputMap = 
         { 
           { static_cast<uint32_t>(GLFW_KEY_W), static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_UP) },
+          { static_cast<uint32_t>(GLFW_KEY_UP), static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_UP) },
           { static_cast<uint32_t>(GLFW_KEY_S), static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_DOWN) },
+          { static_cast<uint32_t>(GLFW_KEY_DOWN), static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_DOWN) },
           { static_cast<uint32_t>(GLFW_KEY_A), static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_LEFT) },
+          { static_cast<uint32_t>(GLFW_KEY_LEFT), static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_LEFT) },
           { static_cast<uint32_t>(GLFW_KEY_D), static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_RIGHT) },
+          { static_cast<uint32_t>(GLFW_KEY_RIGHT), static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_RIGHT) },
           };
     inputSubsystemSettings.pInputMapEntryArrays[0] = p1InputMap.data();
     inputSubsystemSettings.pInputMapEntryArrays[1] = nullptr;
@@ -118,12 +119,25 @@ GameScene::GameScene(
     {
         system::LogAndFail("Failed to retrieve font storage");
     }
+
+    m_uiTheme.FocusedBorderColor = render::Color::White;
+    m_uiTheme.ButtonBorderSize = gameconstants::MainMenuButtonBorderSize;
+    m_uiTheme.UnfocusedBorderColor = render::Color::Gray;
+    m_uiTheme.ButtonDownAndDisabledBorderColor = render::Color::Red;
+    m_uiTheme.ModalBorderSize = 4;
+    m_uiTheme.ModalBackgroundColor = render::Color::Black;
 }
 
 GameScene::~GameScene()
 {
     delete m_pMeshSubsystem;
+    m_pMeshSubsystem = nullptr;
+
     delete m_pInputSubsystem;
+    m_pInputSubsystem = nullptr;
+
+    delete m_pScreen;
+    m_pScreen = nullptr;
 }
 
 void GameScene::Initialize() 
@@ -131,6 +145,34 @@ void GameScene::Initialize()
     m_pGameState->CurrentState = GameState::State::Starting;
     m_pGameState->Arena.Initialize(gameconstants::ArenaDimensions);        
     m_pGameState->Camera.SetTranslation(gameconstants::InitialCameraPosition);
+
+    if (!m_pScreen)
+    {
+        m_pScreen = new ui::Screen(m_pWindow);
+
+        const sputter::math::Vector2i ModalPosition(-200, -200);
+        const sputter::math::Vector2i ModalDimensions(400, 400);
+        const sputter::math::Vector2i ModalButtonDimensions(120, 50);
+        char* ppButtonTextEntries[] = { "RESTART", "DONE" };
+        m_pModalPopup = new sputter::ui::ModalPopup(
+            m_pScreen, &m_uiTheme, m_pTextRenderer,
+            ModalPosition, ModalDimensions, ModalButtonDimensions,
+            (const char**)ppButtonTextEntries, 2);
+
+        using namespace sputter::ui;
+        m_pModalPopup->SetModalPopupOptionSelectedCallback([this](ModalPopup::ModalPopupSelection selection){
+            m_pModalPopup->SetVisibility(false);
+            if (selection == ModalPopup::ModalPopupSelection::Selection_0)
+            {
+                // Restart: TODO
+            }
+            else
+            {
+                m_pPaddleArena->PreviousSceneFromGame();
+            }
+        });
+        m_pModalPopup->SetVisibility(false);
+    }
 }
 
 void GameScene::Uninitialize() 
@@ -148,19 +190,25 @@ void GameScene::Draw()
     const glm::mat4 viewMatrix = m_pGameState->Camera.ViewMatrix4d();
     m_pMeshSubsystem->Draw(*m_pOrthoMatrix, viewMatrix);
     m_pTextRenderer->SetMatrices(*m_pOrthoMatrix, viewMatrix);
+    m_pTextRenderer->SetDepth(-1.f);
+
     DrawScore(gameconstants::P1ScorePositionX, gameconstants::ScorePositionY, m_pTextRenderer, m_pGameState->Player1Score);
     DrawScore(gameconstants::P2ScorePositionX, gameconstants::ScorePositionY, m_pTextRenderer, m_pGameState->Player2Score);
 
     if (m_pGameState->CurrentState == GameState::State::Ended)
     {
-        const std::string WinString = 
-            m_pGameState->WinningPlayer == 1 ? "P1 WINS!" : "P2 WINS!";
-        m_pTextRenderer->DrawText(
-            gameconstants::WinMessagePositionX,
-            gameconstants::WinMessagePositionY,
-            gameconstants::WinMessageSize,
-            WinString.c_str());
+        // const std::string WinString = 
+        //     m_pGameState->WinningPlayer == 1 ? "P1 WINS!" : "P2 WINS!";
+        // m_pTextRenderer->DrawText(
+        //     gameconstants::WinMessagePositionX,
+        //     gameconstants::WinMessagePositionY,
+        //     gameconstants::WinMessageSize,
+        //     WinString.c_str());
+        m_pModalPopup->SetText(m_pGameState->WinningPlayer == 1 ? "P1 WINS" : "P2 WINS");
+        m_pModalPopup->SetVisibility(true);
     }
+
+    m_pScreen->Draw();
 }
 
 void GameScene::TickFrame(math::FixedPoint dt)
@@ -222,6 +270,8 @@ void GameScene::TickFrame(math::FixedPoint dt)
         m_pGameState->Player1Paddle.Tick(dt);
         m_pGameState->Player2Paddle.Tick(dt);
     }
+
+    m_pScreen->Tick((float)dt);
 }
 
 void GameScene::PostTickFrame(math::FixedPoint dt)
@@ -255,13 +305,13 @@ void GameScene::PostTickFrame(math::FixedPoint dt)
         }
 
         if (m_pGameState->Player1Score > gameconstants::ScoreToWin && 
-           (m_pGameState->Player1Score - m_pGameState->Player2Score) >= 2)
+           (m_pGameState->Player1Score - m_pGameState->Player2Score) >= gameconstants::WinningScoreAdvantage)
         {
             m_pGameState->WinningPlayer = 1;
             m_pGameState->CurrentState = GameState::State::Ended;
         }
         else if (m_pGameState->Player2Score > gameconstants::ScoreToWin && 
-                (m_pGameState->Player2Score - m_pGameState->Player1Score) >= 2)
+                (m_pGameState->Player2Score - m_pGameState->Player1Score) >= gameconstants::WinningScoreAdvantage)
         {
             m_pGameState->WinningPlayer = 2;
             m_pGameState->CurrentState = GameState::State::Ended;

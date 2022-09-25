@@ -17,11 +17,11 @@ ModalPopup::ModalPopup(
     const math::Vector2i& position, const math::Vector2i& dimensions,
     const math::Vector2i& buttonDimensions,
     const char** ppButtonTextEntries, uint32_t numButtonTextEntries,
-    const char* pTitle)
+    const char* pText)
     : Element(pParent),
       m_pTheme(pTheme),
       m_pTextRenderer(pTextRenderer),
-      m_pTitle(pTitle)
+      m_pText(pText)
 {
     RELEASE_CHECK(numButtonTextEntries <= kMaxModalPopupSelectionOptions, "Too many button entires for a modal popup");
 
@@ -56,6 +56,9 @@ ModalPopup::ModalPopup(
         pCurrentButton->SetFontRenderer(m_pTextRenderer);
         pCurrentButton->SetPosition(currentButtonOffsetX, ButtonOffsetY);
         pCurrentButton->SetDimensions(buttonDimensions);
+        pCurrentButton->SetButtonPressedCallback([this, i](){
+            OnButtonPressed(i);
+        });
 
         if (pPreviousButton)
         {
@@ -89,23 +92,74 @@ void ModalPopup::HandleEvent(uint8_t eventCodeParameter, void* pEventData)
 {}
 
 void ModalPopup::SetModalPopupOptionSelectedCallback(const ModalPopupOptionSelectedCallback onOptionSelected)
-{}
+{
+    m_fnOptionSelectedCallback = onOptionSelected;
+}
 
 void ModalPopup::DrawInternal()
 {
     const float RenderDepth = -1.0f * GetElementDepth();
-    const float PreviousLineRenderDepth = shapes::GetLineRendererDepth();
-    shapes::SetLineRendererDepth(RenderDepth);
+    
+    {
+        const float PreviousLineRenderDepth = shapes::GetLineRendererDepth();
+        shapes::SetLineRendererDepth(RenderDepth);
 
-    const auto AbsolutePosition = GetAbsolutePosition();
-    const auto Dimensions = GetDimensions();
-    shapes::DrawFilledRect(
-        GetAbsolutePosition(), GetDimensions(),
-        m_pTheme->ModalBorderSize, m_pTheme->FocusedBorderColor,
-        m_pTheme->ModalBackgroundColor);
+        const auto AbsolutePosition = GetAbsolutePosition();
+        const auto Dimensions = GetDimensions();
+        shapes::DrawFilledRect(
+            GetAbsolutePosition(), GetDimensions(),
+            m_pTheme->ModalBorderSize, m_pTheme->FocusedBorderColor,
+            m_pTheme->ModalBackgroundColor);
 
-    shapes::SetLineRendererDepth(PreviousLineRenderDepth);
+        shapes::SetLineRendererDepth(PreviousLineRenderDepth);
+    }
+
+    if (m_pText && m_pText[0] && m_pTextRenderer)
+    {
+        const auto AbsolutePosition = GetAbsolutePosition();
+        const float PreviousTextDepth = m_pTextRenderer->GetDepth();
+
+        // Adjust depth slightly to render text in front of the widget's body
+        m_pTextRenderer->SetDepth(RenderDepth * 1.01);
+
+        const float kTextPlacementHeightCoefficient = 0.7f;
+        const uint32_t kButtonTextSize = 1;
+        m_pTextRenderer->DrawTextCentered(
+            AbsolutePosition.GetX(),
+            AbsolutePosition.GetX() + GetWidth(),
+            AbsolutePosition.GetY() + GetHeight() * kTextPlacementHeightCoefficient,
+            1, m_pText);
+
+        m_pTextRenderer->SetDepth(PreviousTextDepth);
+    }
+}
+
+void ModalPopup::SetText(const char* pText)
+{
+    m_pText = pText;
 }
 
 void ModalPopup::TickInternal(float dt)
 {}
+
+void ModalPopup::OnButtonPressed(uint8_t buttonIndex)
+{
+    if (m_fnOptionSelectedCallback)
+    {
+        ModalPopupSelection selection = ModalPopupSelection::Invalid;
+        if (buttonIndex == 0)
+        {
+            selection = ModalPopupSelection::Selection_0;
+        }
+        else if (buttonIndex == 1)
+        {
+            selection = ModalPopupSelection::Selection_1;
+        }
+        else
+        {
+            system::LogAndFail("Unexpected button index");
+        }
+
+        m_fnOptionSelectedCallback(selection);
+    }
+}

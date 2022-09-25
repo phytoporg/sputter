@@ -7,6 +7,9 @@ InputSource::InputSource(IInputDevice* pInputDevice)
     : m_pInputDevice(pInputDevice)
 {}
 
+InputSource::~InputSource()
+{}
+
 IInputDevice* InputSource::GetInputDevice()
 {
     return m_pInputDevice;

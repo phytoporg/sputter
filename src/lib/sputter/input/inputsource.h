@@ -17,6 +17,7 @@ namespace sputter { namespace input {
         };
 
         InputSource(IInputDevice* pInputDevice);
+        virtual ~InputSource();
 
         IInputDevice* GetInputDevice();
 

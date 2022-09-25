@@ -51,6 +51,7 @@ public:
     virtual bool StartGame() override;
 
     void NextSceneFromMainMenu();
+    void PreviousSceneFromGame();
 
 private:
     PaddleArena() = delete;

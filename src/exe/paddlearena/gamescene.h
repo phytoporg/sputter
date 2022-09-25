@@ -4,6 +4,9 @@
 #include <sputter/game/subsystemprovider.h>
 #include <sputter/game/timersystem.h>
 
+#include <sputter/ui/screen.h>
+#include <sputter/ui/theme.h>
+
 #include <sputter/memory/reservedregion.h>
 #include <sputter/memory/fixedmemoryallocator.h>
 
@@ -43,6 +46,11 @@ namespace sputter
         class InputSubsystem;
     }
 
+    namespace ui
+    {
+        class ModalPopup;
+    }
+
     namespace memory
     {
         class FixedMemoryAllocator;
@@ -50,12 +58,14 @@ namespace sputter
 }
 
 struct GameState;
+class PaddleArena;
 
 class GameScene : public sputter::game::IScene
 {
 public:
     GameScene(
         sputter::render::Window* pWindow,
+        PaddleArena* pPaddleArena,
         sputter::game::TimerSystem* pTimerSystem,
         sputter::render::Camera* pCamera,
         glm::mat4* pOrthoMatrix,
@@ -95,8 +105,13 @@ private:
     glm::mat4*                                m_pOrthoMatrix = nullptr;
 
     sputter::render::VolumetricTextRenderer*  m_pTextRenderer = nullptr;
+    sputter::render::Window*                  m_pWindow = nullptr;
+    sputter::ui::Screen*                      m_pScreen = nullptr;
+    sputter::ui::ModalPopup*                  m_pModalPopup = nullptr;
+    sputter::ui::Theme                        m_uiTheme;
 
     sputter::game::TimerSystem*               m_pTimerSystem = nullptr;
 
     GameState*                                m_pGameState = nullptr;
+    PaddleArena*                              m_pPaddleArena = nullptr;
 };

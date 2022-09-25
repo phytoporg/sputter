@@ -158,19 +158,21 @@ void Button::DrawInternal()
     using namespace sputter::render;
 
     const float RenderDepth = -1.0f * GetElementDepth();
-    const float PreviousLineRenderDepth = shapes::GetLineRendererDepth();
-    shapes::SetLineRendererDepth(RenderDepth);
-
     const auto AbsolutePosition = GetAbsolutePosition();
     const auto PositionToRender = AbsolutePosition + 
         (m_buttonState == ButtonState::Down ?
             kButtonDownDisplacement : math::Vector2i::Zero);
-    sputter::render::shapes::DrawRect(
-        PositionToRender.GetX(), PositionToRender.GetY(),
-        GetWidth(), GetHeight(),
-        m_borderSize, m_borderColor);
+    {
+        const float PreviousLineRenderDepth = shapes::GetLineRendererDepth();
+        shapes::SetLineRendererDepth(RenderDepth);
 
-    shapes::SetLineRendererDepth(PreviousLineRenderDepth);
+        sputter::render::shapes::DrawRect(
+            PositionToRender.GetX(), PositionToRender.GetY(),
+            GetWidth(), GetHeight(),
+            m_borderSize, m_borderColor);
+
+        shapes::SetLineRendererDepth(PreviousLineRenderDepth);
+    }
 
     if (m_text[0] && m_pTextRenderer)
     {

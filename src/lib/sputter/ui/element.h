@@ -51,6 +51,8 @@ namespace sputter
 
             uint32_t GetElementDepth() const;
 
+            void SetVisibility(bool isVisible);
+
         protected:
             // Called by Draw(). Implement any specific drawing logic for this element type
             // here that is not common to all elements.
@@ -69,6 +71,8 @@ namespace sputter
 
             uint32_t m_width = 0;
             uint32_t m_height = 0;
+
+            bool m_isVisible = true;
 
             // Increment as needed
             static const uint32_t kMaxChildren = 4;

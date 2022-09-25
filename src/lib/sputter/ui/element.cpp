@@ -26,10 +26,20 @@ Element::Element(Element* pParent)
 }
 
 Element::~Element()
-{}
+{
+    if (m_pParent)
+    {
+        m_pParent->RemoveChild(this);
+    }
+}
 
 void Element::Draw() 
 {
+    if (!m_isVisible)
+    {
+        return;
+    }
+
     DrawInternal();
 
     // Draw all children
@@ -200,6 +210,11 @@ uint32_t Element::GetElementDepth() const
     }
 
     return depth;
+}
+
+void Element::SetVisibility(bool isVisible)
+{
+    m_isVisible = isVisible;
 }
 
 void Element::SignalRootElement(const Event& event)

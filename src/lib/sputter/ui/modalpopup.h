@@ -47,25 +47,31 @@ namespace sputter { namespace ui {
             const math::Vector2i& position, const math::Vector2i& dimensions,
             const math::Vector2i& buttonDimensions, // Not interested in automating layout and content fitting atm
             const char** ppButtonTextEntries, uint32_t numButtonTextEntries,
-            const char* pTitle = nullptr);
+            const char* pText = nullptr);
 
         virtual ~ModalPopup();
         virtual void HandleEvent(uint8_t eventCodeParameter, void* pEventData) override;
 
-        using ModalPopupOptionSelectedCallback = std::function<ModalPopupSelection()>;
+        using ModalPopupOptionSelectedCallback = std::function<void(ModalPopupSelection)>;
         void SetModalPopupOptionSelectedCallback(const ModalPopupOptionSelectedCallback onOptionSelected);
+
+        void SetText(const char* pText);
 
     protected:
         virtual void DrawInternal() override;
         virtual void TickInternal(float dt) override;
 
     private:
+        void OnButtonPressed(uint8_t buttonIndex);
+
         Button**                        m_ppButtonArray = nullptr;
         uint8_t                         m_numButtons    = 0;
 
         Theme*                          m_pTheme        = nullptr;
         render::VolumetricTextRenderer* m_pTextRenderer = nullptr;
-        const char*                     m_pTitle        = nullptr;
+        const char*                     m_pText         = nullptr;
+
+        ModalPopupOptionSelectedCallback m_fnOptionSelectedCallback;
 
         // Probably parameters we want up in Element, but that sort of generalization isn't needed right now.
         static const int32_t kDefaultVerticalMargin = 5;
