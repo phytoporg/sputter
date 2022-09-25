@@ -56,7 +56,7 @@ Window::Window(const std::string& windowTitle, uint32_t w, uint32_t h)
     glfwSetKeyCallback(m_pWindow, WindowKeyThunk);
 
     glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
+    glDepthFunc(GL_LEQUAL);
 }
 
 Window::~Window()

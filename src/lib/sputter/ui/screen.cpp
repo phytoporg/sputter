@@ -15,8 +15,12 @@ Screen::Screen(render::Window* pWindow)
     m_pKeyMapping = new Key[GLFW_KEY_LAST];
     m_pKeyMapping[GLFW_KEY_UP]    = Key::Up;
     m_pKeyMapping[GLFW_KEY_DOWN]  = Key::Down;
+    m_pKeyMapping[GLFW_KEY_LEFT]  = Key::Left;
+    m_pKeyMapping[GLFW_KEY_RIGHT] = Key::Right;
     m_pKeyMapping[GLFW_KEY_W]     = Key::Up;
     m_pKeyMapping[GLFW_KEY_S]     = Key::Down;
+    m_pKeyMapping[GLFW_KEY_A]     = Key::Left;
+    m_pKeyMapping[GLFW_KEY_D]     = Key::Right;
     m_pKeyMapping[GLFW_KEY_ENTER] = Key::Activate;
     m_pKeyMapping[GLFW_KEY_SPACE] = Key::Activate;
 

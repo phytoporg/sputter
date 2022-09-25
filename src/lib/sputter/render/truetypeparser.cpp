@@ -662,16 +662,16 @@ const GLYPH_Header* TrueTypeParser::FindGlyphHeader(char c)
         if (GlyphCharacter <= SegmentEnd && GlyphCharacter >= SegmentStart)
         {
             const uint16_t IdOffset = SwapEndianness16(m_CmapSegmentMapPointers.pIdRangeOffsets[i]);
-
-            // Indexing trick from the spec
-            const uint16_t GlyphIndex = SwapEndianness16(*(IdOffset / 2 + (GlyphCharacter - SegmentStart) + &m_CmapSegmentMapPointers.pIdRangeOffsets[i]));
-            if (m_CmapSegmentMapPointers.pGlyphIdArray[GlyphIndex] == 0)
+            if (IdOffset == 0)
             {
                 glyphId = GlyphCharacter + SwapEndianness16(m_CmapSegmentMapPointers.pIdDeltas[i]);
             }
             else
             {
+                // Indexing trick from the spec
+                const uint16_t GlyphIndex = SwapEndianness16(*(IdOffset / 2 + (GlyphCharacter - SegmentStart) + &m_CmapSegmentMapPointers.pIdRangeOffsets[i]));
                 glyphId = SwapEndianness16(GlyphIndex);
+                
             }
             break;
         }

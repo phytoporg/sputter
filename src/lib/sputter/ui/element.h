@@ -47,6 +47,9 @@ namespace sputter
             bool RemoveChild(Element* pChildElement); // Not recursive!
 
             Element* GetParent();
+            const Element* GetParent() const;
+
+            uint32_t GetElementDepth() const;
 
         protected:
             // Called by Draw(). Implement any specific drawing logic for this element type

@@ -17,6 +17,7 @@
 #include <vector>
 #include <glm/glm.hpp>
 
+static const float kDefaultDepth = 0.f; 
 static const int kMaxInstances = 2000;
 static const char* kVertexShaderName = "volume_text_vert";
 static const char* kFragmentShaderName = "volume_text_frag";
@@ -38,6 +39,8 @@ struct VolumetricTextRenderer::PImpl
 
     glm::mat4                 ProjectionMatrix;
     glm::mat4                 ViewMatrix;
+
+    float                     Depth = kDefaultDepth;
 
     // Attributes & EOB
     Attribute<glm::vec3>      VertexPositionAttribute;
@@ -151,9 +154,21 @@ void VolumetricTextRenderer::SetMatrices(const glm::mat4& projMatrix, const glm:
     m_spPimpl->ViewMatrix = viewMatrix;
 }
 
+void VolumetricTextRenderer::SetDepth(float depth)
+{
+    m_spPimpl->Depth = depth;
+}
+
+float VolumetricTextRenderer::GetDepth() const
+{
+    return m_spPimpl->Depth;
+}
+
 void VolumetricTextRenderer::DrawText(int32_t x, int32_t y, uint32_t size, const char* pText)
 {
-    const glm::vec2 rootPos(x, y);
+    // Adjust the depth so that the *front* face of the voxels are at the specified depth
+    // since these coordinates represent the centered origin of the unit cube.
+    const glm::vec3 rootPos(x, y, m_spPimpl->Depth + (size * 0.5f));
     m_spPimpl->spShader->Bind();
 
     if (m_spPimpl->OffsetPositionUniformHandle == Shader::kInvalidHandleValue)
@@ -164,7 +179,7 @@ void VolumetricTextRenderer::DrawText(int32_t x, int32_t y, uint32_t size, const
             system::LogAndFail("Failed to retrieve uniform handle for 'rootPos'");
         }
     }
-    Uniform<glm::vec2>::Set(m_spPimpl->OffsetPositionUniformHandle, glm::vec2(x, y));
+    Uniform<glm::vec3>::Set(m_spPimpl->OffsetPositionUniformHandle, rootPos);
 
     if (m_spPimpl->ViewMatrixUniformHandle == Shader::kInvalidHandleValue)
     {
@@ -286,7 +301,7 @@ void VolumetricTextRenderer::DrawTextCentered(int32_t xLeft, int32_t xRight, int
         return;
     }
 
-    int32_t startX = xLeft + (xSpan - currentGlyphOffsetX * size) / 2;
-    int32_t startY = yMid - (maxHeight / 2);
+    const int32_t startX = xLeft + (xSpan - currentGlyphOffsetX * size) / 2;
+    const int32_t startY = yMid - (maxHeight / 2);
     DrawText(startX, startY, size, pText);
 }

@@ -189,8 +189,8 @@ bool sputter::render::geometry::MakeUnitCube(
 }
 
 bool sputter::render::geometry::MakeBorderedRect(
-    int32_t x, int32_t y, int32_t width, int32_t height, int32_t borderSize,
-    glm::ivec2* pVertexPositions, uint32_t numVertexPositions,
+    int32_t x, int32_t y, int32_t z, int32_t width, int32_t height, int32_t borderSize,
+    glm::vec3* pVertexPositions, uint32_t numVertexPositions,
     int* pIndices, uint32_t numIndices)
 {
     static const uint32_t kExpectedNumVertexPositions = 8;
@@ -213,10 +213,10 @@ bool sputter::render::geometry::MakeBorderedRect(
     // 7---------------6
 
     // Inner vertices
-    pVertexPositions[0] = glm::ivec2(x, y);
-    pVertexPositions[1] = glm::ivec2(x + width, y);
-    pVertexPositions[2] = glm::ivec2(x + width, y + height);
-    pVertexPositions[3] = glm::ivec2(x, y + height);
+    pVertexPositions[0] = glm::vec3(x, y, z);
+    pVertexPositions[1] = glm::vec3(x + width, y, z);
+    pVertexPositions[2] = glm::vec3(x + width, y + height, z);
+    pVertexPositions[3] = glm::vec3(x, y + height, z);
 
     // Outer vertices
     const int32_t OuterX = x - borderSize;
@@ -224,10 +224,10 @@ bool sputter::render::geometry::MakeBorderedRect(
     const int32_t OuterWidth  = width + 2 * borderSize;
     const int32_t OuterHeight = height + 2 * borderSize;
 
-    pVertexPositions[4] = glm::ivec2(OuterX, OuterY);
-    pVertexPositions[5] = glm::ivec2(OuterX + OuterWidth, OuterY);
-    pVertexPositions[6] = glm::ivec2(OuterX + OuterWidth, OuterY + OuterHeight);
-    pVertexPositions[7] = glm::ivec2(OuterX, OuterY + OuterHeight);
+    pVertexPositions[4] = glm::vec3(OuterX, OuterY, z);
+    pVertexPositions[5] = glm::vec3(OuterX + OuterWidth, OuterY, z);
+    pVertexPositions[6] = glm::vec3(OuterX + OuterWidth, OuterY + OuterHeight, z);
+    pVertexPositions[7] = glm::vec3(OuterX, OuterY + OuterHeight, z);
 
     // Indices
     // Assuming GL_CCW for front-facing
@@ -240,6 +240,48 @@ bool sputter::render::geometry::MakeBorderedRect(
         2, 3, 6, 3, 7, 6,
         // Left
         3, 0, 7, 0, 4, 7,
+    };
+    memcpy(pIndices, IndexValues, sizeof(IndexValues));
+
+    return true;
+}
+
+bool sputter::render::geometry::MakeQuad(
+    int32_t x, int32_t y, int32_t z, int32_t width, int32_t height, 
+    glm::vec3* pVertexPositions, uint32_t numVertexPositions,
+    int* pIndices, uint32_t numIndices)
+{
+    static const uint32_t kExpectedNumVertexPositions = 4;
+    static const uint32_t kExpectedNumIndices = 6;
+
+    if (numVertexPositions != kExpectedNumVertexPositions ||
+        numIndices         != kExpectedNumIndices)
+    {
+        return false;
+    }
+
+    // Verts
+    //
+    // 0---------------1
+    // |               |
+    // |               |
+    // |               |
+    // |               |
+    // |               |
+    // 3---------------2
+
+    pVertexPositions[0] = glm::vec3(x, y, z);
+    pVertexPositions[1] = glm::vec3(x + width, y, z);
+    pVertexPositions[2] = glm::vec3(x + width, y + height, z);
+    pVertexPositions[3] = glm::vec3(x, y + height, z);
+
+    // Indices
+    // Assuming GL_CCW for front-facing
+    const int IndexValues[] = {
+        // Upper-right triangle
+        0, 2, 1,
+        // Lower-left triangle
+        0, 3, 2,
     };
     memcpy(pIndices, IndexValues, sizeof(IndexValues));
 

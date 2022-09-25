@@ -184,6 +184,24 @@ Element* Element::GetParent()
     return m_pParent;
 }
 
+const Element* Element::GetParent() const
+{
+    return m_pParent;
+}
+
+uint32_t Element::GetElementDepth() const
+{
+    uint32_t depth = 0;
+    const Element* pParent = GetParent();
+    while (pParent)
+    {
+        pParent = pParent->GetParent();
+        ++depth;
+    }
+
+    return depth;
+}
+
 void Element::SignalRootElement(const Event& event)
 {
     Element* pRoot = this;

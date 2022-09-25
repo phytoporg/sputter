@@ -25,6 +25,8 @@ namespace sputter { namespace ui {
         Invalid = 0,
         Up,
         Down,
+        Left,
+        Right,
         // Presses a button in focus for example, but I want more of a catch-all name for 
         // future scenarios, so "Activate" for now.
         Activate,

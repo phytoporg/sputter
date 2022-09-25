@@ -14,6 +14,8 @@ bool sputter::ui::IsDirectionKey(Key key)
     {
         case Key::Up:
         case Key::Down:
+        case Key::Left:
+        case Key::Right:
             return true;
         default: break;
     }

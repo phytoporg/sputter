@@ -56,7 +56,9 @@ void Button::HandleEvent(uint8_t eventCodeParameter, void* pEventData)
             static const NavigationDirections KeyToDirectionMap[static_cast<uint8_t>(Key::KeyMax)] = {
                 NavigationDirections::Invalid,
                 NavigationDirections::Up,
-                NavigationDirections::Down
+                NavigationDirections::Down,
+                NavigationDirections::Left,
+                NavigationDirections::Right,
             };
 
             const uint8_t KeyPressedIndex = static_cast<uint8_t>(KeyPressed);
@@ -153,6 +155,12 @@ void Button::SetButtonIsDisabled(bool isDisabled)
 
 void Button::DrawInternal()
 {
+    using namespace sputter::render;
+
+    const float RenderDepth = -1.0f * GetElementDepth();
+    const float PreviousLineRenderDepth = shapes::GetLineRendererDepth();
+    shapes::SetLineRendererDepth(RenderDepth);
+
     const auto AbsolutePosition = GetAbsolutePosition();
     const auto PositionToRender = AbsolutePosition + 
         (m_buttonState == ButtonState::Down ?
@@ -162,14 +170,21 @@ void Button::DrawInternal()
         GetWidth(), GetHeight(),
         m_borderSize, m_borderColor);
 
+    shapes::SetLineRendererDepth(PreviousLineRenderDepth);
+
     if (m_text[0] && m_pTextRenderer)
     {
+        const float PreviousTextDepth = m_pTextRenderer->GetDepth();
+        m_pTextRenderer->SetDepth(-1.0f * GetElementDepth());
+
         const uint32_t kButtonTextSize = 1;
         m_pTextRenderer->DrawTextCentered(
-        PositionToRender.GetX(),
-        PositionToRender.GetX() + GetWidth(),
-        PositionToRender.GetY() + (GetHeight() / 2),
-        kButtonTextSize, m_text);
+            PositionToRender.GetX(),
+            PositionToRender.GetX() + GetWidth(),
+            PositionToRender.GetY() + (GetHeight() / 2),
+            kButtonTextSize, m_text);
+
+        m_pTextRenderer->SetDepth(PreviousTextDepth);
     }
 }
 

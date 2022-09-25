@@ -4,4 +4,4 @@
 // a "logging.h" of some kind.
 #include <sputter/system/system.h>
 
-#define RELEASE_CHECK(Condition, FailureText) if (!(Condition)) { system::LogAndFail(FailureText); }
+#define RELEASE_CHECK(Condition, FailureText) if (!(Condition)) { sputter::system::LogAndFail(FailureText); }

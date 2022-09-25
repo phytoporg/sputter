@@ -43,6 +43,7 @@ namespace sputter { namespace ui {
 
         ModalPopup(
             Element* pParent, Theme* pTheme,
+            render::VolumetricTextRenderer* pTextRenderer,
             const math::Vector2i& position, const math::Vector2i& dimensions,
             const math::Vector2i& buttonDimensions, // Not interested in automating layout and content fitting atm
             const char** ppButtonTextEntries, uint32_t numButtonTextEntries,
@@ -59,18 +60,19 @@ namespace sputter { namespace ui {
         virtual void TickInternal(float dt) override;
 
     private:
-        Button**            m_ppButtonArray = nullptr;
-        uint8_t             m_numButtons   = 0;
+        Button**                        m_ppButtonArray = nullptr;
+        uint8_t                         m_numButtons    = 0;
 
-        Theme*              m_pTheme = nullptr;
-        const char*         m_pTitle = nullptr;
+        Theme*                          m_pTheme        = nullptr;
+        render::VolumetricTextRenderer* m_pTextRenderer = nullptr;
+        const char*                     m_pTitle        = nullptr;
 
         // Probably parameters we want up in Element, but that sort of generalization isn't needed right now.
         static const int32_t kDefaultVerticalMargin = 5;
-        int32_t             m_verticalMargin= kDefaultVerticalMargin;
+        int32_t             m_verticalMargin = kDefaultVerticalMargin;
 
         // Strictly adjusts the spacing between buttons.
-        static const int32_t kDefaultInterButtonPadding = 10;
+        static const int32_t kDefaultInterButtonPadding = 30;
         int32_t             m_horizontalInterButtonPadding = kDefaultInterButtonPadding;
     };
 }}

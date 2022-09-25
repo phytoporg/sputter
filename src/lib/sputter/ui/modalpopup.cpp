@@ -13,15 +13,17 @@ using namespace sputter::math;
 
 ModalPopup::ModalPopup(
     Element* pParent, Theme* pTheme,
+    render::VolumetricTextRenderer* pTextRenderer,
     const math::Vector2i& position, const math::Vector2i& dimensions,
     const math::Vector2i& buttonDimensions,
     const char** ppButtonTextEntries, uint32_t numButtonTextEntries,
     const char* pTitle)
     : Element(pParent),
       m_pTheme(pTheme),
+      m_pTextRenderer(pTextRenderer),
       m_pTitle(pTitle)
 {
-    RELEASE_CHECK(numButtonTextEntries > kMaxModalPopupSelectionOptions, "Too many button entires for a modal popup");
+    RELEASE_CHECK(numButtonTextEntries <= kMaxModalPopupSelectionOptions, "Too many button entires for a modal popup");
 
     SetPosition(position);
     SetDimensions(dimensions);
@@ -34,13 +36,13 @@ ModalPopup::ModalPopup(
         buttonDimensions.GetX() * m_numButtons + 
         m_horizontalInterButtonPadding * (m_numButtons - 1);
     {
-        RELEASE_CHECK(TotalHorizontalButtonSpace > dimensions.GetX(), "Not enough horizontal space in modal to accommodate buttons");
+        RELEASE_CHECK(TotalHorizontalButtonSpace <= dimensions.GetX(), "Not enough horizontal space in modal to accommodate buttons");
 
         const int32_t TotalVerticalButtonSpace = buttonDimensions.GetY() + m_verticalMargin;
-        RELEASE_CHECK(TotalVerticalButtonSpace > dimensions.GetY(), "Not enough vertical space in modal to accommodate buttons");
+        RELEASE_CHECK(TotalVerticalButtonSpace <= dimensions.GetY(), "Not enough vertical space in modal to accommodate buttons");
     }
 
-    const int32_t ButtonOffsetY = dimensions.GetY() - buttonDimensions.GetY() - m_verticalMargin;
+    const int32_t ButtonOffsetY = buttonDimensions.GetY() - m_verticalMargin;
 
     // Center the buttons!
     int32_t currentButtonOffsetX = (dimensions.GetX() - TotalHorizontalButtonSpace) / 2;
@@ -48,10 +50,10 @@ ModalPopup::ModalPopup(
     Button* pPreviousButton = nullptr;
     for (uint8_t i = 0; i < m_numButtons; ++i)
     {
-        RELEASE_CHECK(!ppButtonTextEntries[i], "All button text entries must be non-null");
+        RELEASE_CHECK(ppButtonTextEntries[i], "All button text entries must be non-null");
 
         Button* pCurrentButton = new Button(this, m_pTheme, ppButtonTextEntries[i]);
-        pCurrentButton->SetFontRenderer(nullptr /*TODO*/);
+        pCurrentButton->SetFontRenderer(m_pTextRenderer);
         pCurrentButton->SetPosition(currentButtonOffsetX, ButtonOffsetY);
         pCurrentButton->SetDimensions(buttonDimensions);
 
@@ -61,7 +63,7 @@ ModalPopup::ModalPopup(
             pCurrentButton->SetNavigationLink(pPreviousButton, NavigationDirections::Left);
         }
 
-        currentButtonOffsetX += m_horizontalInterButtonPadding;
+        currentButtonOffsetX += m_horizontalInterButtonPadding + buttonDimensions.GetX();
 
         pPreviousButton = pCurrentButton;
         m_ppButtonArray[i] = pCurrentButton;
@@ -91,11 +93,18 @@ void ModalPopup::SetModalPopupOptionSelectedCallback(const ModalPopupOptionSelec
 
 void ModalPopup::DrawInternal()
 {
+    const float RenderDepth = -1.0f * GetElementDepth();
+    const float PreviousLineRenderDepth = shapes::GetLineRendererDepth();
+    shapes::SetLineRendererDepth(RenderDepth);
+
     const auto AbsolutePosition = GetAbsolutePosition();
     const auto Dimensions = GetDimensions();
-    shapes::DrawRect(
+    shapes::DrawFilledRect(
         GetAbsolutePosition(), GetDimensions(),
-        m_pTheme->ModalBorderSize, m_pTheme->FocusedBorderColor);
+        m_pTheme->ModalBorderSize, m_pTheme->FocusedBorderColor,
+        m_pTheme->ModalBackgroundColor);
+
+    shapes::SetLineRendererDepth(PreviousLineRenderDepth);
 }
 
 void ModalPopup::TickInternal(float dt)

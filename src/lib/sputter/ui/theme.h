@@ -22,5 +22,6 @@ namespace sputter { namespace ui {
     
         // Modals
         uint8_t ModalBorderSize = 1;
+        render::Color ModalBackgroundColor;
     };
 }}

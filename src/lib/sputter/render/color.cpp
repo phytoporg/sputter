@@ -7,6 +7,7 @@ Color Color::DarkRed   = Color{140, 0, 0};
 Color Color::Blue      = Color{0, 255, 0};
 Color Color::Green     = Color{0, 0, 255};
 Color Color::White     = Color{255, 255, 255};
+Color Color::Black     = Color{0, 0, 0};
 Color Color::Gray      = Color{125, 125, 125};
 
 glm::vec3 Color::ToVec3() const
