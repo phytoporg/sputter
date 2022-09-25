@@ -1,5 +1,8 @@
 Next high-level goal: Gameplay vertical slice
 
+IMMEDIATE TODO:
+- Either use the same screen for all scenes, or hook/unhook window callbacks for screen instances on scene transitions
+
 BUGBUG: Fix space being rendered as !
 Missing an edge case in processing font tables, see: https://stackoverflow.com/questions/12591439/how-to-render-zero-width-glyphs-in-ttf
 
