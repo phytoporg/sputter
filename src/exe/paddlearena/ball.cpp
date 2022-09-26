@@ -193,7 +193,7 @@ void Ball::Initialize(
 
     // Now, set up collision geometry! Defined in *global* space at the moment. TODO: Fix that
     // Because of this, gotta update geometry on tick... D: D:
-    m_pCollisionComponent->CollisionFlags = 0x111;
+    m_pCollisionComponent->CollisionFlags = 0b111;
     m_pCollisionComponent->pObject = this;
     m_pCollisionComponent->CollisionShapes.clear();
 
