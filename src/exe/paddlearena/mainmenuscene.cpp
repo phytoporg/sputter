@@ -37,49 +37,6 @@ MainMenuScene::MainMenuScene(
     m_uiTheme.ButtonDownAndDisabledBorderColor = render::Color::Red;
 }
 
-void MainMenuScene::Initialize() 
-{
-    m_pCamera->SetTranslation(gameconstants::InitialCameraPosition);
-    const glm::mat4 viewMatrix = m_pCamera->ViewMatrix4d();
-    m_pVolumeTextRenderer->SetMatrices(*m_pOrthoMatrix, viewMatrix);
-
-    if (m_pScreen)
-    {
-        m_pScreen->SetVisibility(true);
-        return;
-    }
-
-    m_pScreen = new ui::Screen(m_pWindow);
-    m_pVersusAiButton = new ui::Button(m_pScreen, &m_uiTheme, "VS AI");
-    m_pVersusAiButton->SetFontRenderer(m_pVolumeTextRenderer);
-    m_pVersusAiButton->SetPosition(
-        gameconstants::VersusAiButtonPositionX,
-        gameconstants::VersusAiButtonPositionY);
-    m_pVersusAiButton->SetDimensions(
-        gameconstants::MainMenuButtonDimensionX,
-        gameconstants::MainMenuButtonDimensionY);
-    m_pVersusAiButton->SetButtonPressedCallback([this](){
-        m_pPaddleArena->NextSceneFromMainMenu();
-    });
-
-    m_pVersusPlayerButton = new ui::Button(m_pScreen, &m_uiTheme, "VS PLAYER");
-    m_pVersusPlayerButton->SetFontRenderer(m_pVolumeTextRenderer);
-    m_pVersusPlayerButton->SetPosition(
-        gameconstants::VersusAiButtonPositionX,
-        gameconstants::VersusAiButtonPositionY -
-        gameconstants::MainMenuButtonMarginTop);
-    m_pVersusPlayerButton->SetDimensions(
-        gameconstants::MainMenuButtonDimensionX,
-        gameconstants::MainMenuButtonDimensionY);
-    m_pVersusPlayerButton->SetButtonIsDisabled(true);
-
-    {
-        using namespace sputter::ui;
-        m_pVersusAiButton->SetNavigationLink(m_pVersusPlayerButton, NavigationDirections::Down);
-        m_pVersusPlayerButton->SetNavigationLink(m_pVersusAiButton, NavigationDirections::Up);
-    }
-}
-
 MainMenuScene::~MainMenuScene()
 {
     delete m_pVersusAiButton;
@@ -92,11 +49,52 @@ MainMenuScene::~MainMenuScene()
     m_pScreen = nullptr;
 }
 
+void MainMenuScene::Initialize() 
+{
+    m_pCamera->SetTranslation(gameconstants::InitialCameraPosition);
+    const glm::mat4 viewMatrix = m_pCamera->ViewMatrix4d();
+    m_pVolumeTextRenderer->SetMatrices(*m_pOrthoMatrix, viewMatrix);
+
+    if (!m_pScreen)
+    {
+        m_pScreen = new ui::Screen(m_pWindow);
+        m_pVersusAiButton = new ui::Button(m_pScreen, &m_uiTheme, "VS AI");
+        m_pVersusAiButton->SetFontRenderer(m_pVolumeTextRenderer);
+        m_pVersusAiButton->SetPosition(
+            gameconstants::VersusAiButtonPositionX,
+            gameconstants::VersusAiButtonPositionY);
+        m_pVersusAiButton->SetDimensions(
+            gameconstants::MainMenuButtonDimensionX,
+            gameconstants::MainMenuButtonDimensionY);
+        m_pVersusAiButton->SetButtonPressedCallback([this](){
+            m_pPaddleArena->NextSceneFromMainMenu();
+        });
+
+        m_pVersusPlayerButton = new ui::Button(m_pScreen, &m_uiTheme, "VS PLAYER");
+        m_pVersusPlayerButton->SetFontRenderer(m_pVolumeTextRenderer);
+        m_pVersusPlayerButton->SetPosition(
+            gameconstants::VersusAiButtonPositionX,
+            gameconstants::VersusAiButtonPositionY -
+            gameconstants::MainMenuButtonMarginTop);
+        m_pVersusPlayerButton->SetDimensions(
+            gameconstants::MainMenuButtonDimensionX,
+            gameconstants::MainMenuButtonDimensionY);
+        m_pVersusPlayerButton->SetButtonIsDisabled(true);
+
+        {
+            using namespace sputter::ui;
+            m_pVersusAiButton->SetNavigationLink(m_pVersusPlayerButton, NavigationDirections::Down);
+            m_pVersusPlayerButton->SetNavigationLink(m_pVersusAiButton, NavigationDirections::Up);
+        }
+    }
+    m_pScreen->Initialize();
+}
+
 void MainMenuScene::Uninitialize() 
 {
     if (m_pScreen)
     {
-        m_pScreen->SetVisibility(false);
+        m_pScreen->Uninitialize();
     }
 }
 

@@ -23,13 +23,6 @@ Screen::Screen(render::Window* pWindow)
     m_pKeyMapping[GLFW_KEY_D]     = Key::Right;
     m_pKeyMapping[GLFW_KEY_ENTER] = Key::Activate;
     m_pKeyMapping[GLFW_KEY_SPACE] = Key::Activate;
-
-    // Need this layer of indirection because the glfw user pointer is 
-    // already taken by our render::Window pointer. Handlers could be inlined 
-    // here in lambdas, but I'd prefer to keep the constructor succinct and clear.
-    m_pWindow->SetKeyCallback([this](render::Window* pWindow, int key, int action) {
-        HandleKeyEvent(key, action);
-    });
 }
 
 Screen::~Screen()
@@ -40,6 +33,23 @@ Screen::~Screen()
     m_pKeyMapping = nullptr;
 
     // TODO: Destroy element hierarchy?
+}
+
+void Screen::Initialize()
+{
+    // Need this layer of indirection because the glfw user pointer is 
+    // already taken by our render::Window pointer. Handlers could be inlined 
+    // here in lambdas, but I'd prefer to keep the constructor succinct and clear.
+    m_pWindow->SetKeyCallback([this](render::Window* pWindow, int key, int action) {
+        HandleKeyEvent(key, action);
+    });
+    SetVisibility(true);
+}
+
+void Screen::Uninitialize()
+{
+    m_pWindow->SetKeyCallback(0);
+    SetVisibility(false);
 }
 
 void Screen::TickInternal(float dt) 

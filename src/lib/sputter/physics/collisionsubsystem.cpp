@@ -49,7 +49,7 @@ void CollisionSubsystem::PostTick(math::FixedPoint dt)
                 A.CollisionsThisFrame.push_back(result);
                 B.CollisionsThisFrame.push_back(result);
 
-                result.pCollisionShapeA->GetSeparation2D(result.pCollisionShapeB);
+               result.pCollisionShapeA->GetSeparation2D(result.pCollisionShapeB);
             }
         }
     }

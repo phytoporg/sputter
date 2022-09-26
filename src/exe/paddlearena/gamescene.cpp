@@ -145,6 +145,9 @@ void GameScene::Initialize()
     m_pGameState->CurrentState = GameState::State::Starting;
     m_pGameState->Arena.Initialize(gameconstants::ArenaDimensions);        
     m_pGameState->Camera.SetTranslation(gameconstants::InitialCameraPosition);
+    m_pGameState->Player1Score = 0;
+    m_pGameState->Player2Score = 0;
+    m_pGameState->WinningPlayer = 0;
 
     if (!m_pScreen)
     {
@@ -153,7 +156,7 @@ void GameScene::Initialize()
         const sputter::math::Vector2i ModalPosition(-200, -200);
         const sputter::math::Vector2i ModalDimensions(400, 400);
         const sputter::math::Vector2i ModalButtonDimensions(120, 50);
-        char* ppButtonTextEntries[] = { "RESTART", "DONE" };
+        const char* ppButtonTextEntries[] = { "RESTART", "DONE" };
         m_pModalPopup = new sputter::ui::ModalPopup(
             m_pScreen, &m_uiTheme, m_pTextRenderer,
             ModalPosition, ModalDimensions, ModalButtonDimensions,
@@ -173,10 +176,16 @@ void GameScene::Initialize()
         });
         m_pModalPopup->SetVisibility(false);
     }
+
+    m_pScreen->Initialize();
 }
 
 void GameScene::Uninitialize() 
 {
+    if (m_pScreen)
+    {
+        m_pScreen->Uninitialize();
+    }
 }
 
 void GameScene::Tick(sputter::math::FixedPoint dt) 
@@ -197,13 +206,6 @@ void GameScene::Draw()
 
     if (m_pGameState->CurrentState == GameState::State::Ended)
     {
-        // const std::string WinString = 
-        //     m_pGameState->WinningPlayer == 1 ? "P1 WINS!" : "P2 WINS!";
-        // m_pTextRenderer->DrawText(
-        //     gameconstants::WinMessagePositionX,
-        //     gameconstants::WinMessagePositionY,
-        //     gameconstants::WinMessageSize,
-        //     WinString.c_str());
         m_pModalPopup->SetText(m_pGameState->WinningPlayer == 1 ? "P1 WINS" : "P2 WINS");
         m_pModalPopup->SetVisibility(true);
     }
@@ -276,11 +278,15 @@ void GameScene::TickFrame(math::FixedPoint dt)
 
 void GameScene::PostTickFrame(math::FixedPoint dt)
 { 
-    m_pCollisionSubsystem->PostTick(dt);
+    const GameState::State CurrentState = m_pGameState->CurrentState;
+    if (CurrentState == GameState::State::Playing)
+    {
+        m_pCollisionSubsystem->PostTick(dt);
 
-    m_pGameState->TheBall.PostTick(dt);
-    m_pGameState->Player1Paddle.PostTick(dt);
-    m_pGameState->Player2Paddle.PostTick(dt);
+        m_pGameState->TheBall.PostTick(dt);
+        m_pGameState->Player1Paddle.PostTick(dt);
+        m_pGameState->Player2Paddle.PostTick(dt);
+    }
 
     // Do we need to reset the ball?
     if (m_pGameState->TheBall.IsDead() &&
@@ -304,13 +310,13 @@ void GameScene::PostTickFrame(math::FixedPoint dt)
             ballServeDirection = gameconstants::BallServeDirectionRight;
         }
 
-        if (m_pGameState->Player1Score > gameconstants::ScoreToWin && 
+        if (m_pGameState->Player1Score >= gameconstants::ScoreToWin && 
            (m_pGameState->Player1Score - m_pGameState->Player2Score) >= gameconstants::WinningScoreAdvantage)
         {
             m_pGameState->WinningPlayer = 1;
             m_pGameState->CurrentState = GameState::State::Ended;
         }
-        else if (m_pGameState->Player2Score > gameconstants::ScoreToWin && 
+        else if (m_pGameState->Player2Score >= gameconstants::ScoreToWin && 
                 (m_pGameState->Player2Score - m_pGameState->Player1Score) >= gameconstants::WinningScoreAdvantage)
         {
             m_pGameState->WinningPlayer = 2;
@@ -325,8 +331,6 @@ void GameScene::PostTickFrame(math::FixedPoint dt)
                 );
         }
     }
-
-
 }
 
 void GameScene::OnCountdownTimerExpired(game::TimerSystem* pTimerSystem, game::TimerSystem::TimerHandle handle, void* pUserData)
