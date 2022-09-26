@@ -142,6 +142,7 @@ GameScene::~GameScene()
 
 void GameScene::Initialize() 
 {
+    m_pGameState->CountdownTimerHandle = game::TimerSystem::kInvalidTimerHandle;
     m_pGameState->CurrentState = GameState::State::Starting;
     m_pGameState->Arena.Initialize(gameconstants::ArenaDimensions);        
     m_pGameState->Camera.SetTranslation(gameconstants::InitialCameraPosition);
@@ -152,29 +153,6 @@ void GameScene::Initialize()
     if (!m_pScreen)
     {
         m_pScreen = new ui::Screen(m_pWindow);
-
-        const sputter::math::Vector2i ModalPosition(-200, -200);
-        const sputter::math::Vector2i ModalDimensions(400, 400);
-        const sputter::math::Vector2i ModalButtonDimensions(120, 50);
-        const char* ppButtonTextEntries[] = { "RESTART", "DONE" };
-        m_pModalPopup = new sputter::ui::ModalPopup(
-            m_pScreen, &m_uiTheme, m_pTextRenderer,
-            ModalPosition, ModalDimensions, ModalButtonDimensions,
-            (const char**)ppButtonTextEntries, 2);
-
-        using namespace sputter::ui;
-        m_pModalPopup->SetModalPopupOptionSelectedCallback([this](ModalPopup::ModalPopupSelection selection){
-            m_pModalPopup->SetVisibility(false);
-            if (selection == ModalPopup::ModalPopupSelection::Selection_0)
-            {
-                // Restart: TODO
-            }
-            else
-            {
-                m_pPaddleArena->PreviousSceneFromGame();
-            }
-        });
-        m_pModalPopup->SetVisibility(false);
     }
 
     m_pScreen->Initialize();
@@ -185,6 +163,49 @@ void GameScene::Uninitialize()
     if (m_pScreen)
     {
         m_pScreen->Uninitialize();
+    }
+    DestroyEndOfGameModalPopup();
+}
+
+void GameScene::CreateEndOfGameModalPopup()
+{
+    if (m_pModalPopup)
+    {
+        LOG(WARNING) << "Modal popup already exists";
+        return;
+    }
+
+    const sputter::math::Vector2i ModalPosition(-200, -200);
+    const sputter::math::Vector2i ModalDimensions(400, 400);
+    const sputter::math::Vector2i ModalButtonDimensions(120, 50);
+    const char* ppButtonTextEntries[] = { "RESTART", "DONE" };
+    m_pModalPopup = new sputter::ui::ModalPopup(
+        m_pScreen, &m_uiTheme, m_pTextRenderer,
+        ModalPosition, ModalDimensions, ModalButtonDimensions,
+        (const char**)ppButtonTextEntries, 2);
+
+    using namespace sputter::ui;
+    m_pModalPopup->SetModalPopupOptionSelectedCallback([this](ModalPopup::ModalPopupSelection selection){
+        m_pModalPopup->SetVisibility(false);
+
+        if (selection == ModalPopup::ModalPopupSelection::Selection_0)
+        {
+            m_pGameState->CurrentState = GameState::State::Restarting;
+        }
+        else
+        {
+            m_pGameState->CurrentState = GameState::State::Exiting;
+        }
+    });
+}
+
+void GameScene::DestroyEndOfGameModalPopup()
+{
+    if (m_pModalPopup)
+    {
+        m_pScreen->RemoveChild(m_pModalPopup);
+        delete m_pModalPopup;
+        m_pModalPopup = nullptr;
     }
 }
 
@@ -204,10 +225,10 @@ void GameScene::Draw()
     DrawScore(gameconstants::P1ScorePositionX, gameconstants::ScorePositionY, m_pTextRenderer, m_pGameState->Player1Score);
     DrawScore(gameconstants::P2ScorePositionX, gameconstants::ScorePositionY, m_pTextRenderer, m_pGameState->Player2Score);
 
-    if (m_pGameState->CurrentState == GameState::State::Ended)
+    if (m_pGameState->CurrentState == GameState::State::Ended && !m_pModalPopup)
     {
+        CreateEndOfGameModalPopup();
         m_pModalPopup->SetText(m_pGameState->WinningPlayer == 1 ? "P1 WINS" : "P2 WINS");
-        m_pModalPopup->SetVisibility(true);
     }
 
     m_pScreen->Draw();
@@ -233,6 +254,7 @@ void GameScene::TickFrame(math::FixedPoint dt)
             const int8_t LoopCount = gameconstants::StartCountdownSeconds;
             const uint32_t TimerFrames = 60; // 1sec
             m_pGameState->CountdownTimerHandle = m_pTimerSystem->CreateLoopingFrameTimer(TimerFrames, LoopCount, OnCountdownTimerExpired, this);
+            m_pGameState->CountdownTimeRemaining = gameconstants::StartCountdownSeconds;
         }
 
         const char CountdownChar = '0' + static_cast<char>(m_pGameState->CountdownTimeRemaining);
@@ -271,6 +293,18 @@ void GameScene::TickFrame(math::FixedPoint dt)
         m_pGameState->Arena.Tick(dt);
         m_pGameState->Player1Paddle.Tick(dt);
         m_pGameState->Player2Paddle.Tick(dt);
+    }
+
+    if (CurrentState == GameState::State::Restarting)
+    {
+        DestroyEndOfGameModalPopup();
+        Initialize();
+    }
+
+    if (CurrentState == GameState::State::Exiting)
+    {
+        DestroyEndOfGameModalPopup();
+        m_pPaddleArena->PreviousSceneFromGame();
     }
 
     m_pScreen->Tick((float)dt);

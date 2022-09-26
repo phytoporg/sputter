@@ -62,7 +62,7 @@ void Element::Tick(float dt)
     TickInternal(dt);
 
     // Tick all children
-    for (uint32_t i = 0; i < m_numChildren; ++i)
+    for (int32_t i = 0; i < m_numChildren; ++i)
     {
         m_children[i]->Tick(dt);
     }

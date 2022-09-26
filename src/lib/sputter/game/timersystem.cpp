@@ -33,6 +33,11 @@ TimerHandle TimerSystem::CreateLoopingFrameTimer(uint32_t numFrames, int8_t loop
 
 bool TimerSystem::ClearTimer(TimerHandle timerHandle)
 {
+    if (timerHandle == kInvalidTimerHandle)
+    {
+        return false;
+    }
+
     for (uint8_t i = 0; i < m_nextEntry; ++i)
     {
         if (m_entries[i].Handle == timerHandle)
@@ -42,6 +47,7 @@ bool TimerSystem::ClearTimer(TimerHandle timerHandle)
                 std::swap(m_entries[i], m_entries[m_nextEntry - 1]);
             }
 
+            m_entries[i].Handle = kInvalidTimerHandle;
             --m_nextEntry;
             return true;
         }
@@ -58,11 +64,17 @@ void TimerSystem::Tick()
         if (entry.FramesRemaining > 0)
         {
             entry.FramesRemaining--;
-            if (entry.FramesRemaining == 0)
+            if (entry.FramesRemaining == 0 && entry.Handle != kInvalidTimerHandle)
             {
-                if (entry.FramesRemaining == 0 && entry.pfnExpiryCallback)
+                if (entry.pfnExpiryCallback)
                 {
                     entry.pfnExpiryCallback(this, entry.Handle, entry.pUserData);
+                }
+
+                // The callback may have cleared the timer. Check before proceeding!
+                if (entry.Handle == kInvalidTimerHandle)
+                {
+                    continue;
                 }
 
                 if (entry.LoopCount > 0)
@@ -80,7 +92,7 @@ void TimerSystem::Tick()
                     }
                     m_nextEntry--;
                 }
-                else
+                else if (entry.LoopCount > 0)
                 {
                     // More loops to go, reset frames remaining
                     entry.FramesRemaining = entry.InitialFrames;

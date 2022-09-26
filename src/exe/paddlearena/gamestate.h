@@ -33,6 +33,8 @@ struct GameState
         Starting,
         Playing,
         Ended,
+        Exiting,
+        Restarting,
         MaxValue
     };
 
@@ -48,5 +50,5 @@ struct GameState
 
     using TimerSystem = sputter::game::TimerSystem;
     TimerSystem::TimerHandle CountdownTimerHandle = TimerSystem::kInvalidTimerHandle;
-    uint8_t          CountdownTimeRemaining = 3;
+    uint8_t          CountdownTimeRemaining = 0;
 };

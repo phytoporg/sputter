@@ -82,9 +82,12 @@ ModalPopup::~ModalPopup()
     {
         for (uint8_t i = 0; i < m_numButtons; ++i)
         {
+            RemoveChild(m_ppButtonArray[i]);
             delete m_ppButtonArray[i];
+            m_ppButtonArray[i] = nullptr;
         }
         delete[] m_ppButtonArray;
+        m_ppButtonArray = nullptr;
     }
 }
 
