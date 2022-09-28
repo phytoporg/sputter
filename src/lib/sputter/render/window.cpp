@@ -45,6 +45,9 @@ Window::Window(const std::string& windowTitle, uint32_t w, uint32_t h)
 
     glfwMakeContextCurrent(m_pWindow);
 
+    // Hide the mouse cursor
+    glfwSetInputMode(m_pWindow, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+
     if (glewInit())
     {
         system::LogAndFail("glewInit() failed.");
