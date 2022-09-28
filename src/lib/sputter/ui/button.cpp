@@ -157,14 +157,13 @@ void Button::DrawInternal()
 {
     using namespace sputter::render;
 
-    const float RenderDepth = -1.0f * GetElementDepth();
     const auto AbsolutePosition = GetAbsolutePosition();
     const auto PositionToRender = AbsolutePosition + 
         (m_buttonState == ButtonState::Down ?
             kButtonDownDisplacement : math::Vector2i::Zero);
     {
         const float PreviousLineRenderDepth = shapes::GetLineRendererDepth();
-        shapes::SetLineRendererDepth(RenderDepth);
+        shapes::SetLineRendererDepth(GetRenderDepth());
 
         sputter::render::shapes::DrawRect(
             PositionToRender.GetX(), PositionToRender.GetY(),

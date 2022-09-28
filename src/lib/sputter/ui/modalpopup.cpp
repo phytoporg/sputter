@@ -101,7 +101,8 @@ void ModalPopup::SetModalPopupOptionSelectedCallback(const ModalPopupOptionSelec
 
 void ModalPopup::DrawInternal()
 {
-    const float RenderDepth = -1.0f * GetElementDepth();
+    // TODO: Should this be implicit?
+    const float RenderDepth = GetRenderDepth();
     
     {
         const float PreviousLineRenderDepth = shapes::GetLineRendererDepth();

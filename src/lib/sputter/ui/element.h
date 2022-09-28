@@ -61,6 +61,7 @@ namespace sputter
             // Same deal here
             virtual void TickInternal(float dt) = 0;
 
+            float GetRenderDepth() const;
             void SignalRootElement(const Event& event);
 
         private:

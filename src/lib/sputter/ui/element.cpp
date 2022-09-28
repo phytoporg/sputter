@@ -217,6 +217,11 @@ void Element::SetVisibility(bool isVisible)
     m_isVisible = isVisible;
 }
 
+float Element::GetRenderDepth() const
+{
+    return -1.0f * GetElementDepth();
+}
+
 void Element::SignalRootElement(const Event& event)
 {
     Element* pRoot = this;
