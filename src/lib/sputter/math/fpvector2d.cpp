@@ -1,8 +1,13 @@
 #include "fpvector2d.h"
 
+#include "fpconstants.h"
 #include <fpm/math.hpp>
 
 using namespace sputter::math;
+
+FPVector2D FPVector2D::ZERO(0, 0);
+FPVector2D FPVector2D::LEFT(-1, 0);
+FPVector2D FPVector2D::RIGHT(1, 0);
 
 FPVector2D::FPVector2D()
     : m_x(0), m_y(0)
@@ -89,6 +94,11 @@ FixedPoint FPVector2D::Length() const
 FPVector2D FPVector2D::Normalized() const
 {
     return *this / Length();
+}
+
+bool FPVector2D::IsZero() const
+{
+    return m_x == FPZero && m_y == FPZero;
 }
 
 glm::vec2 sputter::math::FPVector2D::ToVec2() const 

@@ -48,10 +48,12 @@ public:
 
     bool IsDead() const;
 
-    sputter::math::FPVector3D GetPosition() const;
+    void SetCanCollideWithPaddle(uint32_t paddleIndex, bool canCollide);
+    void SetVelocity(const sputter::math::FPVector2D& velocity);
 
-private:
-    // Some private helpers
+    sputter::math::FPVector3D GetPosition() const;
+    sputter::math::FPVector2D GetDimensions() const;
+
     void TranslateBall(const sputter::math::FPVector3D& translation);
 
 private:

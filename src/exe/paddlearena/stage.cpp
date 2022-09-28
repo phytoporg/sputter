@@ -104,7 +104,7 @@ void Stage::Initialize(FPVector2D stageDimensions)
     m_pMeshComponent->SetMeshUniforms({ MeshUniformValue("color", UniformType::Vec3, &Gray) });
 
     // Now, set up collision geometry! Defined in *global* space at the moment. TODO: Fix that
-    m_pCollisionComponent->CollisionFlags = 0x111;
+    m_pCollisionComponent->CollisionFlags = 0b111;
     m_pCollisionComponent->pObject = this;
     m_pCollisionComponent->CollisionShapes.clear();
 

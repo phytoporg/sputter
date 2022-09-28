@@ -9,6 +9,10 @@ namespace sputter { namespace math {
     class FPVector2D
     {
     public:
+        static FPVector2D ZERO;
+        static FPVector2D LEFT;
+        static FPVector2D RIGHT;
+
         FPVector2D();
         FPVector2D(int x, int y);
         FPVector2D(FixedPoint x, FixedPoint y);
@@ -37,6 +41,8 @@ namespace sputter { namespace math {
 
         FixedPoint Length() const;
         FPVector2D Normalized() const;
+
+        bool IsZero() const;
 
         // Conversions
         glm::vec2 ToVec2() const;

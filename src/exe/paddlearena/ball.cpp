@@ -18,6 +18,8 @@
 #include <sputter/physics/collision.h>
 #include <sputter/physics/collisionsubsystem.h>
 
+#include <sputter/core/check.h>
+
 #include <fpm/math.hpp>
 
 using namespace sputter::render;
@@ -84,7 +86,7 @@ void Ball::Tick(sputter::math::FixedPoint deltaTime)
     }
 
     const FixedPoint Speed = gameconstants::BallSpeed;
-    if (m_travelVector.Length() > FPZero)
+    if (!m_travelVector.IsZero())
     {
         const FPVector2D TravelNormalized(m_travelVector.Normalized());
         TranslateBall(FPVector3D(TravelNormalized.GetX(), TravelNormalized.GetY(), FPZero) * Speed * deltaTime);
@@ -219,7 +221,15 @@ void Ball::Reset(
     TranslateBall(location - CurrentTranslation);
 
     // Set the initial motion vector
-    m_travelVector = startVector.Normalized();
+    if (startVector.IsZero())
+    {
+        m_travelVector = startVector;
+    }
+    else
+    {
+        m_travelVector = startVector.Normalized();
+    }
+
     m_isAlive = true;
     m_pMeshComponent->SetVisibility(true);
 }
@@ -229,9 +239,43 @@ bool Ball::IsDead() const
     return !m_isAlive;
 }
 
+void Ball::SetCanCollideWithPaddle(uint32_t paddleIndex, bool canCollide)
+{
+    RELEASE_CHECK(paddleIndex == 0 || paddleIndex == 1, "Unexpected paddle index!");
+
+    const uint32_t BitFlags = 1 << paddleIndex;
+    if (canCollide)
+    {
+        m_pCollisionComponent->CollisionFlags |= BitFlags;
+    }
+    else
+    {
+        m_pCollisionComponent->CollisionFlags &= ~BitFlags;
+    }
+}
+
+void Ball::SetVelocity(const FPVector2D& velocity)
+{
+    if (velocity.IsZero())
+    {
+        m_travelVector = velocity;
+    }
+    else
+    {
+        // Set to constant speed for now
+        m_travelVector = velocity.Normalized() * gameconstants::BallSpeed;
+    }
+}
+
 FPVector3D Ball::GetPosition() const
 {
     return m_localTransform.GetTranslation();
+}
+
+FPVector2D Ball::GetDimensions() const
+{
+    const FPVector3D& Scale = m_localTransform.GetScale();
+    return FPVector2D(Scale.GetX(), Scale.GetY());
 }
 
 void Ball::TranslateBall(const FPVector3D& translation)

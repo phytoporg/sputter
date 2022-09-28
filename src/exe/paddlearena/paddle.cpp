@@ -20,6 +20,7 @@
 #include <sputter/physics/collision.h>
 #include <sputter/physics/collisionsubsystem.h>
 
+#include <sputter/core/check.h>
 #include <sputter/system/system.h>
 
 #include <fpm/math.hpp>
@@ -222,4 +223,55 @@ void Paddle::TranslatePaddle(const FPVector3D& translation)
 
     AABB* pMyAABB = static_cast<AABB*>(m_pCollisionComponent->CollisionShapes.back());
     pMyAABB->SetLowerLeft(PaddleLowerLeft + m_localTransform.GetTranslation());
+
+    if (IsBallAttached())
+    {
+        m_pAttachedBall->TranslateBall(translation);
+    }
+}
+
+void Paddle::AttachBall(Ball* pBall)
+{
+    RELEASE_CHECK(!m_pAttachedBall, "Attempting to attach ball to paddle, but a ball is already attached.");
+    m_pAttachedBall = pBall;
+
+    // Temporarily avoid colliding with the ball
+    m_pAttachedBall->SetCanCollideWithPaddle(m_playerId, false);
+
+    // Figure out where to place the ball, now that it's attached.
+    const FPVector2D ForwardDirection = (m_playerId == 0) ?  FPVector2D::RIGHT : FPVector2D::LEFT;
+    const FixedPoint MyHalfWidth = GetDimensions().GetX() / FPTwo;
+    const FixedPoint BallHalfWidth = m_pAttachedBall->GetDimensions().GetX() / FPTwo;
+
+    const FPVector2D NewBallLocation2D = GetPosition() + (ForwardDirection * (MyHalfWidth + BallHalfWidth));
+    const FPVector3D NewBallLocation3D(NewBallLocation2D.GetX(), NewBallLocation2D.GetY(), -FPOneHalf);
+    const FPVector2D& BallStartVelocity = FPVector2D::ZERO;
+    m_pAttachedBall->Reset(NewBallLocation3D, BallStartVelocity);
+}
+
+void Paddle::DetachBall(const FPVector2D& detachVelocity)
+{
+    RELEASE_CHECK(m_pAttachedBall, "Attempting to detach ball from paddle, but no ball is attached.");
+
+    // Reenable collision
+    m_pAttachedBall->SetCanCollideWithPaddle(m_playerId, true);
+    m_pAttachedBall->SetVelocity(detachVelocity);
+    m_pAttachedBall = nullptr;
+}
+
+bool Paddle::IsBallAttached() const
+{
+    return m_pAttachedBall != nullptr;
+}
+
+FPVector2D Paddle::GetPosition() const
+{
+    const FPVector3D& Translation = m_localTransform.GetTranslation();
+    return FPVector2D(Translation.GetX(), Translation.GetY());
+}
+
+FPVector2D Paddle::GetDimensions() const
+{
+    const FPVector3D& Scale = m_localTransform.GetScale();
+    return FPVector2D(Scale.GetX(), Scale.GetY());
 }

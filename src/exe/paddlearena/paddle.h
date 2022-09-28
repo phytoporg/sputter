@@ -30,6 +30,7 @@ namespace sputter
 }
 
 struct GameState;
+class Ball;
 class Paddle : sputter::game::Object
 {
 public:
@@ -49,6 +50,13 @@ public:
         sputter::math::FPVector3D location
         );
 
+    void AttachBall(Ball* pBall);
+    void DetachBall(const sputter::math::FPVector2D& detachVelocity);
+    bool IsBallAttached() const;
+
+    sputter::math::FPVector2D GetPosition() const;
+    sputter::math::FPVector2D GetDimensions() const;
+
 private:
     // Some private helpers
     void TranslatePaddle(const sputter::math::FPVector3D& translation);
@@ -66,6 +74,8 @@ private:
 
     sputter::math::FPTransform3D             m_localTransform;
     sputter::math::FPVector3D                m_initialLocation;
+
+    Ball*                                    m_pAttachedBall = nullptr;
 
     // TEMP: For AI paddle
     GameState*                               m_pGameState;

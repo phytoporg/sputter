@@ -281,6 +281,7 @@ void GameScene::TickFrame(math::FixedPoint dt)
         }
         else
         {
+            // TODO: Clean up unnecessary state once serving behavior is settled
             m_pGameState->TheBall.Initialize(
                 gameconstants::BallDimensions,
                 gameconstants::BallStartPosition,
@@ -293,6 +294,8 @@ void GameScene::TickFrame(math::FixedPoint dt)
             m_pGameState->Player2Paddle.Initialize(
                 FPVector2D(gameconstants::PaddleWidth, gameconstants::PaddleHeight),
                 gameconstants::P2PaddleStartPosition);
+
+            m_pGameState->Player1Paddle.AttachBall(&m_pGameState->TheBall);
 
             m_pGameState->CurrentState = GameState::State::Playing;
         }
