@@ -81,25 +81,28 @@ GameScene::GameScene(
     sputter::input::InputSubsystemSettings inputSubsystemSettings;
     inputSubsystemSettings.pWindow = pWindow;
     inputSubsystemSettings.PlayerDevices[0] = sputter::input::DeviceType::KeyboardInputDevice;
-    inputSubsystemSettings.PlayerDevices[1] = sputter::input::DeviceType::Invalid;
+    inputSubsystemSettings.PlayerDevices[1] = sputter::input::DeviceType::None;
 
-    const std::vector<sputter::input::InputMapEntry> p1InputMap = 
-        { 
-          { static_cast<uint32_t>(GLFW_KEY_W), static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_UP) },
-          { static_cast<uint32_t>(GLFW_KEY_UP), static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_UP) },
-          { static_cast<uint32_t>(GLFW_KEY_S), static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_DOWN) },
-          { static_cast<uint32_t>(GLFW_KEY_DOWN), static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_DOWN) },
-          { static_cast<uint32_t>(GLFW_KEY_A), static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_LEFT) },
-          { static_cast<uint32_t>(GLFW_KEY_LEFT), static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_LEFT) },
-          { static_cast<uint32_t>(GLFW_KEY_D), static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_RIGHT) },
-          { static_cast<uint32_t>(GLFW_KEY_RIGHT), static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_RIGHT) },
-          };
+    const std::vector<sputter::input::InputMapEntry> p1InputMap = { 
+        { static_cast<uint32_t>(GLFW_KEY_W), static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_UP) },
+        { static_cast<uint32_t>(GLFW_KEY_UP), static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_UP) },
+        { static_cast<uint32_t>(GLFW_KEY_S), static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_DOWN) },
+        { static_cast<uint32_t>(GLFW_KEY_DOWN), static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_DOWN) },
+        { static_cast<uint32_t>(GLFW_KEY_A), static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_LEFT) },
+        { static_cast<uint32_t>(GLFW_KEY_LEFT), static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_LEFT) },
+        { static_cast<uint32_t>(GLFW_KEY_D), static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_RIGHT) },
+        { static_cast<uint32_t>(GLFW_KEY_RIGHT), static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_RIGHT) },
+        { static_cast<uint32_t>(GLFW_KEY_P), static_cast<uint32_t>(PaddleArenaInput::INPUT_PAUSE) },
+    };
     inputSubsystemSettings.pInputMapEntryArrays[0] = p1InputMap.data();
     inputSubsystemSettings.pInputMapEntryArrays[1] = nullptr;
         
     inputSubsystemSettings.pNumInputMapEntries[0] = p1InputMap.size();
     inputSubsystemSettings.pNumInputMapEntries[1] = 0;
     m_pInputSubsystem = new sputter::input::InputSubsystem(inputSubsystemSettings);
+
+    m_pInputSources[0] = m_pInputSubsystem->GetInputSource(0);
+    m_pInputSources[1] = m_pInputSubsystem->GetInputSource(1);
 
     m_subsystemProvider.AddSubsystem(m_pRigidBodySubsystem);
     m_subsystemProvider.AddSubsystem(m_pCollisionSubsystem);
@@ -175,14 +178,17 @@ void GameScene::CreateEndOfGameModalPopup()
         return;
     }
 
-    const sputter::math::Vector2i ModalPosition(-200, -200);
-    const sputter::math::Vector2i ModalDimensions(400, 400);
-    const sputter::math::Vector2i ModalButtonDimensions(120, 50);
-    const char* ppButtonTextEntries[] = { "RESTART", "DONE" };
+    const char* ppButtonTextEntries[] = {
+        gameconstants::GameEndRestartButtonText,
+        gameconstants::GameEndExitButtonText
+    };
+    const uint32_t NumModalButtons = sizeof(ppButtonTextEntries) / sizeof(ppButtonTextEntries[0]);
     m_pModalPopup = new sputter::ui::ModalPopup(
         m_pScreen, &m_uiTheme, m_pTextRenderer,
-        ModalPosition, ModalDimensions, ModalButtonDimensions,
-        (const char**)ppButtonTextEntries, 2);
+        gameconstants::GameEndModalPosition,
+        gameconstants::GameEndModalDimensions,
+        gameconstants::GameEndModalButtonDimensions,
+        (const char**)ppButtonTextEntries, NumModalButtons);
 
     using namespace sputter::ui;
     m_pModalPopup->SetModalPopupOptionSelectedCallback([this](ModalPopup::ModalPopupSelection selection){
@@ -225,7 +231,12 @@ void GameScene::Draw()
     DrawScore(gameconstants::P1ScorePositionX, gameconstants::ScorePositionY, m_pTextRenderer, m_pGameState->Player1Score);
     DrawScore(gameconstants::P2ScorePositionX, gameconstants::ScorePositionY, m_pTextRenderer, m_pGameState->Player2Score);
 
-    if (m_pGameState->CurrentState == GameState::State::Ended && !m_pModalPopup)
+    const GameState::State CurrentState = m_pGameState->CurrentState;
+    if (CurrentState == GameState::State::Paused)
+    {
+        m_pTextRenderer->DrawText(-160, -20, 5, "PAUSE");
+    } 
+    else if (CurrentState == GameState::State::Ended && !m_pModalPopup)
     {
         CreateEndOfGameModalPopup();
         m_pModalPopup->SetText(m_pGameState->WinningPlayer == 1 ? "P1 WINS" : "P2 WINS");
@@ -293,6 +304,16 @@ void GameScene::TickFrame(math::FixedPoint dt)
         m_pGameState->Arena.Tick(dt);
         m_pGameState->Player1Paddle.Tick(dt);
         m_pGameState->Player2Paddle.Tick(dt);
+
+        if (CheckPauseInput())
+        {
+            m_pGameState->CurrentState = GameState::State::Paused;
+        }
+    }
+
+    if (CurrentState == GameState::State::Paused && CheckPauseInput())
+    {
+        m_pGameState->CurrentState = GameState::State::Playing;
     }
 
     if (CurrentState == GameState::State::Restarting)
@@ -365,6 +386,13 @@ void GameScene::PostTickFrame(math::FixedPoint dt)
                 );
         }
     }
+}
+
+bool GameScene::CheckPauseInput() const
+{
+    const uint32_t PauseCode = static_cast<uint32_t>(PaddleArenaInput::INPUT_PAUSE);
+    return ((m_pInputSources[0] && m_pInputSources[0]->IsInputReleased(PauseCode)) ||
+            (m_pInputSources[1] && m_pInputSources[1]->IsInputReleased(PauseCode)));
 }
 
 void GameScene::OnCountdownTimerExpired(game::TimerSystem* pTimerSystem, game::TimerSystem::TimerHandle handle, void* pUserData)

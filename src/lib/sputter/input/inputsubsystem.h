@@ -13,6 +13,7 @@ namespace sputter { namespace input {
     enum class DeviceType
     {
         Invalid = 0,
+        None,
         KeyboardInputDevice,
         MaxDeviceType
     };
@@ -47,6 +48,8 @@ namespace sputter { namespace input {
 
         virtual InputSource* CreateComponent(const InputSource::InitializationParameters& params) override;
         virtual void ReleaseComponent(InputSource* pInputSource) override;
+
+        const InputSource* GetInputSource(uint8_t playerIndex) const;
 
     private:
         std::vector<InputSource> m_inputSources;

@@ -34,8 +34,8 @@ bool InputSource::IsInputHeld(uint32_t gameInputCode) const
 {
     if (m_pInputDevice)
     {
-        const uint32_t bitMask = (1 << m_pInputDevice->GameToDeviceInput(gameInputCode));
-        return (m_currentInput & bitMask && m_previousInput & bitMask);
+        const uint32_t bitMask = (1 << gameInputCode);
+        return (m_currentInput & bitMask) && (m_previousInput & bitMask);
     }
 
     return false;
@@ -45,11 +45,8 @@ bool InputSource::IsInputReleased(uint32_t gameInputCode) const
 {
     if (m_pInputDevice)
     {
-        const uint32_t deviceInput = m_pInputDevice->GameToDeviceInput(gameInputCode);
-        if (!m_pInputDevice->SampleInputState(deviceInput))
-        {
-            return m_previousInput & (1 << deviceInput);
-        }
+        const uint32_t bitMask = (1 << gameInputCode);
+        return !(m_currentInput & bitMask) && (m_previousInput & bitMask);
     }
 
     return false;
@@ -59,8 +56,7 @@ bool InputSource::IsInputPressed(uint32_t gameInputCode) const
 {
     if (m_pInputDevice)
     {
-        const uint32_t deviceInput = m_pInputDevice->GameToDeviceInput(gameInputCode);
-        return m_pInputDevice->SampleInputState(deviceInput);
+        return m_pInputDevice->SampleGameInputState(gameInputCode);
     }
 
     return false;
@@ -71,6 +67,6 @@ void InputSource::Tick()
     if (m_pInputDevice)  
     {
         m_previousInput = m_currentInput;
-        m_currentInput = m_pInputDevice->SampleInputState();
+        m_currentInput = m_pInputDevice->SampleGameInputState();
     }
 }

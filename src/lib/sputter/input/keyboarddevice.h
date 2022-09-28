@@ -13,16 +13,11 @@ namespace sputter { namespace input {
     public:
         KeyboardDevice(sputter::render::Window* pWindow);
 
-        virtual uint32_t SampleInputState() const override;
-        virtual uint32_t SampleInputState(uint32_t code) const override;
-
         virtual uint32_t SampleGameInputState() const override;
         virtual uint32_t SampleGameInputState(uint32_t code) const override;
 
         virtual InputDeviceConnectionState GetConnectionState() const override;
         virtual void SetInputMap(InputMapEntry const* pEntries, size_t numEntries) override;
-
-        virtual uint32_t GameToDeviceInput(uint32_t gameInputCode) const override;
 
     private:
         KeyboardDevice() = delete;

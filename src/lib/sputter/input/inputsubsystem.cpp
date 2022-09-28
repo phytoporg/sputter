@@ -3,6 +3,8 @@
 
 #include <sputter/render/window.h>
 
+#include <sputter/system/system.h>
+
 using namespace sputter::input;
 
 InputSubsystem::InputSubsystem(const InputSubsystemSettings& settings)
@@ -14,6 +16,10 @@ InputSubsystem::InputSubsystem(const InputSubsystemSettings& settings)
             settings.pWindow)
         {
             pInputDevice = new KeyboardDevice(settings.pWindow);
+        }
+        else if (settings.PlayerDevices[i] != DeviceType::None)
+        {
+            system::LogAndFail("Unsupported input device");
         }
 
         m_inputSources.emplace_back(pInputDevice);
@@ -49,4 +55,15 @@ InputSource* InputSubsystem::CreateComponent(const InputSource::InitializationPa
 
 void InputSubsystem::ReleaseComponent(InputSource* pInputSource)
 {
+}
+
+const InputSource* InputSubsystem::GetInputSource(uint8_t playerIndex) const
+{
+    if (playerIndex < m_inputSources.size())
+    {
+        return &m_inputSources[playerIndex];
+    }
+
+    system::LogAndFail("Player index out of bounds.");
+    return nullptr; // Appease the compiler
 }

@@ -32,6 +32,7 @@ struct GameState
         Invalid = 0,
         Starting,
         Playing,
+        Paused,
         Ended,
         Exiting,
         Restarting,

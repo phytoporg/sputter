@@ -4,6 +4,7 @@
 #include <sputter/math/fpconstants.h>
 #include <sputter/math/fpvector2d.h>
 #include <sputter/math/fpvector3d.h>
+#include <sputter/math/vector2i.h>
 
 #include <sputter/render/color.h>
 
@@ -109,4 +110,11 @@ namespace gameconstants
     const int32_t MainMenuGameTitlePositionX = -380;
     const int32_t MainMenuGameTitlePositionY = 100;
     const int32_t MainMenuGameTitleSize = 5;
+
+    // In-game UI constants
+    const auto GameEndModalPosition = sputter::math::Vector2i(-200, -200);
+    const auto GameEndModalDimensions = sputter::math::Vector2i(400, 400);
+    const auto GameEndModalButtonDimensions = sputter::math::Vector2i(120, 50);
+    static const char* GameEndRestartButtonText = "RESTART";
+    static const char* GameEndExitButtonText = "EXIT";
 }

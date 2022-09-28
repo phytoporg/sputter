@@ -44,6 +44,7 @@ namespace sputter
     namespace input
     {
         class InputSubsystem;
+        class InputSource;
     }
 
     namespace ui
@@ -88,6 +89,8 @@ private:
     void TickFrame(sputter::math::FixedPoint dt);
     void PostTickFrame(sputter::math::FixedPoint dt);
 
+    bool CheckPauseInput() const;
+
     static void OnCountdownTimerExpired(sputter::game::TimerSystem* pTimerSystem, sputter::game::TimerSystem::TimerHandle handle, void* pUserData);
 
     sputter::memory::ReservedRegion           m_reservedRegion;
@@ -99,6 +102,7 @@ private:
     sputter::physics::CollisionSubsystem*     m_pCollisionSubsystem = nullptr;
     sputter::render::MeshSubsystem*           m_pMeshSubsystem = nullptr;
     sputter::input::InputSubsystem*           m_pInputSubsystem = nullptr;
+    const sputter::input::InputSource*        m_pInputSources[2] = {};
 
     sputter::assets::AssetStorage*            m_pAssetStorage = nullptr;
     sputter::assets::AssetStorageProvider*    m_pAssetStorageProvider = nullptr;
