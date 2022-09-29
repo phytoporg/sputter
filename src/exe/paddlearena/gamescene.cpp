@@ -352,22 +352,17 @@ void GameScene::PostTickFrame(math::FixedPoint dt)
     if (m_pGameState->TheBall.IsDead() &&
         m_pGameState->CurrentState == GameState::State::Playing)
     {
-        math::FPVector3D ballServePosition;
-        math::FPVector2D ballServeDirection;
+        Paddle* pServingPaddle = nullptr;
         const math::FixedPoint BallX = m_pGameState->TheBall.GetPosition().GetX();
         if (BallX < math::FPZero)
         {
             m_pGameState->Player2Score++;
-
-            ballServePosition = gameconstants::BallServePositionLeft;
-            ballServeDirection = gameconstants::BallServeDirectionLeft;
+            pServingPaddle = &m_pGameState->Player1Paddle;
         }
         else
         {
             m_pGameState->Player1Score++;
-
-            ballServePosition = gameconstants::BallServePositionRight;
-            ballServeDirection = gameconstants::BallServeDirectionRight;
+            pServingPaddle = &m_pGameState->Player2Paddle;
         }
 
         if (m_pGameState->Player1Score >= gameconstants::ScoreToWin && 
@@ -385,10 +380,7 @@ void GameScene::PostTickFrame(math::FixedPoint dt)
         else
         {
             // Ideally we wait a few frames. Handle that later!
-            m_pGameState->TheBall.Reset(
-                ballServePosition,
-                ballServeDirection
-                );
+            pServingPaddle->AttachBall(&m_pGameState->TheBall);
         }
     }
 }

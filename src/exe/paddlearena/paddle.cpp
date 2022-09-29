@@ -101,17 +101,25 @@ void Paddle::Tick(FixedPoint deltaTime)
     {
         // TEMP: simple "AI" for testing purposes, for the second paddle
         const FixedPoint PaddleY = m_localTransform.GetTranslation().GetY();
+        const FixedPoint PaddleX = m_localTransform.GetTranslation().GetX();
         const FixedPoint BallY = m_pGameState->TheBall.GetPosition().GetY();
+        const FixedPoint BallX = m_pGameState->TheBall.GetPosition().GetX();
         const FixedPoint VerticalDelta = BallY - PaddleY;
+        const FixedPoint HorizontalDelta = fpm::abs(BallX - PaddleX);
 
-        const FixedPoint TravelThreshold(5);
-        if (VerticalDelta > TravelThreshold)
+        const FixedPoint WaitDistance(gameconstants::ArenaDimensions.GetX() / FPTwo);
+        // If the ball is too far away, just chill
+        if (HorizontalDelta < WaitDistance)
         {
-            velocity += FPVector3D(0, 1, 0);
-        }
-        else if (VerticalDelta < -TravelThreshold)
-        {
-            velocity += FPVector3D(0, -1, 0);
+            const FixedPoint TravelThreshold(10);
+            if (VerticalDelta > TravelThreshold)
+            {
+                velocity += FPVector3D(0, 1, 0);
+            }
+            else if (VerticalDelta < -TravelThreshold)
+            {
+                velocity += FPVector3D(0, -1, 0);
+            }
         }
     }
     else
@@ -129,7 +137,8 @@ void Paddle::Tick(FixedPoint deltaTime)
         {
             if (m_pInputSource->IsInputPressed(static_cast<uint32_t>(PaddleArenaInput::INPUT_SERVE)))
             {
-                DetachBall(GetFacingDirection());
+                const FPVector2D Velocity2D(velocity.GetX(), velocity.GetY());
+                DetachBall(GetFacingDirection() + Velocity2D);
             }
         }
     }
