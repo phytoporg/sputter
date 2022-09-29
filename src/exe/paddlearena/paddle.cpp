@@ -124,6 +124,14 @@ void Paddle::Tick(FixedPoint deltaTime)
         {
             velocity += FPVector3D(0, -1, 0);
         }
+
+        if (IsBallAttached())
+        {
+            if (m_pInputSource->IsInputPressed(static_cast<uint32_t>(PaddleArenaInput::INPUT_SERVE)))
+            {
+                DetachBall(GetFacingDirection());
+            }
+        }
     }
 
 // Just vertical movement for now
@@ -239,11 +247,10 @@ void Paddle::AttachBall(Ball* pBall)
     m_pAttachedBall->SetCanCollideWithPaddle(m_playerId, false);
 
     // Figure out where to place the ball, now that it's attached.
-    const FPVector2D ForwardDirection = (m_playerId == 0) ?  FPVector2D::RIGHT : FPVector2D::LEFT;
     const FixedPoint MyHalfWidth = GetDimensions().GetX() / FPTwo;
     const FixedPoint BallHalfWidth = m_pAttachedBall->GetDimensions().GetX() / FPTwo;
 
-    const FPVector2D NewBallLocation2D = GetPosition() + (ForwardDirection * (MyHalfWidth + BallHalfWidth));
+    const FPVector2D NewBallLocation2D = GetPosition() + (GetFacingDirection() * (MyHalfWidth + BallHalfWidth));
     const FPVector3D NewBallLocation3D(NewBallLocation2D.GetX(), NewBallLocation2D.GetY(), -FPOneHalf);
     const FPVector2D& BallStartVelocity = FPVector2D::ZERO;
     m_pAttachedBall->Reset(NewBallLocation3D, BallStartVelocity);
@@ -262,6 +269,11 @@ void Paddle::DetachBall(const FPVector2D& detachVelocity)
 bool Paddle::IsBallAttached() const
 {
     return m_pAttachedBall != nullptr;
+}
+
+FPVector2D Paddle::GetFacingDirection() const
+{
+    return (m_playerId == 0) ? FPVector2D::RIGHT : FPVector2D::LEFT;
 }
 
 FPVector2D Paddle::GetPosition() const

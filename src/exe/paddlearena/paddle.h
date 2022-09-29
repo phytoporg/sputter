@@ -54,6 +54,8 @@ public:
     void DetachBall(const sputter::math::FPVector2D& detachVelocity);
     bool IsBallAttached() const;
 
+    sputter::math::FPVector2D GetFacingDirection() const;
+
     sputter::math::FPVector2D GetPosition() const;
     sputter::math::FPVector2D GetDimensions() const;
 

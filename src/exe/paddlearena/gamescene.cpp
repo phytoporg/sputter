@@ -83,16 +83,18 @@ GameScene::GameScene(
     inputSubsystemSettings.PlayerDevices[0] = sputter::input::DeviceType::KeyboardInputDevice;
     inputSubsystemSettings.PlayerDevices[1] = sputter::input::DeviceType::None;
 
+    // TODO: Resolve all this casting biz :(
     const std::vector<sputter::input::InputMapEntry> p1InputMap = { 
-        { static_cast<uint32_t>(GLFW_KEY_W), static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_UP) },
-        { static_cast<uint32_t>(GLFW_KEY_UP), static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_UP) },
-        { static_cast<uint32_t>(GLFW_KEY_S), static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_DOWN) },
-        { static_cast<uint32_t>(GLFW_KEY_DOWN), static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_DOWN) },
-        { static_cast<uint32_t>(GLFW_KEY_A), static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_LEFT) },
-        { static_cast<uint32_t>(GLFW_KEY_LEFT), static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_LEFT) },
-        { static_cast<uint32_t>(GLFW_KEY_D), static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_RIGHT) },
+        { static_cast<uint32_t>(GLFW_KEY_W),     static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_UP) },
+        { static_cast<uint32_t>(GLFW_KEY_UP),    static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_UP) },
+        { static_cast<uint32_t>(GLFW_KEY_S),     static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_DOWN) },
+        { static_cast<uint32_t>(GLFW_KEY_DOWN),  static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_DOWN) },
+        { static_cast<uint32_t>(GLFW_KEY_A),     static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_LEFT) },
+        { static_cast<uint32_t>(GLFW_KEY_LEFT),  static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_LEFT) },
+        { static_cast<uint32_t>(GLFW_KEY_D),     static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_RIGHT) },
         { static_cast<uint32_t>(GLFW_KEY_RIGHT), static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_RIGHT) },
-        { static_cast<uint32_t>(GLFW_KEY_P), static_cast<uint32_t>(PaddleArenaInput::INPUT_PAUSE) },
+        { static_cast<uint32_t>(GLFW_KEY_P),     static_cast<uint32_t>(PaddleArenaInput::INPUT_PAUSE) },
+        { static_cast<uint32_t>(GLFW_KEY_SPACE), static_cast<uint32_t>(PaddleArenaInput::INPUT_SERVE) },
     };
     inputSubsystemSettings.pInputMapEntryArrays[0] = p1InputMap.data();
     inputSubsystemSettings.pInputMapEntryArrays[1] = nullptr;
