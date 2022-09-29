@@ -25,8 +25,8 @@ namespace gameconstants
     const auto ArenaDimensions = sputter::math::FPVector2D(800, 600);
 
     // Ball config
-    const auto BallSpeed = sputter::math::FixedPoint(700);
-    const auto PaddleSpeed = sputter::math::FixedPoint(400);
+    const auto BallSpeed = sputter::math::FixedPoint(600);
+    const auto PaddleSpeed = sputter::math::FixedPoint(550);
     const auto BallDimensions = sputter::math::FPVector2D(
             10, 10
         );
