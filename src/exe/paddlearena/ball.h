@@ -52,6 +52,7 @@ public:
     void SetVelocity(const sputter::math::FPVector2D& velocity);
 
     sputter::math::FPVector3D GetPosition() const;
+    sputter::math::FPVector2D GetPosition2D() const;
     sputter::math::FPVector2D GetDimensions() const;
 
     void TranslateBall(const sputter::math::FPVector3D& translation);

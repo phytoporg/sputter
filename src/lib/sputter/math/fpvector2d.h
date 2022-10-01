@@ -12,6 +12,7 @@ namespace sputter { namespace math {
         static FPVector2D ZERO;
         static FPVector2D LEFT;
         static FPVector2D RIGHT;
+        static FPVector2D DOWN;
 
         FPVector2D();
         FPVector2D(int x, int y);
@@ -29,10 +30,13 @@ namespace sputter { namespace math {
         void SetX(FixedPoint x);
         void SetY(FixedPoint y);
 
-        // Scalar Arithmetic
+        // Vector Arithmetic
         FPVector2D operator+(const FPVector2D& other) const;
         FPVector2D operator+=(const FPVector2D& other);
+        FPVector2D operator-(const FPVector2D& other) const;
+        FPVector2D operator-=(const FPVector2D& other);
 
+        // Scalar Arithmetic
         FPVector2D operator*(FixedPoint scalar) const;
         FPVector2D operator/(FixedPoint scalar) const;
 

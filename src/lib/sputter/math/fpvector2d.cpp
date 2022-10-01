@@ -8,6 +8,7 @@ using namespace sputter::math;
 FPVector2D FPVector2D::ZERO(0, 0);
 FPVector2D FPVector2D::LEFT(-1, 0);
 FPVector2D FPVector2D::RIGHT(1, 0);
+FPVector2D FPVector2D::DOWN(0, -1);
 
 FPVector2D::FPVector2D()
     : m_x(0), m_y(0)
@@ -67,6 +68,19 @@ FPVector2D FPVector2D::operator+=(const FPVector2D& other)
 {
     m_x += other.m_x;
     m_y += other.m_y;
+
+    return *this;
+}
+
+FPVector2D FPVector2D::operator-(const FPVector2D& other) const
+{
+    return FPVector2D(m_x - other.m_x, m_y - other.m_y);
+}
+
+FPVector2D FPVector2D::operator-=(const FPVector2D& other)
+{
+    m_x -= other.m_x;
+    m_y -= other.m_y;
 
     return *this;
 }

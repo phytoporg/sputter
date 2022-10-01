@@ -99,6 +99,11 @@ void Paddle::Tick(FixedPoint deltaTime)
     FPVector3D velocity = FPVector3D::ZERO;
     if (m_playerId == 1)
     {
+        if (IsBallAttached())
+        {
+            DetachBall(GetFacingDirection());
+        }
+
         // TEMP: simple "AI" for testing purposes, for the second paddle
         const FixedPoint PaddleY = m_localTransform.GetTranslation().GetY();
         const FixedPoint PaddleX = m_localTransform.GetTranslation().GetX();
@@ -111,7 +116,7 @@ void Paddle::Tick(FixedPoint deltaTime)
         // If the ball is too far away, just chill
         if (HorizontalDelta < WaitDistance)
         {
-            const FixedPoint TravelThreshold(10);
+            const FixedPoint TravelThreshold(15);
             if (VerticalDelta > TravelThreshold)
             {
                 velocity += FPVector3D(0, 1, 0);
@@ -295,4 +300,9 @@ FPVector2D Paddle::GetDimensions() const
 {
     const FPVector3D& Scale = m_localTransform.GetScale();
     return FPVector2D(Scale.GetX(), Scale.GetY());
+}
+
+uint32_t Paddle::GetPlayerID() const
+{
+    return m_playerId;
 }

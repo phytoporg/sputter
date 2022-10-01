@@ -59,6 +59,8 @@ public:
     sputter::math::FPVector2D GetPosition() const;
     sputter::math::FPVector2D GetDimensions() const;
 
+    uint32_t GetPlayerID() const;
+
 private:
     // Some private helpers
     void TranslatePaddle(const sputter::math::FPVector3D& translation);

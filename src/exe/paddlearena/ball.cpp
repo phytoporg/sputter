@@ -1,4 +1,5 @@
 #include "ball.h"
+#include "paddle.h"
 #include "paddlearena.h"
 #include "objecttypes.h"
 #include "gameconstants.h"
@@ -140,10 +141,33 @@ void Ball::PostTick(sputter::math::FixedPoint deltaTime)
 
             if (fpm::abs(Separation.GetX()) > FPZero)
             {
-                // Colliding with the side of the paddle. Negate x-axis travel direction and 
+                // TODO: CLEAN THIS ALL UP
+
+                // Colliding with the front of the paddle. Negate x-axis travel direction and 
                 // correct separation.
-                m_travelVector.SetX(-m_travelVector.GetX());
+                // m_travelVector.SetX(-m_travelVector.GetX());
+
+                // Correct position based on separation
                 TranslateBall(-Separation * (FPOne + FPEpsilon));
+                
+                // Colliding with the side of the paddle. Get a vector from the a reference point
+                // on the paddle to the collision point, that's the travel direction.
+                Paddle* pPaddle = reinterpret_cast<Paddle*>(OtherCollision.pObject);
+                //const FPVector2D& PaddlePosition = pPaddle->GetPosition(); // Should be the upper-left
+                const FPVector2D& PaddlePosition = pPaddle->GetPosition() - (pPaddle->GetFacingDirection() * FixedPoint(30));
+                const FPVector2D MiddleLeft = PaddlePosition ;//+ FPVector2D::DOWN * (pPaddle->GetDimensions().GetY() / FPTwo);                                                                           
+                FPVector2D paddleReferencePoint = MiddleLeft;
+                if (pPaddle->GetPlayerID() == 0)
+                {
+                    // Left-side paddle, nothing to do !
+                }
+                else 
+                {
+                    RELEASE_CHECK(pPaddle->GetPlayerID() == 1, "Unexpected player ID!");
+                    paddleReferencePoint += FPVector2D::RIGHT * (pPaddle->GetDimensions().GetX() / FPTwo);
+                }
+
+                m_travelVector = GetPosition2D() - paddleReferencePoint;
             }
             else if (fpm::abs(Separation.GetY()) > FPZero)
             {
@@ -270,6 +294,12 @@ void Ball::SetVelocity(const FPVector2D& velocity)
 FPVector3D Ball::GetPosition() const
 {
     return m_localTransform.GetTranslation();
+}
+
+FPVector2D Ball::GetPosition2D() const
+{
+    const FPVector3D& Position = GetPosition();
+    return FPVector2D(Position.GetX(), Position.GetY());
 }
 
 FPVector2D Ball::GetDimensions() const
