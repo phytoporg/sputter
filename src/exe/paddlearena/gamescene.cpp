@@ -125,12 +125,12 @@ GameScene::GameScene(
         system::LogAndFail("Failed to retrieve font storage");
     }
 
-    m_uiTheme.FocusedBorderColor = render::Color::White;
+    m_uiTheme.FocusedBorderColor = render::Color::WHITE;
     m_uiTheme.ButtonBorderSize = gameconstants::MainMenuButtonBorderSize;
-    m_uiTheme.UnfocusedBorderColor = render::Color::Gray;
-    m_uiTheme.ButtonDownAndDisabledBorderColor = render::Color::Red;
+    m_uiTheme.UnfocusedBorderColor = render::Color::GRAY;
+    m_uiTheme.ButtonDownAndDisabledBorderColor = render::Color::RED;
     m_uiTheme.ModalBorderSize = 4;
-    m_uiTheme.ModalBackgroundColor = render::Color::Black;
+    m_uiTheme.ModalBackgroundColor = render::Color::BLACK;
 }
 
 GameScene::~GameScene()

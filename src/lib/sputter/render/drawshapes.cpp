@@ -190,6 +190,49 @@ float shapes::GetLineRendererDepth()
     return RenderDepth;
 }
 
+void shapes::DrawLine(
+    int32_t x0, int32_t y0, int32_t x1, int32_t y1, int32_t size, const Color& color)
+{
+    RELEASE_CHECK(IsInitialized, "Line renderer is not initialized in DrawRect()");
+
+    const uint32_t NumVertices = 4;
+    RELEASE_CHECK((VertexPositions.size() + NumVertices <= kMaxVertices), "Attempting to draw too many vertices. Reconsider kMaxVertices.");
+    
+    const uint32_t PreviousNumPositions = VertexPositions.size();
+    VertexPositions.resize(VertexPositions.size() + NumVertices);
+    VertexColors.resize(VertexColors.size() + NumVertices);
+
+    RELEASE_CHECK(VertexPositions.size() == VertexColors.size(), "Color and position vectors should be the same size.");
+
+    const uint32_t NumIndices = 6;
+    RELEASE_CHECK(VertexIndices.size() + NumIndices <= kMaxIndices, "Attempting to drw with too man index values. Reconsider kMaxIndices");
+
+    const uint32_t PreviousNumIndices = VertexIndices.size();
+    VertexIndices.resize(VertexIndices.size() + NumIndices);
+    geometry::MakeLine(x0, y0, x1, y1, RenderDepth, size, &VertexPositions[PreviousNumPositions], NumVertices, &VertexIndices[PreviousNumIndices], NumIndices);
+
+    // Offset the indices by PrevNumPositions
+    for (uint32_t i = PreviousNumIndices; i < VertexIndices.size(); ++i)
+    {
+        VertexIndices[i] += PreviousNumPositions;
+    }
+
+    // Set up the color elements
+    for (uint32_t i = PreviousNumPositions; i < VertexPositions.size(); ++i)
+    {
+        VertexColors[i] = color.ToVec3();
+    }
+}
+
+void shapes::DrawLine(
+    const math::Vector2i& startPoint, const math::Vector2i& endPoint, int32_t size, const Color& color)
+{
+    DrawLine(
+        startPoint.GetX(), startPoint.GetY(),
+        endPoint.GetX(), endPoint.GetY(),
+        size, color);
+}
+
 void shapes::DrawRect(
     int32_t x, int32_t y, int32_t width, int32_t height, int32_t borderSize, const Color& borderColor)
 {

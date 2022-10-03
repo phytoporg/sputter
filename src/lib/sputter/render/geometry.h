@@ -22,6 +22,11 @@ namespace sputter { namespace render { namespace geometry {
 
     // Not using fixed point input here since atm this is only used for UI rendering. Same reasoning
     // for lack of UVs, Normals.
+    bool MakeLine(
+        int32_t x0, int32_t y0, int32_t x1, int32_t y1, int32_t z, int32_t size, 
+        glm::vec3* pVectorPositions, uint32_t numVertexPositions, 
+        int* pIndices, uint32_t numIndices);
+
     bool MakeBorderedRect(
         int32_t x, int32_t y, int32_t z, int32_t width, int32_t height, int32_t borderSize,
         glm::vec3* pVertexPositions, uint32_t numVertexPositions,

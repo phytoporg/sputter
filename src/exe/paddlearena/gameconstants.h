@@ -25,8 +25,9 @@ namespace gameconstants
     const auto ArenaDimensions = sputter::math::FPVector2D(800, 600);
 
     // Ball config
-    const auto BallSpeed = sputter::math::FixedPoint(800);
-    const auto PaddleSpeed = sputter::math::FixedPoint(550);
+    const auto BallSpeed = sputter::math::FixedPoint(850);
+    const auto PaddleSpeed = sputter::math::FixedPoint(500);
+    const auto PaddleHitReferencePointDistance = sputter::math::FixedPoint(5);
     const auto BallDimensions = sputter::math::FPVector2D(
             10, 10
         );
@@ -105,7 +106,7 @@ namespace gameconstants
     const uint32_t MainMenuButtonDimensionY = 50;
     const uint32_t MainMenuButtonMarginTop = 100;
     const uint32_t MainMenuButtonBorderSize = 3;
-    const auto MainMenuButtonBorderColor = sputter::render::Color::White;
+    const auto MainMenuButtonBorderColor = sputter::render::Color::WHITE;
 
     const int32_t MainMenuGameTitlePositionX = -380;
     const int32_t MainMenuGameTitlePositionY = 100;

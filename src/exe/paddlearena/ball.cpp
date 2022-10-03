@@ -14,12 +14,14 @@
 #include <sputter/render/shaderstorage.h>
 #include <sputter/render/uniform.h>
 #include <sputter/render/geometry.h>
+#include <sputter/render/drawshapes.h>
 
 #include <sputter/physics/aabb.h>
 #include <sputter/physics/collision.h>
 #include <sputter/physics/collisionsubsystem.h>
 
 #include <sputter/core/check.h>
+#include <sputter/core/debugsettings.h>
 
 #include <fpm/math.hpp>
 
@@ -28,6 +30,7 @@ using namespace sputter::game;
 using namespace sputter::assets;
 using namespace sputter::math;
 using namespace sputter::physics;
+using namespace sputter::core;
 
 // Same ol' same ol' for now
 const std::string Ball::kBallVertexShaderAssetName = "cube_vert";
@@ -141,33 +144,17 @@ void Ball::PostTick(sputter::math::FixedPoint deltaTime)
 
             if (fpm::abs(Separation.GetX()) > FPZero)
             {
-                // TODO: CLEAN THIS ALL UP
-
-                // Colliding with the front of the paddle. Negate x-axis travel direction and 
-                // correct separation.
-                // m_travelVector.SetX(-m_travelVector.GetX());
-
-                // Correct position based on separation
-                TranslateBall(-Separation * (FPOne + FPEpsilon));
-                
-                // Colliding with the side of the paddle. Get a vector from the a reference point
-                // on the paddle to the collision point, that's the travel direction.
+                // We only care about colliding with the *front* face when colliding with
+                // the side of a paddle.
                 Paddle* pPaddle = reinterpret_cast<Paddle*>(OtherCollision.pObject);
-                //const FPVector2D& PaddlePosition = pPaddle->GetPosition(); // Should be the upper-left
-                const FPVector2D& PaddlePosition = pPaddle->GetPosition() - (pPaddle->GetFacingDirection() * FixedPoint(30));
-                const FPVector2D MiddleLeft = PaddlePosition ;//+ FPVector2D::DOWN * (pPaddle->GetDimensions().GetY() / FPTwo);                                                                           
-                FPVector2D paddleReferencePoint = MiddleLeft;
-                if (pPaddle->GetPlayerID() == 0)
+                const int8_t SeparationXSign = Separation.GetX() > FPZero ? 1 : -1;
+                const int8_t PaddleDirectionXSign = pPaddle->GetFacingDirection().GetX() > FPZero ? 1 : -1;
+                if (SeparationXSign != PaddleDirectionXSign)
                 {
-                    // Left-side paddle, nothing to do !
+                    // Correct position based on separation
+                    TranslateBall(-Separation * (FPOne + FPEpsilon));
+                    m_travelVector = ComputeBallDeflectionFromPaddle(pPaddle);
                 }
-                else 
-                {
-                    RELEASE_CHECK(pPaddle->GetPlayerID() == 1, "Unexpected player ID!");
-                    paddleReferencePoint += FPVector2D::RIGHT * (pPaddle->GetDimensions().GetX() / FPTwo);
-                }
-
-                m_travelVector = GetPosition2D() - paddleReferencePoint;
             }
             else if (fpm::abs(Separation.GetY()) > FPZero)
             {
@@ -320,4 +307,38 @@ void Ball::TranslateBall(const FPVector3D& translation)
 
     AABB* pMyAABB = static_cast<AABB*>(m_pCollisionComponent->CollisionShapes.back());
     pMyAABB->SetLowerLeft(BallLowerLeft + m_localTransform.GetTranslation());
+}
+
+const FPVector2D Ball::ComputeBallDeflectionFromPaddle(const Paddle* pPaddle) const
+{
+    // Get a vector from the a reference point on the paddle to the collision 
+    // point, that's the travel direction.
+    //
+    // The "reference point" sits behind the paddle's midpoint at a distance from the 
+    // paddle's edge defined by gameconstants::PaddleHitReferencePoint. The vector 
+    // from that reference point to the ball's point of contact is the direction of 
+    // deflection for the ball.
+    const FixedPoint PaddleHalfWidth = pPaddle->GetDimensions().GetY() / FPTwo;
+    const FPVector2D& MiddleBack = 
+        pPaddle->GetPosition() - 
+        (pPaddle->GetFacingDirection() * 
+         (PaddleHalfWidth + gameconstants::PaddleHitReferencePointDistance));
+    const FPVector2D PaddleReferencePoint = MiddleBack;
+
+    if (debugsettings::GetDebugSetting("DrawPaddleDeflectionVector"))
+    {
+        // TODO: DebugDrawLine
+        const float PreviousDepth = shapes::GetLineRendererDepth();
+        shapes::SetLineRendererDepth(-1.f);
+
+        const Vector2i RefPoint(
+            (int)PaddleReferencePoint.GetX(),
+            (int)PaddleReferencePoint.GetY());
+        const Vector2i Pos((int)GetPosition().GetX(), (int)GetPosition().GetY());
+        shapes::DrawLine(RefPoint, Pos, 5, Color::GREEN);
+
+        shapes::SetLineRendererDepth(PreviousDepth);
+    }
+
+    return GetPosition2D() - PaddleReferencePoint;
 }

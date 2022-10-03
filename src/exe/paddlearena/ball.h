@@ -24,6 +24,7 @@ namespace sputter
     }
 }
 
+class Paddle;
 class Ball : sputter::game::Object
 {
 public:
@@ -58,6 +59,8 @@ public:
     void TranslateBall(const sputter::math::FPVector3D& translation);
 
 private:
+    const sputter::math::FPVector2D ComputeBallDeflectionFromPaddle(const Paddle* pPaddle) const;
+
     static const std::string       kBallVertexShaderAssetName;
     static const std::string       kBallFragmentShaderAssetName;
     static const std::string       kBallShaderName;

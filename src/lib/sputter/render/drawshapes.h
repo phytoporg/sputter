@@ -29,6 +29,9 @@ namespace sputter { namespace render { namespace shapes {
     void SetLineRendererDepth(float depth);
     float GetLineRendererDepth();
 
+    void DrawLine(int32_t x, int32_t y, int32_t width, int32_t height, int32_t size, const Color& color);
+    void DrawLine(const math::Vector2i& startPoint, const math::Vector2i& endPoint, int32_t size, const Color& color);
+
     void DrawRect(int32_t x, int32_t y, int32_t width, int32_t height, int32_t borderSize, const Color& borderColor);
     void DrawRect(const math::Vector2i& position, const math::Vector2i& dimensions, int32_t borderSize, const Color& borderColor);
 

@@ -31,10 +31,10 @@ MainMenuScene::MainMenuScene(
       m_pCamera(pCamera),
       m_pOrthoMatrix(pOrthoMatrix)
 {
-    m_uiTheme.FocusedBorderColor = render::Color::White;
+    m_uiTheme.FocusedBorderColor = render::Color::WHITE;
     m_uiTheme.ButtonBorderSize = gameconstants::MainMenuButtonBorderSize;
-    m_uiTheme.UnfocusedBorderColor = render::Color::Gray;
-    m_uiTheme.ButtonDownAndDisabledBorderColor = render::Color::Red;
+    m_uiTheme.UnfocusedBorderColor = render::Color::GRAY;
+    m_uiTheme.ButtonDownAndDisabledBorderColor = render::Color::RED;
 }
 
 MainMenuScene::~MainMenuScene()

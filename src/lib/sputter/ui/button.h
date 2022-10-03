@@ -56,7 +56,7 @@ namespace sputter { namespace ui {
         ButtonPressedCallback           m_fnButtonPressed;
 
         uint8_t                         m_borderSize  = 1;
-        render::Color                   m_borderColor = render::Color::White;
+        render::Color                   m_borderColor = render::Color::WHITE;
 
         Theme*                          m_pTheme      = nullptr; 
         Button*                         m_pNavLinks[4];

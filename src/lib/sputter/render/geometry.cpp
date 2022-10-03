@@ -188,6 +188,50 @@ bool sputter::render::geometry::MakeUnitCube(
     return true;
 }
 
+bool sputter::render::geometry::MakeLine(
+    int32_t x0, int32_t y0, int32_t x1, int32_t y1, int32_t z, int32_t size, 
+    glm::vec3* pVertexPositions, uint32_t numVertexPositions, 
+    int* pIndices, uint32_t numIndices)
+{
+    static const uint32_t kExpectedNumVertexPositions = 4;
+    static const uint32_t kExpectedNumIndices = 6;
+
+    if (numVertexPositions != kExpectedNumVertexPositions ||
+        numIndices         != kExpectedNumIndices)
+    {
+        return false;
+    }
+
+    // Indices (not to scale, this is low-effort illustrative ascii art):
+    //
+    // 0---------1   
+    // |         |   
+    // 3---------2   
+
+    const float dX = static_cast<float>(x1) - static_cast<float>(x0);
+    const float dY = static_cast<float>(y1) - static_cast<float>(y0);
+
+    const float NormalX = -dY / sqrtf(dX * dX + dY * dY);
+    const float NormalY = dX / sqrtf(dX * dX + dY * dY);
+    const glm::vec3 NormalVector(NormalX, NormalY, 0.f);
+
+    const float HalfSize = static_cast<float>(size) / 2.f;
+    const glm::vec3 HalfSizeNormal = NormalVector * HalfSize;
+
+    // Inner vertices
+    pVertexPositions[0] = glm::vec3(x0, y0, z) + HalfSizeNormal;
+    pVertexPositions[1] = glm::vec3(x1, y1, z) + HalfSizeNormal;
+    pVertexPositions[2] = glm::vec3(x1, y1, z) - HalfSizeNormal;
+    pVertexPositions[3] =  glm::vec3(x0, y0, z) - HalfSizeNormal;
+
+    // Indices
+    // Assuming GL_CCW for front-facing
+    const int IndexValues[] = { 2, 1, 0, 3, 2, 0 };
+    memcpy(pIndices, IndexValues, sizeof(IndexValues));
+
+    return true;
+}
+
 bool sputter::render::geometry::MakeBorderedRect(
     int32_t x, int32_t y, int32_t z, int32_t width, int32_t height, int32_t borderSize,
     glm::vec3* pVertexPositions, uint32_t numVertexPositions,
