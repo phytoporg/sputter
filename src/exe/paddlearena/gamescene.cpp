@@ -42,6 +42,14 @@ namespace {
 
         pTextRenderer->DrawText(x, y, gameconstants::ScoreSize, pScoreString);
     }
+
+    sputter::input::InputMapEntry InputMapping(int32_t from, PaddleArenaInput to)
+    {
+        return sputter::input::InputMapEntry { 
+            static_cast<uint32_t>(from),
+            static_cast<uint32_t>(to) 
+        }; 
+    }
 }
 
 GameScene::GameScene(
@@ -83,18 +91,18 @@ GameScene::GameScene(
     inputSubsystemSettings.PlayerDevices[0] = sputter::input::DeviceType::KeyboardInputDevice;
     inputSubsystemSettings.PlayerDevices[1] = sputter::input::DeviceType::None;
 
-    // TODO: Resolve all this casting biz :(
     const std::vector<sputter::input::InputMapEntry> p1InputMap = { 
-        { static_cast<uint32_t>(GLFW_KEY_W),     static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_UP) },
-        { static_cast<uint32_t>(GLFW_KEY_UP),    static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_UP) },
-        { static_cast<uint32_t>(GLFW_KEY_S),     static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_DOWN) },
-        { static_cast<uint32_t>(GLFW_KEY_DOWN),  static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_DOWN) },
-        { static_cast<uint32_t>(GLFW_KEY_A),     static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_LEFT) },
-        { static_cast<uint32_t>(GLFW_KEY_LEFT),  static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_LEFT) },
-        { static_cast<uint32_t>(GLFW_KEY_D),     static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_RIGHT) },
-        { static_cast<uint32_t>(GLFW_KEY_RIGHT), static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_RIGHT) },
-        { static_cast<uint32_t>(GLFW_KEY_P),     static_cast<uint32_t>(PaddleArenaInput::INPUT_PAUSE) },
-        { static_cast<uint32_t>(GLFW_KEY_SPACE), static_cast<uint32_t>(PaddleArenaInput::INPUT_SERVE) },
+        InputMapping(GLFW_KEY_W, PaddleArenaInput::INPUT_MOVE_UP),
+        InputMapping(GLFW_KEY_UP, PaddleArenaInput::INPUT_MOVE_UP),
+        InputMapping(GLFW_KEY_S, PaddleArenaInput::INPUT_MOVE_DOWN),
+        InputMapping(GLFW_KEY_DOWN, PaddleArenaInput::INPUT_MOVE_DOWN),
+        InputMapping(GLFW_KEY_A, PaddleArenaInput::INPUT_MOVE_LEFT),
+        InputMapping(GLFW_KEY_LEFT, PaddleArenaInput::INPUT_MOVE_LEFT),
+        InputMapping(GLFW_KEY_D, PaddleArenaInput::INPUT_MOVE_RIGHT),
+        InputMapping(GLFW_KEY_RIGHT, PaddleArenaInput::INPUT_MOVE_RIGHT),
+        InputMapping(GLFW_KEY_P, PaddleArenaInput::INPUT_PAUSE),
+        InputMapping(GLFW_KEY_SPACE, PaddleArenaInput::INPUT_SERVE),
+        InputMapping(GLFW_KEY_J, PaddleArenaInput::INPUT_DASH),
     };
     inputSubsystemSettings.pInputMapEntryArrays[0] = p1InputMap.data();
     inputSubsystemSettings.pInputMapEntryArrays[1] = nullptr;

@@ -138,6 +138,14 @@ void Paddle::Tick(FixedPoint deltaTime)
             velocity += FPVector3D(0, -1, 0);
         }
 
+        if (m_pInputSource->IsInputPressed(static_cast<uint32_t>(PaddleArenaInput::INPUT_DASH)))
+        {
+            if (!velocity.IsZero() && m_dashVelocityY == FPZero)
+            {
+                m_dashVelocityY = velocity.GetY() * gameconstants::PaddleDashSpeed;
+            }
+        }
+
         if (IsBallAttached())
         {
             if (m_pInputSource->IsInputPressed(static_cast<uint32_t>(PaddleArenaInput::INPUT_SERVE)))
@@ -160,9 +168,24 @@ void Paddle::Tick(FixedPoint deltaTime)
     }
 #endif
 
-    if (velocity.Length() > FPZero)
+    if (m_dashVelocityY != FPZero)
     {
-        TranslatePaddle(velocity.Normalized() * gameconstants::PaddleSpeed * deltaTime);
+        TranslatePaddle(FPVector3D::UP * m_dashVelocityY * deltaTime);
+    }
+    else if (velocity.Length() > FPZero)
+    {
+        TranslatePaddle(velocity * gameconstants::PaddleSpeed * deltaTime);
+    }
+
+    // Dash velocity "friction"
+    if (m_dashVelocityY != FPZero)
+    {
+        // TODO: A forreal function for tuning duration, change, recovery, etc
+        m_dashVelocityY -= (m_dashVelocityY * FixedPoint(6) * deltaTime);
+        if (fpm::abs(m_dashVelocityY) < gameconstants::PaddleSpeed)
+        {
+            m_dashVelocityY = FPZero;
+        }
     }
 }
 

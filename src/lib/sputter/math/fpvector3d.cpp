@@ -7,6 +7,7 @@
 using namespace sputter::math;
 
 const FPVector3D FPVector3D::ZERO = FPVector3D(0, 0, 0);
+const FPVector3D FPVector3D::UP = FPVector3D(0, 1, 0);
 
 FPVector3D::FPVector3D()
     : m_x(0), m_y(0), m_z(0)
@@ -117,6 +118,11 @@ FPVector3D FPVector3D::Normalized() const
 
     system::LogAndFail("Can't normalize a zero vector, yo");
     return *this;
+}
+
+bool FPVector3D::IsZero() const
+{
+    return m_x == FPZero && m_y == FPZero && m_z == FPZero;
 }
 
 FixedPoint FPVector3D::DotProduct(const FPVector3D& other) const

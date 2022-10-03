@@ -38,6 +38,7 @@ enum class PaddleArenaInput {
     INPUT_MOVE_RIGHT,
     INPUT_PAUSE,
     INPUT_SERVE, // Can also be used for other things though??
+    INPUT_DASH,
 };
 
 class PaddleArena : public sputter::game::Game

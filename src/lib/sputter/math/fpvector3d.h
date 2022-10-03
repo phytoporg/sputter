@@ -11,6 +11,7 @@ namespace sputter { namespace math {
     public:
         // Static constant values first
         static const FPVector3D ZERO;
+        static const FPVector3D UP;
 
         FPVector3D();
         FPVector3D(FixedPoint x, FixedPoint y, FixedPoint z);
@@ -47,6 +48,7 @@ namespace sputter { namespace math {
 
         FixedPoint Length() const;
         FPVector3D Normalized() const;
+        bool IsZero() const;
 
         // Other exciting vector operations
         FixedPoint DotProduct(const FPVector3D& other) const;

@@ -8,6 +8,7 @@
 #include <sputter/math/fptransform3d.h>
 #include <sputter/math/fpvector2d.h>
 #include <sputter/math/fpvector3d.h>
+#include <sputter/math/fpconstants.h>
 
 namespace sputter
 {
@@ -85,4 +86,5 @@ private:
     GameState*                               m_pGameState;
 
     uint32_t                                 m_playerId;
+    sputter::math::FixedPoint                m_dashVelocityY = sputter::math::FPZero;
 };

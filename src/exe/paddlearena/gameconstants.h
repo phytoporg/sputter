@@ -27,6 +27,7 @@ namespace gameconstants
     // Ball config
     const auto BallSpeed = sputter::math::FixedPoint(850);
     const auto PaddleSpeed = sputter::math::FixedPoint(500);
+    const auto PaddleDashSpeed = sputter::math::FixedPoint(2000);
     const auto PaddleHitReferencePointDistance = sputter::math::FixedPoint(5);
     const auto BallDimensions = sputter::math::FPVector2D(
             10, 10
