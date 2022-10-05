@@ -225,12 +225,42 @@ struct HEAD_Header
     int16_t     GlyphDataFormat;
 };
 
-// HHEA - Font header table
+// HHEA - Font horizontal header table
 struct HHEA_Header
 {
-    uint16_t    MajorVersion;
-    uint16_t    MinorVersion;
-    // There's more, but I don't know what "FWORD" means as a type :P
+    uint32_t Version;
+    int16_t  Ascent;
+    int16_t  Descent;
+    int16_t  LineGap;
+    uint16_t AdvanceWidthMax;
+    int16_t  MinLeftSideBearing;
+    int16_t  MinRightSideBearing;
+    int16_t  XMaxExtent;
+    int16_t  CaretSlopeRise;
+    int16_t  CaretSlopeRun;
+    int16_t  CaretOffset;
+    int16_t  Reserved[4];
+    int16_t  MetricDataFormat;
+    uint16_t NumOfLongHorMetrics;
+};
+
+// VHEA - Font vertical header table
+struct VHEA_Header
+{
+    uint32_t Version;
+    int16_t  VertTypoAscender;
+    int16_t  VertTypoDescender;
+    int16_t  VertTypoLineGap;
+    int16_t  AdvanceHeightMax;
+    int16_t  MinTopSideBearing;
+    int16_t  MinBottomSideBearing;
+    int16_t  YMaxExtent;
+    int16_t  CaretSlopeRise;
+    int16_t  CaretSlopeRun;
+    int16_t  CaretOffset;
+    int16_t  Reserved[4];
+    int16_t  MetricDataFormat;
+    uint16_t NumOfLongVerMetrics;
 };
 
 // LOCA - Index to location
@@ -270,10 +300,21 @@ struct HMTX_LongHorizontalMetrics
 
 struct HMTX 
 {
-    HMTX_LongHorizontalMetrics* pMetrics; // Number of entries dictated by HHEA.NumberOfHMetrics
-    int16_t*                    pLeftSideBearings; // Number of entries is NumGlyphs - NumberOfHMetrics
+    HMTX_LongHorizontalMetrics* pMetrics;
+    int16_t*                    pLeftSideBearings;
 };
 
 // VMTX - Vertical Metrics table
+struct VMTX_LongVerticalMetrics 
+{
+	uint16_t AdvanceHeight;      // In font design units, whatever that means
+	int16_t  TopSideBearing;   // In font design units, whatever that means
+};
+
+struct VMTX 
+{
+    VMTX_LongVerticalMetrics* pMetrics;
+    int16_t*                  pTopSideBearings;
+};
 
 #pragma pack(pop)

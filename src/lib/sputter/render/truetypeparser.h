@@ -19,7 +19,7 @@ namespace sputter { namespace render {
         GlyphMetrics GetCharacterGlyphMetrics(char c);
 
     private:
-        const GLYPH_Header* FindGlyphHeader(char c);
+        const GLYPH_Header* FindGlyphHeader(char c, uint16_t* pGlyphIndexOut = nullptr);
 
         bool                      m_isGood;
 
@@ -32,6 +32,9 @@ namespace sputter { namespace render {
         const GLYPH_Header* m_pFirstGlyphHeader = nullptr;
         const HEAD_Header*  m_pHeadHeader = nullptr;
         const HHEA_Header*  m_pHheaHeader = nullptr;
+        const VHEA_Header*  m_pVheaHeader = nullptr;
+        const HMTX*         m_pHmtx       = nullptr;
+        const VMTX*         m_pVmtx       = nullptr;
         const LOCA_Header*  m_pLocaHeader = nullptr;
         const MAXP_Header*  m_pMaxpHeader = nullptr;
     };

@@ -6,6 +6,7 @@
 #include <vector>
 
 #include <sputter/assets/binarydata.h>
+#include <sputter/core/check.h>
 #include <sputter/system/system.h>
 
 // Placeholder! Gotta actually read this value from the horizontal metrics table.
@@ -340,11 +341,24 @@ TrueTypeParser::TrueTypeParser(const assets::BinaryData& dataToParse)
             case FOURCC("hhea"):
             {
                 LOG(INFO) << "Locating hhea... ";
-                m_pHheaHeader = reinterpret_cast<const HHEA_Header*>(pDataStart + SwapEndianness32(pTableDirectory->Offset));
-                if (SwapEndianness16(m_pHheaHeader->MajorVersion) != 1 ||
-                    SwapEndianness16(m_pHheaHeader->MinorVersion) != 0)
+                m_pHheaHeader = reinterpret_cast<const HHEA_Header*>(
+                        pDataStart + SwapEndianness32(pTableDirectory->Offset));
+                if (SwapEndianness32(m_pHheaHeader->Version) != 0x00010000)
                 {
                     LOG(ERROR) << "hhea or directory entry is malformed";
+                    return;
+                }
+                
+                LOG(INFO) << "found.";
+            }
+            case FOURCC("vhea"):
+            {
+                LOG(INFO) << "Locating vhea... ";
+                m_pVheaHeader = reinterpret_cast<const VHEA_Header*>(
+                        pDataStart + SwapEndianness32(pTableDirectory->Offset));
+                if (SwapEndianness32(m_pVheaHeader->Version) != 0x00010000)
+                {
+                    LOG(ERROR) << "vhea or directory entry is malformed";
                     return;
                 }
                 
@@ -353,8 +367,17 @@ TrueTypeParser::TrueTypeParser(const assets::BinaryData& dataToParse)
             break;
             case FOURCC("hmtx"):
             {
-                // TODO: Process this table and surface proper horizontal metrics for glyphs
-                LOG(INFO) << "hmtx found in directory, but skipping.";
+                LOG(INFO) << "Locating hmtx... ";
+                m_pHmtx = reinterpret_cast<const HMTX*>(
+                        pDataStart + SwapEndianness32(pTableDirectory->Offset));
+                LOG(INFO) << "found.";
+            }
+            case FOURCC("vmtx"):
+            {
+                LOG(INFO) << "Locating vmtx... ";
+                m_pVmtx = reinterpret_cast<const VMTX*>(
+                        pDataStart + SwapEndianness32(pTableDirectory->Offset));
+                LOG(INFO) << "found.";
             }
             break;
             case FOURCC("loca"):
@@ -445,10 +468,15 @@ Glyph TrueTypeParser::GetCharacterGlyph(char c)
 {
     const GLYPH_Header* pFoundGlyphHeader = FindGlyphHeader(c);
     const uint16_t NumberOfContours = SwapEndianness16(pFoundGlyphHeader->NumberOfContours);
-    if (SwapEndianness16(NumberOfContours) < 0)
+
+    if (NumberOfContours < 0)
     {
         LOG(ERROR) << "Unsupported glyph description type";
         return Glyph::kInvalidGlyph;
+    }
+    else if (NumberOfContours == 0)
+    {
+        return Glyph{ GetCharacterGlyphMetrics(c), nullptr };
     }
 
     const uint16_t* pEndPtsOfContours = &pFoundGlyphHeader->EndPtsOfContours[0];
@@ -460,13 +488,12 @@ Glyph TrueTypeParser::GetCharacterGlyph(char c)
     GLYPH_PointData pointData;
     pointData.pFlags = GetOffsetFrom<uint8_t>(pInstructionDescriptions, pInstructionDescriptions->InstructionLength + 2);
 
-    std::vector<uint8_t> expandedContourPointFlags;
-    std::vector<int16_t> expandedContourXCoordinates;
-    std::vector<int16_t> expandedContourYCoordinates;
-
     // The flags array can specify repeated flag bytes, so it can actually be shorter in length than the X/Y
     // coordinate array. This also means it must be processed to know the *actual* length of the array, which
     // we need to know where to begin processing coordinates.
+    std::vector<uint8_t> expandedContourPointFlags;
+    std::vector<int16_t> expandedContourXCoordinates;
+    std::vector<int16_t> expandedContourYCoordinates;
 
     expandedContourPointFlags.resize(NumberOfPoints);
     const uint8_t* pCurrentFlag = pointData.pFlags;
@@ -526,7 +553,6 @@ Glyph TrueTypeParser::GetCharacterGlyph(char c)
     }
 
     // Scale and then rasterize
-
     // Scale -> pointSize * resolution / ( 72 points per inch * units_per_em )
     const uint8_t PointSize = 24; // TODO: parameterize
     const uint16_t PPI = 100;
@@ -628,7 +654,8 @@ Glyph TrueTypeParser::GetCharacterGlyph(char c)
 
 GlyphMetrics TrueTypeParser::GetCharacterGlyphMetrics(char c)
 {
-    const GLYPH_Header* pFoundGlyphHeader = FindGlyphHeader(c);
+    uint16_t glyphId;
+    const GLYPH_Header* pFoundGlyphHeader = FindGlyphHeader(c, &glyphId);
 
     // Grab the offset for this glyph
     const uint8_t PointSize = 24; // TODO: parameterize
@@ -637,17 +664,36 @@ GlyphMetrics TrueTypeParser::GetCharacterGlyphMetrics(char c)
     const uint16_t UnitsPerEm = SwapEndianness16(m_pHeadHeader->UnitsPerEm);
     const float EmToPixels = static_cast<float>(PPEM) / UnitsPerEm;
 
-    const int16_t xMin = SwapEndianness16(pFoundGlyphHeader->XMin) * EmToPixels;
-    const int16_t xMax = SwapEndianness16(pFoundGlyphHeader->XMax) * EmToPixels;
-    const int16_t yMin = SwapEndianness16(pFoundGlyphHeader->YMin) * EmToPixels;
-    const int16_t yMax = SwapEndianness16(pFoundGlyphHeader->YMax) * EmToPixels;
-    const uint16_t GlyphHeight = yMax - yMin + 1;
-    const uint16_t GlyphWidth = xMax - xMin + 1;
+    if (pFoundGlyphHeader->NumberOfContours)
+    {
+        const int16_t xMin = SwapEndianness16(pFoundGlyphHeader->XMin) * EmToPixels;
+        const int16_t xMax = SwapEndianness16(pFoundGlyphHeader->XMax) * EmToPixels;
+        const int16_t yMin = SwapEndianness16(pFoundGlyphHeader->YMin) * EmToPixels;
+        const int16_t yMax = SwapEndianness16(pFoundGlyphHeader->YMax) * EmToPixels;
+        const uint16_t GlyphHeight = yMax - yMin + 1;
+        const uint16_t GlyphWidth = xMax - xMin + 1;
 
-    return GlyphMetrics{ kPlaceholderBearingX, GlyphWidth, GlyphHeight };
+        return GlyphMetrics{ kPlaceholderBearingX, GlyphWidth, GlyphHeight };
+    }
+    else
+    {
+        // Empty glyph! Fall back on H metrics tables and just provide a bearing.
+        const uint16_t NumHMetrics = 
+            SwapEndianness16(m_pHheaHeader->NumOfLongHorMetrics);
+        const uint16_t MetricsIndex = NumHMetrics > 1 ? glyphId : 0;
+        const HMTX_LongHorizontalMetrics* pHMetrics =
+            reinterpret_cast<const HMTX_LongHorizontalMetrics*>(&m_pHmtx);
+
+        const uint16_t LeftBearing =
+            SwapEndianness16(pHMetrics[MetricsIndex].LeftSideBearing) * EmToPixels;
+        const uint16_t GlyphWidth = 0; 
+        const uint16_t GlyphHeight = 0;
+
+        return GlyphMetrics{ LeftBearing, GlyphWidth, GlyphHeight };
+    }
 }
 
-const GLYPH_Header* TrueTypeParser::FindGlyphHeader(char c)
+const GLYPH_Header* TrueTypeParser::FindGlyphHeader(char c, uint16_t* pGlyphIndexOut)
 {
     const uint32_t NumCmapSegmentsX2 = SwapEndianness16(m_pCmapSegmentMap->SegCountX2);
     const uint32_t NumCmapSegments = NumCmapSegmentsX2 / 2;
@@ -656,20 +702,26 @@ const GLYPH_Header* TrueTypeParser::FindGlyphHeader(char c)
     uint16_t glyphId = 0xFFFF; // Invalid
     for (uint16_t i = 0; i < NumCmapSegments; ++i)
     {
-        const uint16_t SegmentStart = SwapEndianness16(m_CmapSegmentMapPointers.pStartCodes[i]);
-        const uint16_t SegmentEnd = SwapEndianness16(m_CmapSegmentMapPointers.pEndCodes[i]);
+        const CMAP_SegmentMapPointers& SegmentMapPtrs = m_CmapSegmentMapPointers;
+
+        const uint16_t SegmentStart = SwapEndianness16(SegmentMapPtrs.pStartCodes[i]);
+        const uint16_t SegmentEnd = SwapEndianness16(SegmentMapPtrs.pEndCodes[i]);
 
         if (GlyphCharacter <= SegmentEnd && GlyphCharacter >= SegmentStart)
         {
-            const uint16_t IdOffset = SwapEndianness16(m_CmapSegmentMapPointers.pIdRangeOffsets[i]);
+            const uint16_t IdOffset = 
+                SwapEndianness16(SegmentMapPtrs.pIdRangeOffsets[i]);
             if (IdOffset == 0)
             {
-                glyphId = GlyphCharacter + SwapEndianness16(m_CmapSegmentMapPointers.pIdDeltas[i]);
+                glyphId = 
+                    GlyphCharacter + SwapEndianness16(SegmentMapPtrs.pIdDeltas[i]);
             }
             else
             {
                 // Indexing trick from the spec
-                const uint16_t GlyphIndex = SwapEndianness16(*(IdOffset / 2 + (GlyphCharacter - SegmentStart) + &m_CmapSegmentMapPointers.pIdRangeOffsets[i]));
+                const uint16_t GlyphIndex = SwapEndianness16(
+                        *(IdOffset / 2 + (GlyphCharacter - SegmentStart) + 
+                        &SegmentMapPtrs.pIdRangeOffsets[i]));
                 glyphId = SwapEndianness16(GlyphIndex);
                 
             }
@@ -682,7 +734,24 @@ const GLYPH_Header* TrueTypeParser::FindGlyphHeader(char c)
     }
 
     const uint32_t GlyphOffset = SwapEndianness32(m_pLocaHeader->Offsets[glyphId]);
-    const GLYPH_Header* pFoundGlyphHeader = GetOffsetFrom<GLYPH_Header>(m_pFirstGlyphHeader, GlyphOffset);
+    const GLYPH_Header* pFoundGlyphHeader =
+        GetOffsetFrom<GLYPH_Header>(m_pFirstGlyphHeader, GlyphOffset);
+    const uint32_t NextGlyphOffset = 
+        SwapEndianness32(m_pLocaHeader->Offsets[glyphId + 1]);
+    const GLYPH_Header* pNextGlyphHeader =
+        GetOffsetFrom<GLYPH_Header>(m_pFirstGlyphHeader, NextGlyphOffset);
+
+    if (pGlyphIndexOut)
+    {
+        *pGlyphIndexOut = glyphId;
+    }
+
+    if (pFoundGlyphHeader == pNextGlyphHeader)
+    {
+        // Empty character, return an empty glyph header.
+        static const GLYPH_Header EmptyGlyphHeader = {};
+        return &EmptyGlyphHeader;
+    }
 
     return pFoundGlyphHeader;
 }

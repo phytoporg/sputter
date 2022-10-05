@@ -96,7 +96,7 @@ namespace gameconstants
     const int32_t GetReadyPositionY = 30;
 
     // Strings
-    static const char* GetReadyString = "GETREADY";
+    static const char* GetReadyString = "GET READY";
     static const char* GameTitleString = "PADDLEARENA";
 
     // Main menu constants
