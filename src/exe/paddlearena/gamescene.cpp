@@ -1,18 +1,12 @@
 #include "gamescene.h"
 #include "gameconstants.h"
 #include "gamestate.h"
+#include "gameinstance.h"
 #include "paddlearena.h"
 
 #include <sputter/assets/assetstorageprovider.h>
 
-#include <sputter/physics/rigidbodysubsystem.h>
-#include <sputter/physics/collisionsubsystem.h>
-
-#include <sputter/memory/fixedmemoryallocator.h>
-
 #include <sputter/render/window.h>
-#include <sputter/render/meshsubsystem.h>
-#include <sputter/render/shaderstorage.h>
 #include <sputter/render/fontstorage.h>
 #include <sputter/render/volumetrictext.h>
 
@@ -59,7 +53,6 @@ GameScene::GameScene(
     sputter::render::Camera* pCamera,
     glm::mat4* pOrthoMatrix,
     sputter::render::VolumetricTextRenderer* pTextRenderer,
-    sputter::assets::AssetStorage* pAssetStorage,
     sputter::assets::AssetStorageProvider* pStorageProvider)
     : m_reservedRegion(0x100000),
       m_fixedAllocator("GameState", m_reservedRegion.GetRegionBase(), m_reservedRegion.GetRegionSize()),
@@ -71,21 +64,6 @@ GameScene::GameScene(
       m_pWindow(pWindow),
       m_pPaddleArena(pPaddleArena)
 {
-    physics::RigidBodySubsystemSettings rigidBodySubsystemSettings;
-    rigidBodySubsystemSettings.MaxRigidBodies = 5;
-    m_pRigidBodySubsystem = 
-        m_fixedAllocator.Create<physics::RigidBodySubsystem>(rigidBodySubsystemSettings);
-
-    physics::CollisionSubsystemSettings collisionSubsystemSettings;
-    m_pCollisionSubsystem = m_fixedAllocator.Create<sputter::physics::CollisionSubsystem>(collisionSubsystemSettings);
-
-    render::MeshSubsystemSettings meshSubsystemSettings;
-    meshSubsystemSettings.MaxVertexCount = 20;
-    meshSubsystemSettings.MaxMeshCount = 20;
-    m_pMeshSubsystem = new sputter::render::MeshSubsystem(
-        meshSubsystemSettings
-    );
-
     sputter::input::InputSubsystemSettings inputSubsystemSettings;
     inputSubsystemSettings.pWindow = pWindow;
     inputSubsystemSettings.PlayerDevices[0] = sputter::input::DeviceType::KeyboardInputDevice;
@@ -114,24 +92,21 @@ GameScene::GameScene(
     m_pInputSources[0] = m_pInputSubsystem->GetInputSource(0);
     m_pInputSources[1] = m_pInputSubsystem->GetInputSource(1);
 
-    m_subsystemProvider.AddSubsystem(m_pRigidBodySubsystem);
-    m_subsystemProvider.AddSubsystem(m_pCollisionSubsystem);
-    m_subsystemProvider.AddSubsystem(m_pMeshSubsystem);
     m_subsystemProvider.AddSubsystem(m_pInputSubsystem);
 
-    m_pGameState = m_fixedAllocator.Create<GameState>(m_pAssetStorageProvider, &m_subsystemProvider);
-
-    auto pShaderStorage = m_pAssetStorageProvider->GetStorageByType<render::ShaderStorage>();
-    if (!pShaderStorage)
-    {
-        system::LogAndFail("Failed to retrieve shader storage");
-    }
-
-    auto pFontStorage = m_pAssetStorageProvider->GetStorageByType<render::FontStorage>();
-    if (!pFontStorage)
-    {
-        system::LogAndFail("Failed to retrieve font storage");
-    }
+    GameState* pGameState =
+        m_fixedAllocator.Create<GameState>(m_pAssetStorageProvider, &m_subsystemProvider);
+    m_pGameInstance = 
+        m_fixedAllocator.Create<GameInstance>(
+            &m_fixedAllocator,
+            &m_subsystemProvider,
+            pGameState,
+            pTimerSystem,
+            pCamera,
+            pOrthoMatrix,
+            pTextRenderer,
+            m_pInputSources[0],
+            m_pInputSources[1]);
 
     m_uiTheme.FocusedBorderColor = render::Color::WHITE;
     m_uiTheme.ButtonBorderSize = gameconstants::MainMenuButtonBorderSize;
@@ -143,9 +118,6 @@ GameScene::GameScene(
 
 GameScene::~GameScene()
 {
-    delete m_pMeshSubsystem;
-    m_pMeshSubsystem = nullptr;
-
     delete m_pInputSubsystem;
     m_pInputSubsystem = nullptr;
 
@@ -155,14 +127,6 @@ GameScene::~GameScene()
 
 void GameScene::Initialize() 
 {
-    m_pGameState->CountdownTimerHandle = game::TimerSystem::kInvalidTimerHandle;
-    m_pGameState->CurrentState = GameState::State::Starting;
-    m_pGameState->Arena.Initialize(gameconstants::ArenaDimensions);        
-    m_pGameState->Camera.SetTranslation(gameconstants::InitialCameraPosition);
-    m_pGameState->Player1Score = 0;
-    m_pGameState->Player2Score = 0;
-    m_pGameState->WinningPlayer = 0;
-
     if (!m_pScreen)
     {
         m_pScreen = new ui::Screen(m_pWindow);
@@ -206,11 +170,11 @@ void GameScene::CreateEndOfGameModalPopup()
 
         if (selection == ModalPopup::ModalPopupSelection::Selection_0)
         {
-            m_pGameState->CurrentState = GameState::State::Restarting;
+            m_pGameInstance->Restart();
         }
         else
         {
-            m_pGameState->CurrentState = GameState::State::Exiting;
+            m_pGameInstance->Exit();
         }
     });
 }
@@ -233,32 +197,13 @@ void GameScene::Tick(sputter::math::FixedPoint dt)
 
 void GameScene::Draw()
 {
-    const glm::mat4 viewMatrix = m_pGameState->Camera.ViewMatrix4d();
-    m_pMeshSubsystem->Draw(*m_pOrthoMatrix, viewMatrix);
-    m_pTextRenderer->SetMatrices(*m_pOrthoMatrix, viewMatrix);
-    m_pTextRenderer->SetDepth(-1.f);
-
-    DrawScore(gameconstants::P1ScorePositionX, gameconstants::ScorePositionY, m_pTextRenderer, m_pGameState->Player1Score);
-    DrawScore(gameconstants::P2ScorePositionX, gameconstants::ScorePositionY, m_pTextRenderer, m_pGameState->Player2Score);
-
-    const GameState::State CurrentState = m_pGameState->CurrentState;
-    if (CurrentState == GameState::State::Paused)
-    {
-        m_pTextRenderer->DrawText(-160, -20, 5, "PAUSE");
-    } 
-    else if (CurrentState == GameState::State::Ended && !m_pModalPopup)
-    {
-        CreateEndOfGameModalPopup();
-        m_pModalPopup->SetText(m_pGameState->WinningPlayer == 1 ? "P1 WINS" : "P2 WINS");
-    }
-
+    m_pGameInstance->Draw();
     m_pScreen->Draw();
 }
 
 void GameScene::TickFrame(math::FixedPoint dt)
 {
     m_pInputSubsystem->Tick(dt);
-    m_pRigidBodySubsystem->Tick(dt);
 
     const GameState::State CurrentState = m_pGameState->CurrentState;
     if (CurrentState == GameState::State::Starting)
@@ -349,7 +294,7 @@ void GameScene::PostTickFrame(math::FixedPoint dt)
     const GameState::State CurrentState = m_pGameState->CurrentState;
     if (CurrentState == GameState::State::Playing)
     {
-        m_pCollisionSubsystem->PostTick(dt);
+        // m_pCollisionSubsystem->PostTick(dt);
 
         m_pGameState->TheBall.PostTick(dt);
         m_pGameState->Player1Paddle.PostTick(dt);
