@@ -128,12 +128,12 @@ void GameScene::Initialize()
         }
         else if (newState == GameState::State::Exiting)
         {
-            CloseEndOfGameModalPopup();
+            DestroyEndOfGameModalPopup();
             m_pPaddleArena->PreviousSceneFromGame();
         }
         else if (newState == GameState::State::Restarting)
         {
-            CloseEndOfGameModalPopup();
+            DestroyEndOfGameModalPopup();
             Initialize();
         }
     });
@@ -145,7 +145,7 @@ void GameScene::Uninitialize()
     {
         m_pScreen->Uninitialize();
     }
-    CloseEndOfGameModalPopup();
+    DestroyEndOfGameModalPopup();
 }
 
 void GameScene::CreateEndOfGameModalPopup()
@@ -189,7 +189,7 @@ void GameScene::CreateEndOfGameModalPopup()
         p1Score > p2Score ? "P1 WINS" : "P2 WINS");
 }
 
-void GameScene::CloseEndOfGameModalPopup()
+void GameScene::DestroyEndOfGameModalPopup()
 {
     if (m_pModalPopup)
     {

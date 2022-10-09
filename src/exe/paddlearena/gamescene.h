@@ -79,7 +79,7 @@ public:
     virtual void Uninitialize() override;
 
     void CreateEndOfGameModalPopup();
-    void CloseEndOfGameModalPopup();
+    void DestroyEndOfGameModalPopup();
 
     virtual void Tick(sputter::math::FixedPoint dt) override;
     virtual void Draw() override;
