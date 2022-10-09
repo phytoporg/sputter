@@ -21,22 +21,6 @@
 using namespace sputter;
 
 namespace {
-    void DrawScore(int x, int y, sputter::render::VolumetricTextRenderer* pTextRenderer, uint16_t score)
-    {
-        // itoa for unsigned shorts, more or less. Scores shouldn't ever get to four
-        // digits, but hey, just in case.
-        char scoreBuffer[5] = {}; // +1 for null termination
-        char* pScoreString = &scoreBuffer[sizeof(scoreBuffer) - 1];
-        do
-        {
-            pScoreString--;
-            *pScoreString = '0' + (score % 10);
-            score /= 10;
-        } while (score && (pScoreString > scoreBuffer));
-
-        pTextRenderer->DrawText(x, y, gameconstants::ScoreSize, pScoreString);
-    }
-
     sputter::input::InputMapEntry InputMapping(int32_t from, PaddleArenaInput to)
     {
         return sputter::input::InputMapEntry { 
@@ -57,7 +41,6 @@ GameScene::GameScene(
     : m_reservedRegion(0x100000),
       m_fixedAllocator("GameState", m_reservedRegion.GetRegionBase(), m_reservedRegion.GetRegionSize()),
       m_pAssetStorageProvider(pStorageProvider),
-      m_pTimerSystem(pTimerSystem),
       m_pCamera(pCamera),
       m_pOrthoMatrix(pOrthoMatrix),
       m_pTextRenderer(pTextRenderer),
@@ -94,13 +77,11 @@ GameScene::GameScene(
 
     m_subsystemProvider.AddSubsystem(m_pInputSubsystem);
 
-    GameState* pGameState =
-        m_fixedAllocator.Create<GameState>(m_pAssetStorageProvider, &m_subsystemProvider);
     m_pGameInstance = 
         m_fixedAllocator.Create<GameInstance>(
             &m_fixedAllocator,
+            m_pAssetStorageProvider,
             &m_subsystemProvider,
-            pGameState,
             pTimerSystem,
             pCamera,
             pOrthoMatrix,
@@ -123,6 +104,10 @@ GameScene::~GameScene()
 
     delete m_pScreen;
     m_pScreen = nullptr;
+
+    // Always start with no modal
+    delete m_pModalPopup;
+    m_pModalPopup = nullptr;
 }
 
 void GameScene::Initialize() 
@@ -133,6 +118,25 @@ void GameScene::Initialize()
     }
 
     m_pScreen->Initialize();
+    m_pGameInstance->Initialize();
+
+    m_pGameInstance->SetGameStateChangedCallback([this](GameState::State newState)
+    {
+        if (newState == GameState::State::Ended)
+        {
+            CreateEndOfGameModalPopup();
+        }
+        else if (newState == GameState::State::Exiting)
+        {
+            CloseEndOfGameModalPopup();
+            m_pPaddleArena->PreviousSceneFromGame();
+        }
+        else if (newState == GameState::State::Restarting)
+        {
+            CloseEndOfGameModalPopup();
+            Initialize();
+        }
+    });
 }
 
 void GameScene::Uninitialize() 
@@ -141,7 +145,7 @@ void GameScene::Uninitialize()
     {
         m_pScreen->Uninitialize();
     }
-    DestroyEndOfGameModalPopup();
+    CloseEndOfGameModalPopup();
 }
 
 void GameScene::CreateEndOfGameModalPopup()
@@ -177,9 +181,15 @@ void GameScene::CreateEndOfGameModalPopup()
             m_pGameInstance->Exit();
         }
     });
+
+    int16_t p1Score;
+    int16_t p2Score;
+    m_pGameInstance->GetCurrentScore(&p1Score, &p2Score);
+    m_pModalPopup->SetText(
+        p1Score > p2Score ? "P1 WINS" : "P2 WINS");
 }
 
-void GameScene::DestroyEndOfGameModalPopup()
+void GameScene::CloseEndOfGameModalPopup()
 {
     if (m_pModalPopup)
     {
@@ -204,157 +214,11 @@ void GameScene::Draw()
 void GameScene::TickFrame(math::FixedPoint dt)
 {
     m_pInputSubsystem->Tick(dt);
-
-    const GameState::State CurrentState = m_pGameState->CurrentState;
-    if (CurrentState == GameState::State::Starting)
-    {
-        m_pTextRenderer->DrawText(
-            gameconstants::GetReadyPositionX,
-            gameconstants::GetReadyPositionY,
-            gameconstants::GetReadySize,
-            gameconstants::GetReadyString);
-
-        // TODO: Need a way to check inputs to advance the state.
-        if (m_pGameState->CountdownTimerHandle == game::TimerSystem::kInvalidTimerHandle)
-        {
-            const int8_t LoopCount = gameconstants::StartCountdownSeconds;
-            const uint32_t TimerFrames = 60; // 1sec
-            m_pGameState->CountdownTimerHandle = m_pTimerSystem->CreateLoopingFrameTimer(TimerFrames, LoopCount, OnCountdownTimerExpired, this);
-            m_pGameState->CountdownTimeRemaining = gameconstants::StartCountdownSeconds;
-        }
-
-        const char CountdownChar = '0' + static_cast<char>(m_pGameState->CountdownTimeRemaining);
-        char pCountdownString[2] = { CountdownChar, '\0' };
-
-        if (m_pGameState->CountdownTimeRemaining > 0)
-        {
-            m_pTextRenderer->DrawText(
-                gameconstants::StartCountdownPositionX,
-                gameconstants::StartCountdownPositionY,
-                gameconstants::StartCountdownSize,
-                pCountdownString);
-        }
-        else
-        {
-            // TODO: Clean up unnecessary state once serving behavior is settled
-            m_pGameState->TheBall.Initialize(
-                gameconstants::BallDimensions,
-                gameconstants::BallStartPosition,
-                gameconstants::BallStartDirection);
-
-            using namespace sputter::math;
-            m_pGameState->Player1Paddle.Initialize(
-                FPVector2D(gameconstants::PaddleWidth, gameconstants::PaddleHeight),
-                gameconstants::P1PaddleStartPosition);
-            m_pGameState->Player2Paddle.Initialize(
-                FPVector2D(gameconstants::PaddleWidth, gameconstants::PaddleHeight),
-                gameconstants::P2PaddleStartPosition);
-
-            m_pGameState->Player1Paddle.AttachBall(&m_pGameState->TheBall);
-
-            m_pGameState->CurrentState = GameState::State::Playing;
-        }
-    }
-
-    if (CurrentState == GameState::State::Playing)
-    {
-        m_pGameState->TheBall.Tick(dt);
-        m_pGameState->Arena.Tick(dt);
-        m_pGameState->Player1Paddle.Tick(dt);
-        m_pGameState->Player2Paddle.Tick(dt);
-
-        if (CheckPauseInput())
-        {
-            m_pGameState->CurrentState = GameState::State::Paused;
-        }
-    }
-
-    if (CurrentState == GameState::State::Paused && CheckPauseInput())
-    {
-        m_pGameState->CurrentState = GameState::State::Playing;
-    }
-
-    if (CurrentState == GameState::State::Restarting)
-    {
-        DestroyEndOfGameModalPopup();
-        Initialize();
-    }
-
-    if (CurrentState == GameState::State::Exiting)
-    {
-        DestroyEndOfGameModalPopup();
-        m_pPaddleArena->PreviousSceneFromGame();
-    }
-
+    m_pGameInstance->Tick(dt);
     m_pScreen->Tick((float)dt);
 }
 
 void GameScene::PostTickFrame(math::FixedPoint dt)
 { 
-    const GameState::State CurrentState = m_pGameState->CurrentState;
-    if (CurrentState == GameState::State::Playing)
-    {
-        // m_pCollisionSubsystem->PostTick(dt);
-
-        m_pGameState->TheBall.PostTick(dt);
-        m_pGameState->Player1Paddle.PostTick(dt);
-        m_pGameState->Player2Paddle.PostTick(dt);
-    }
-
-    // Do we need to reset the ball?
-    if (m_pGameState->TheBall.IsDead() &&
-        m_pGameState->CurrentState == GameState::State::Playing)
-    {
-        Paddle* pServingPaddle = nullptr;
-        const math::FixedPoint BallX = m_pGameState->TheBall.GetPosition().GetX();
-        if (BallX < math::FPZero)
-        {
-            m_pGameState->Player2Score++;
-            pServingPaddle = &m_pGameState->Player1Paddle;
-        }
-        else
-        {
-            m_pGameState->Player1Score++;
-            pServingPaddle = &m_pGameState->Player2Paddle;
-        }
-
-        if (m_pGameState->Player1Score >= gameconstants::ScoreToWin && 
-           (m_pGameState->Player1Score - m_pGameState->Player2Score) >= gameconstants::WinningScoreAdvantage)
-        {
-            m_pGameState->WinningPlayer = 1;
-            m_pGameState->CurrentState = GameState::State::Ended;
-        }
-        else if (m_pGameState->Player2Score >= gameconstants::ScoreToWin && 
-                (m_pGameState->Player2Score - m_pGameState->Player1Score) >= gameconstants::WinningScoreAdvantage)
-        {
-            m_pGameState->WinningPlayer = 2;
-            m_pGameState->CurrentState = GameState::State::Ended;
-        }
-        else
-        {
-            // Ideally we wait a few frames. Handle that later!
-            pServingPaddle->AttachBall(&m_pGameState->TheBall);
-        }
-    }
-}
-
-bool GameScene::CheckPauseInput() const
-{
-    const uint32_t PauseCode = static_cast<uint32_t>(PaddleArenaInput::INPUT_PAUSE);
-    return ((m_pInputSources[0] && m_pInputSources[0]->IsInputReleased(PauseCode)) ||
-            (m_pInputSources[1] && m_pInputSources[1]->IsInputReleased(PauseCode)));
-}
-
-void GameScene::OnCountdownTimerExpired(game::TimerSystem* pTimerSystem, game::TimerSystem::TimerHandle handle, void* pUserData)
-{
-    auto pGameScene = reinterpret_cast<GameScene*>(pUserData);
-
-    pGameScene->m_pGameState->CountdownTimeRemaining--;
-    if (pGameScene->m_pGameState->CountdownTimeRemaining == 0)
-    {
-        if (!pTimerSystem->ClearTimer(handle))
-        {
-            LOG(WARNING) << "Could not clear countdown timer handle\n";
-        }
-    }
+    m_pGameInstance->PostTick(dt);
 }

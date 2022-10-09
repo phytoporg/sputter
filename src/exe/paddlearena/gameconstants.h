@@ -76,7 +76,8 @@ namespace gameconstants
 
     // Game text config
     const uint32_t ScoreSize = 5;
-    const uint32_t ScoreToWin = 9;
+    //const uint32_t ScoreToWin = 9;
+    const uint32_t ScoreToWin = 2;
     const uint32_t WinningScoreAdvantage = 2;
     const uint32_t WinMessageSize = 7;
     const uint32_t StartCountdownSize = 6;

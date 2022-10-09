@@ -46,6 +46,16 @@ namespace
 }
 
 namespace sputter { namespace assets {
+    AssetStorage::AssetStorageEntry::AssetStorageEntry(
+        const std::string& name,
+        const std::string& relativePath,
+        std::shared_ptr<AssetData> spData)
+    {
+        strncpy(Name, name.c_str(), sizeof(Name));
+        strncpy(RelativePath, relativePath.c_str(), sizeof(RelativePath));
+        spAssetData = spData;
+    }
+
     AssetStorage::AssetStorage(const std::string& rootPathStr)
     {
         namespace fs = std::filesystem;
@@ -77,10 +87,11 @@ namespace sputter { namespace assets {
                     LOG(INFO) << "Asset loader: loaded " 
                               << relativePathString;
 
-                    m_assetMap.insert({
+                    m_assetMap[m_numAssets++] = AssetStorageEntry(
                         relativePathString,
-                        {CurrentPath.stem().string(), spData}
-                        });
+                        CurrentPath.stem().string(),
+                        spData
+                    );
                 }
                 else
                 {
@@ -100,10 +111,11 @@ namespace sputter { namespace assets {
                     LOG(INFO) << "Asset loader: loaded " 
                               << relativePathString;
 
-                    m_assetMap.insert({
+                    m_assetMap[m_numAssets++] = AssetStorageEntry(
                         relativePathString,
-                        {CurrentPath.stem().string(), spData}
-                        });
+                        CurrentPath.stem().string(),
+                        spData
+                    );
                 }
                 else
                 {
@@ -123,10 +135,11 @@ namespace sputter { namespace assets {
                     LOG(INFO) << "Asset loader: loaded " 
                               << relativePathString;
 
-                    m_assetMap.insert({
+                    m_assetMap[m_numAssets++] = AssetStorageEntry(
                         relativePathString,
-                        { CurrentPath.stem().string(), spData }
-                        });
+                        CurrentPath.stem().string(),
+                        spData
+                    );
                 }
                 else
                 {
@@ -140,13 +153,13 @@ namespace sputter { namespace assets {
     std::shared_ptr<AssetData> 
     AssetStorage::FindFirstByName(const std::string& assetName) const
     {
-        for (auto& mapPair : m_assetMap)
+        for (size_t i = 0; i < m_numAssets; ++i)
         {
-            const AssetStorageEntry& storageEntry = mapPair.second;
-            LOG(INFO) << storageEntry.Name;
-            if (assetName == storageEntry.Name)
+            const AssetStorageEntry& StorageEntry = m_assetMap[i];
+            LOG(INFO) << StorageEntry.Name;
+            if (assetName == StorageEntry.RelativePath)
             {
-                return storageEntry.spAssetData;
+                return StorageEntry.spAssetData;
             }
         }
 

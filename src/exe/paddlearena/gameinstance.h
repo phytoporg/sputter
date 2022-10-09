@@ -10,6 +10,11 @@
 
 namespace sputter
 {
+    namespace assets
+    {
+        class AssetStorageProvider;
+    }
+
     namespace game 
     {
         class TimerSystem;
@@ -44,8 +49,8 @@ class GameInstance {
 public:
     GameInstance(
         sputter::memory::FixedMemoryAllocator* pAllocator,
+        sputter::assets::AssetStorageProvider* pAssetStorageProvider,
         sputter::game::SubsystemProvider* pSubsystemProvider,
-        GameState* pGameState,
         sputter::game::TimerSystem* pTimerSystem,
         sputter::render::Camera* pCamera,
         glm::mat4* pOrthoMatrix,
@@ -60,13 +65,22 @@ public:
     void Exit();
 
     void Tick(sputter::math::FixedPoint dt);
+    void PostTick(sputter::math::FixedPoint dt);
+
     void Draw();
+
+    void GetCurrentScore(int16_t* pP1ScoreOut, int16_t* pP2ScoreOut);
 
     typedef std::function<void(GameState::State)> GameStateChangedCallback;
     void SetGameStateChangedCallback(GameStateChangedCallback fnOnGameStateChanged);
 
 private:
     void SetGameState(GameState::State newState);
+    bool CheckPauseInput() const;
+    static void OnCountdownTimerExpired(
+        sputter::game::TimerSystem* pTimerSystem,
+        sputter::game::TimerSystem::TimerHandle handle,
+        void* pUserData);
 
     GameStateChangedCallback                 m_fnOngameStateChanged = nullptr;
 
@@ -76,6 +90,7 @@ private:
     sputter::render::VolumetricTextRenderer* m_pTextRenderer = nullptr;
 
     sputter::game::SubsystemProvider*        m_pSubsystemProvider = nullptr;
+    sputter::assets::AssetStorageProvider*   m_pAssetStorageProvider = nullptr;
 
     sputter::physics::RigidBodySubsystem*    m_pRigidBodySubsystem = nullptr;
     sputter::physics::CollisionSubsystem*    m_pCollisionSubsystem = nullptr;

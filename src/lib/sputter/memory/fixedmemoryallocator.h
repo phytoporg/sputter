@@ -1,6 +1,7 @@
 #pragma once
 
 #include <sputter/system/system.h>
+#include <sputter/core/check.h>
 #include <string>
 
 namespace sputter { namespace memory {
@@ -23,11 +24,14 @@ namespace sputter { namespace memory {
                 return nullptr;
             }
 
-            T* pCreated = new (m_pNext) T(std::forward<Args>(args)...);
-            if (pCreated)
-            {
-                m_pNext += sizeof(T);
-            }
+            // Increment the address prior to invoking placement new, in case the constructor we're
+            // calling allocates additional data on this allocator.
+            void* pCreationAddress = m_pNext;
+            m_pNext += sizeof(T);
+
+            T* pCreated = new (pCreationAddress) T(std::forward<Args>(args)...);
+            RELEASE_CHECK(pCreated, "Placement new failed in fixed allocator!");
+            m_pNext += sizeof(T);
 
             return pCreated;
         }

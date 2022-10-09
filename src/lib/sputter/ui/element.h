@@ -63,6 +63,7 @@ namespace sputter
 
             float GetRenderDepth() const;
             void SignalRootElement(const Event& event);
+            void FlushEvents();
 
         private:
             Element* m_pParent = nullptr;

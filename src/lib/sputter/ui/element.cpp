@@ -51,20 +51,20 @@ void Element::Draw()
 
 void Element::Tick(float dt) 
 {
-    // Handle events prior to ticking
-    while (!m_eventQueue.empty())
-    {
-        const Event& event = m_eventQueue.front();
-        HandleEvent(EventCodeToParameter(event.Code), event.pData);
-        m_eventQueue.pop_front();
-    }
-
     TickInternal(dt);
+
+    // Handle events *after* ticking
+    FlushEvents();
 
     // Tick all children
     for (int32_t i = 0; i < m_numChildren; ++i)
     {
-        m_children[i]->Tick(dt);
+        // Children can be removed during Tick calls
+        Element* pChild = m_children[i];
+        if (pChild)
+        {
+            pChild->Tick(dt);
+        }
     }
 }
 
@@ -220,6 +220,16 @@ void Element::SetVisibility(bool isVisible)
 float Element::GetRenderDepth() const
 {
     return -1.0f * GetElementDepth();
+}
+
+void Element::FlushEvents()
+{
+    while (!m_eventQueue.empty())
+    {
+        const Event& event = m_eventQueue.front();
+        HandleEvent(EventCodeToParameter(event.Code), event.pData);
+        m_eventQueue.pop_front();
+    }
 }
 
 void Element::SignalRootElement(const Event& event)

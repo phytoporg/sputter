@@ -44,12 +44,14 @@ void Screen::Initialize()
         HandleKeyEvent(key, action);
     });
     SetVisibility(true);
+    FlushEvents();
 }
 
 void Screen::Uninitialize()
 {
     m_pWindow->SetKeyCallback(0);
     SetVisibility(false);
+    FlushEvents();
 }
 
 void Screen::TickInternal(float dt) 

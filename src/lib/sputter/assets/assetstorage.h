@@ -28,11 +28,23 @@ namespace sputter { namespace assets {
     private:
         struct AssetStorageEntry
         {
-            std::string                Name;
+            AssetStorageEntry() {}
+
+            AssetStorageEntry(
+                const std::string& name,
+                const std::string& relativePath,
+                std::shared_ptr<AssetData> spData);
+
+            char                Name[256];
+            char                RelativePath[256];
             std::shared_ptr<AssetData> spAssetData;
         };
 
         // Key is the full relative path
-        std::map<std::string, AssetStorageEntry> m_assetMap;
+        // std::map<std::string, AssetStorageEntry> m_assetMap;
+
+        static const size_t kMaxNumAssets = 100;
+        AssetStorageEntry m_assetMap[kMaxNumAssets];
+        size_t m_numAssets = 0;
     };
 }}

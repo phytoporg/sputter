@@ -79,7 +79,7 @@ public:
     virtual void Uninitialize() override;
 
     void CreateEndOfGameModalPopup();
-    void DestroyEndOfGameModalPopup();
+    void CloseEndOfGameModalPopup();
 
     virtual void Tick(sputter::math::FixedPoint dt) override;
     virtual void Draw() override;
@@ -87,10 +87,6 @@ public:
 private:
     void TickFrame(sputter::math::FixedPoint dt);
     void PostTickFrame(sputter::math::FixedPoint dt);
-
-    bool CheckPauseInput() const;
-
-    static void OnCountdownTimerExpired(sputter::game::TimerSystem* pTimerSystem, sputter::game::TimerSystem::TimerHandle handle, void* pUserData);
 
     sputter::memory::ReservedRegion           m_reservedRegion;
     sputter::memory::FixedMemoryAllocator     m_fixedAllocator;
@@ -110,8 +106,6 @@ private:
     sputter::ui::Screen*                      m_pScreen = nullptr;
     sputter::ui::ModalPopup*                  m_pModalPopup = nullptr;
     sputter::ui::Theme                        m_uiTheme;
-
-    sputter::game::TimerSystem*               m_pTimerSystem = nullptr;
 
     GameState*                                m_pGameState = nullptr;
     PaddleArena*                              m_pPaddleArena = nullptr;
