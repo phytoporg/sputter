@@ -27,6 +27,7 @@ PaddleArena::PaddleArena(
 {
     m_storageProvider.AddResourceStorageByType(&m_shaderStorage);
     m_storageProvider.AddResourceStorageByType(&m_fontStorage);
+    assets::AssetStorageProvider::SetAssetStorageProviderAddress(&m_storageProvider);
 
     m_pTextRenderer = new render::VolumetricTextRenderer(&m_assetStorage, &m_shaderStorage, &m_fontStorage);
 

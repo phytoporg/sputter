@@ -38,11 +38,7 @@ class Ball;
 class Paddle : sputter::game::Object
 {
 public:
-    Paddle(
-        // TEMP: For AI paddle
-        uint32_t playerId,
-        sputter::assets::AssetStorageProvider* pStorageProvider
-        );
+    Paddle(uint32_t playerId);
 
     virtual void Tick(sputter::math::FixedPoint deltaTime) override;
     virtual void PostTick(sputter::math::FixedPoint deltaTime) override;

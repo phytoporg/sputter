@@ -29,8 +29,8 @@ const std::string Stage::kArenaVertexShaderAssetName = "cube_vert";
 const std::string Stage::kArenaFragmentShaderAssetName = "cube_frag";
 const std::string Stage::kArenaShaderName = "arena_shader";
 
-Stage::Stage(AssetStorageProvider* pStorageProvider) 
-    : Object(kPaddleArenaObjectTypeStage, pStorageProvider)
+Stage::Stage() 
+    : Object(kPaddleArenaObjectTypeStage)
 {
     {
         sputter::render::Mesh::InitializationParameters params = {};
@@ -48,9 +48,10 @@ Stage::Stage(AssetStorageProvider* pStorageProvider)
         }
     }
 
-    auto pShaderStorage = pStorageProvider->GetStorageByType<ShaderStorage>();
+    auto pAssetStorageProvider = AssetStorageProvider::GetAssetStorageProviderAddress();
+    auto pShaderStorage = pAssetStorageProvider->GetStorageByType<ShaderStorage>();
     if (!pShaderStorage->AddShaderFromShaderAssetNames(
-        pStorageProvider->GetGeneralStorage(),
+        pAssetStorageProvider->GetGeneralStorage(),
         kArenaVertexShaderAssetName,
         kArenaFragmentShaderAssetName,
         kArenaShaderName))
@@ -90,7 +91,8 @@ void Stage::Initialize(FPVector2D stageDimensions)
         sputter::system::LogAndFail("Failed to create a unit cube. What's up with that.");
     }
 
-    auto pShaderStorage = m_pAssetStorageProvider->GetStorageByType<ShaderStorage>();
+    auto pAssetStorageProvider = AssetStorageProvider::GetAssetStorageProviderAddress();
+    auto pShaderStorage = pAssetStorageProvider->GetStorageByType<ShaderStorage>();
     ShaderPtr spShader = pShaderStorage->FindShaderByName(kArenaShaderName);
 
     Mesh* pMeshComponent = GetComponentByType<Mesh>();

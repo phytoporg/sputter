@@ -37,8 +37,8 @@ const std::string Paddle::kPaddleVertexShaderAssetName = "cube_vert";
 const std::string Paddle::kPaddleFragmentShaderAssetName = "cube_frag";
 const std::string Paddle::kPaddleShaderName = "cube_shader";
 
-Paddle::Paddle(uint32_t playerId, AssetStorageProvider* pStorageProvider) 
-    : Object(kPaddleArenaObjectTypePaddle, pStorageProvider), m_playerId(playerId)
+Paddle::Paddle(uint32_t playerId) 
+    : Object(kPaddleArenaObjectTypePaddle), m_playerId(playerId)
 {
     {
         sputter::render::Mesh::InitializationParameters params = {};
@@ -67,12 +67,13 @@ Paddle::Paddle(uint32_t playerId, AssetStorageProvider* pStorageProvider)
         }
     }
 
-    auto pShaderStorage = pStorageProvider->GetStorageByType<ShaderStorage>();
+    auto pAssetStorageProvider = AssetStorageProvider::GetAssetStorageProviderAddress();
+    auto pShaderStorage = pAssetStorageProvider->GetStorageByType<ShaderStorage>();
     m_shaderHandle = pShaderStorage->FindShaderHandleByName(kPaddleShaderName);
     if (m_shaderHandle == kInvalidResourceHandle)
     {
         if (!pShaderStorage->AddShaderFromShaderAssetNames(
-            pStorageProvider->GetGeneralStorage(),
+            pAssetStorageProvider->GetGeneralStorage(),
             kPaddleVertexShaderAssetName,
             kPaddleFragmentShaderAssetName,
             kPaddleShaderName))
@@ -230,7 +231,8 @@ void Paddle::Initialize(
     const uint32_t NumVertices = sizeof(VertexPositions) / sizeof(VertexPositions[0]); 
     const uint32_t NumIndices = sizeof(VertexIndices) / sizeof(VertexIndices[0]); 
 
-    auto pShaderStorage = m_pAssetStorageProvider->GetStorageByType<ShaderStorage>();
+    auto pAssetStorageProvider = AssetStorageProvider::GetAssetStorageProviderAddress();
+    auto pShaderStorage = pAssetStorageProvider->GetStorageByType<ShaderStorage>();
     ShaderPtr spShader = pShaderStorage->GetShaderFromHandle(m_shaderHandle);
 
     Mesh* pMesh = GetComponentByType<Mesh>();

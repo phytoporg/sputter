@@ -4,13 +4,9 @@
 
 using namespace sputter::game;
 
-Object::Object(
-    uint32_t objectType,
-    sputter::assets::AssetStorageProvider* pAssetProvider)
-: m_objectType(objectType),
-  m_pAssetStorageProvider(pAssetProvider)
+Object::Object(uint32_t objectType) : m_objectType(objectType)
 {
-    m_components.fill(nullptr);
+    memset(m_components, 0, sizeof(m_components));
 }
 
 uint32_t Object::GetType() const

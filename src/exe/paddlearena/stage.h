@@ -21,7 +21,7 @@ namespace sputter {
 class Stage : sputter::game::Object
 {
 public:
-    Stage(sputter::assets::AssetStorageProvider* pStorageProvider);
+    Stage();
 
     virtual void Tick(sputter::math::FixedPoint deltaTime) override;
 

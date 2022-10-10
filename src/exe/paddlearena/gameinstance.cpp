@@ -71,7 +71,7 @@ GameInstance::GameInstance(
     m_pSubsystemProvider->AddSubsystem(m_pMeshSubsystem);
     sputter::game::SubsystemProvider::SetSubsystemProviderAddress(m_pSubsystemProvider);
 
-    m_pGameState = pAllocator->Create<GameState>(m_pAssetStorageProvider);
+    m_pGameState = pAllocator->Create<GameState>();
     GameState::SetGameStateAddress(m_pGameState);
 }
 

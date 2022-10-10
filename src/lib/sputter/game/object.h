@@ -7,21 +7,15 @@
 #include <sputter/math/fixedpoint.h>
 #include <sputter/system/system.h>
 
-#include <array>
-
 namespace sputter { namespace assets {
     class AssetStorageProvider;
 }}
 
 namespace sputter { namespace game {
-    class SubsystemProvider;
-
     class Object
     {
     public:
-        Object(
-            uint32_t objectType,
-            sputter::assets::AssetStorageProvider* pAssetProvider);
+        Object(uint32_t objectType);
 
         virtual void Tick(math::FixedPoint deltaTime) {}
         virtual void PostTick(math::FixedPoint deltaTime) {}
@@ -80,14 +74,11 @@ namespace sputter { namespace game {
 
         uint32_t GetType() const;
 
-    protected:
-        sputter::assets::AssetStorageProvider* m_pAssetStorageProvider;
-
     private:
         Object() = delete;
         Object(const Object& other) = delete;
 
         uint32_t m_objectType;
-        std::array<void*, SubsystemType::TYPE_MAX> m_components;
+        void* m_components[SubsystemType::TYPE_MAX];
     };
 }}

@@ -7,26 +7,13 @@
 #include "stage.h"
 #include "ball.h"
 
-namespace sputter 
-{
-    namespace assets 
-    {
-        class AssetStorageProvider;
-    }
-
-    namespace game 
-    {
-        class SubsystemProvider;
-    }
-}
-
 struct GameState
 {
     // Static accessor/mutator pair to grab the address all singleton-like
     static GameState* GetGameStateAddress();
     static void SetGameStateAddress(GameState* pGameState);
 
-    GameState(sputter::assets::AssetStorageProvider* pStorageProvider);
+    GameState();
     
     enum class State 
     {

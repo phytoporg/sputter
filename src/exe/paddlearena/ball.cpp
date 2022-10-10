@@ -37,8 +37,7 @@ const std::string Ball::kBallVertexShaderAssetName = "cube_vert";
 const std::string Ball::kBallFragmentShaderAssetName = "cube_frag";
 const std::string Ball::kBallShaderName = "cube_shader";
 
-Ball::Ball(AssetStorageProvider* pStorageProvider) 
-    : Object(kPaddleArenaObjectTypeBall, pStorageProvider)
+Ball::Ball() : Object(kPaddleArenaObjectTypeBall)
 {
     {
         sputter::render::Mesh::InitializationParameters params = {};
@@ -56,12 +55,13 @@ Ball::Ball(AssetStorageProvider* pStorageProvider)
         }
     }
 
-    auto pShaderStorage = pStorageProvider->GetStorageByType<ShaderStorage>();
+    auto pAssetStorageProvider = AssetStorageProvider::GetAssetStorageProviderAddress();
+    auto pShaderStorage = pAssetStorageProvider->GetStorageByType<ShaderStorage>();
     ResourceHandle shaderHandle = pShaderStorage->FindShaderHandleByName(kBallShaderName);
     if (shaderHandle == kInvalidResourceHandle)
     {
         if (!pShaderStorage->AddShaderFromShaderAssetNames(
-            pStorageProvider->GetGeneralStorage(),
+            pAssetStorageProvider->GetGeneralStorage(),
             kBallVertexShaderAssetName,
             kBallFragmentShaderAssetName,
             kBallShaderName))
@@ -196,7 +196,8 @@ void Ball::Initialize(
     const uint32_t NumVertices = sizeof(VertexPositions) / sizeof(VertexPositions[0]); 
     const uint32_t NumIndices = sizeof(VertexIndices) / sizeof(VertexIndices[0]); 
 
-    auto pShaderStorage = m_pAssetStorageProvider->GetStorageByType<ShaderStorage>();
+    auto pAssetStorageProvider = AssetStorageProvider::GetAssetStorageProviderAddress();
+    auto pShaderStorage = pAssetStorageProvider->GetStorageByType<ShaderStorage>();
     ShaderPtr spShader = pShaderStorage->FindShaderByName(kBallShaderName);
 
     Mesh* pMeshComponent = GetComponentByType<Mesh>();
