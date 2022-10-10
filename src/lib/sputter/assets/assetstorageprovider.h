@@ -9,6 +9,10 @@ namespace sputter { namespace assets {
     class AssetStorageProvider
     {
     public:   
+        // Static accessor/mutator pair
+        static AssetStorageProvider* GetAssetStorageProviderAddress();
+        static void SetAssetStorageProviderAddress(AssetStorageProvider* pAssetStorageProvider);
+
         AssetStorageProvider(AssetStorage* pGeneralStorage)
             : m_pGeneralStorage(pGeneralStorage)
         {}
@@ -33,5 +37,7 @@ namespace sputter { namespace assets {
 
         std::array<void*, ResourceStorageType::TYPE_MAX> m_storageArray;
         AssetStorage*                                    m_pGeneralStorage;
+
+        static AssetStorageProvider* s_pAssetStorageProvider;
     };
 }}
