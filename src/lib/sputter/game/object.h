@@ -21,8 +21,7 @@ namespace sputter { namespace game {
     public:
         Object(
             uint32_t objectType,
-            sputter::assets::AssetStorageProvider* pAssetProvider,
-            SubsystemProvider* pSubsystemProvider);
+            sputter::assets::AssetStorageProvider* pAssetProvider);
 
         virtual void Tick(math::FixedPoint deltaTime) {}
         virtual void PostTick(math::FixedPoint deltaTime) {}
@@ -50,7 +49,8 @@ namespace sputter { namespace game {
         template<typename SubsystemType, typename ComponentType>
         void CreateAndSetComponentByType(ComponentType** ppComponentOut, const typename ComponentType::InitializationParameters& params)
         {
-            auto pSubsystem = m_pSubsystemProvider->GetSubsystemByType<SubsystemType>();
+            auto pSubsystemProvider = SubsystemProvider::GetSubsystemProviderAddress();
+            auto pSubsystem = pSubsystemProvider->GetSubsystemByType<SubsystemType>();
             ComponentType* pComponent = pSubsystem->CreateComponent(params);
             if (ppComponentOut)
             {
@@ -63,7 +63,8 @@ namespace sputter { namespace game {
         template<typename SubsystemType>
         sputter::core::ComponentHandle CreateAndSetComponentByType(const typename SubsystemType::Component::InitializationParameters& params)
         {
-            auto pSubsystem = m_pSubsystemProvider->GetSubsystemByType<SubsystemType>();
+            auto pSubsystemProvider = SubsystemProvider::GetSubsystemProviderAddress();
+            auto pSubsystem = pSubsystemProvider->GetSubsystemByType<SubsystemType>();
             typename SubsystemType::Component* pComponent = pSubsystem->CreateComponent(params);
             if (pComponent)
             {
@@ -80,7 +81,6 @@ namespace sputter { namespace game {
         uint32_t GetType() const;
 
     protected:
-        sputter::game::SubsystemProvider*      m_pSubsystemProvider;
         sputter::assets::AssetStorageProvider* m_pAssetStorageProvider;
 
     private:

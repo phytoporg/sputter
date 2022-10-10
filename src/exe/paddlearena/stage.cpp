@@ -29,10 +29,8 @@ const std::string Stage::kArenaVertexShaderAssetName = "cube_vert";
 const std::string Stage::kArenaFragmentShaderAssetName = "cube_frag";
 const std::string Stage::kArenaShaderName = "arena_shader";
 
-Stage::Stage(
-    AssetStorageProvider* pStorageProvider,
-    SubsystemProvider* pSubsystemProvider
-) : Object(kPaddleArenaObjectTypeStage, pStorageProvider, pSubsystemProvider)
+Stage::Stage(AssetStorageProvider* pStorageProvider) 
+    : Object(kPaddleArenaObjectTypeStage, pStorageProvider)
 {
     {
         sputter::render::Mesh::InitializationParameters params = {};

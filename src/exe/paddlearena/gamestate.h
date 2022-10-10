@@ -26,9 +26,7 @@ struct GameState
     static GameState* GetGameStateAddress();
     static void SetGameStateAddress(GameState* pGameState);
 
-    GameState(
-        sputter::assets::AssetStorageProvider* pStorageProvider,
-        sputter::game::SubsystemProvider* pSubsystemProvider);
+    GameState(sputter::assets::AssetStorageProvider* pStorageProvider);
     
     enum class State 
     {

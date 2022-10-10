@@ -12,11 +12,9 @@ void GameState::SetGameStateAddress(GameState* pGameState)
     s_pGameState = pGameState;
 }
 
-GameState::GameState(
-    sputter::assets::AssetStorageProvider* pStorageProvider,
-    sputter::game::SubsystemProvider* pSubsystemProvider) 
-    : TheBall(pStorageProvider, pSubsystemProvider),
-      Player1Paddle(0, pStorageProvider, pSubsystemProvider),
-      Player2Paddle(1, pStorageProvider, pSubsystemProvider),
-      Arena(pStorageProvider, pSubsystemProvider)
+GameState::GameState(sputter::assets::AssetStorageProvider* pStorageProvider) 
+    : TheBall(pStorageProvider),
+      Player1Paddle(0, pStorageProvider),
+      Player2Paddle(1, pStorageProvider),
+      Arena(pStorageProvider)
 {}

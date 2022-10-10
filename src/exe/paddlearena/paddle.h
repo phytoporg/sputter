@@ -41,8 +41,7 @@ public:
     Paddle(
         // TEMP: For AI paddle
         uint32_t playerId,
-        sputter::assets::AssetStorageProvider* pStorageProvider,
-        sputter::game::SubsystemProvider* pSubsystemProvider
+        sputter::assets::AssetStorageProvider* pStorageProvider
         );
 
     virtual void Tick(sputter::math::FixedPoint deltaTime) override;

@@ -7,6 +7,10 @@ namespace sputter { namespace game {
     class SubsystemProvider
     {
     public:
+        // Static accessor/mutator pair
+        static SubsystemProvider* GetSubsystemProviderAddress();
+        static void SetSubsystemProviderAddress(SubsystemProvider* pSubsystemProvider);
+
         template<typename S>
         void AddSubsystem(S* pSubsystem)
         {
@@ -21,5 +25,7 @@ namespace sputter { namespace game {
 
     private:
         std::array<void*, SubsystemType::TYPE_MAX> m_subsystems;
+
+        static SubsystemProvider* s_pSubsystemProvider;
     };
 }}

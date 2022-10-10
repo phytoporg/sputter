@@ -37,10 +37,8 @@ const std::string Ball::kBallVertexShaderAssetName = "cube_vert";
 const std::string Ball::kBallFragmentShaderAssetName = "cube_frag";
 const std::string Ball::kBallShaderName = "cube_shader";
 
-Ball::Ball(
-    AssetStorageProvider* pStorageProvider,
-    SubsystemProvider* pSubsystemProvider
-) : Object(kPaddleArenaObjectTypeBall, pStorageProvider, pSubsystemProvider)
+Ball::Ball(AssetStorageProvider* pStorageProvider) 
+    : Object(kPaddleArenaObjectTypeBall, pStorageProvider)
 {
     {
         sputter::render::Mesh::InitializationParameters params = {};

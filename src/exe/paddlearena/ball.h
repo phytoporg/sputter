@@ -30,10 +30,7 @@ class Paddle;
 class Ball : sputter::game::Object
 {
 public:
-    Ball(
-        sputter::assets::AssetStorageProvider* pStorageProvider,
-        sputter::game::SubsystemProvider* pSubsystemProvider
-        );
+    Ball(sputter::assets::AssetStorageProvider* pStorageProvider);
 
     virtual void Tick(sputter::math::FixedPoint deltaTime) override;
     virtual void PostTick(sputter::math::FixedPoint deltaTime) override;

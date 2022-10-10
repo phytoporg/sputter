@@ -65,16 +65,13 @@ GameInstance::GameInstance(
     meshSubsystemSettings.MaxVertexCount = 20;
     meshSubsystemSettings.MaxMeshCount = 10;
     m_pMeshSubsystem = pAllocator->Create<sputter::render::MeshSubsystem>(meshSubsystemSettings);
-    // m_pMeshSubsystem = new sputter::render::MeshSubsystem(meshSubsystemSettings);
 
     m_pSubsystemProvider->AddSubsystem(m_pRigidBodySubsystem);
     m_pSubsystemProvider->AddSubsystem(m_pCollisionSubsystem);
     m_pSubsystemProvider->AddSubsystem(m_pMeshSubsystem);
+    sputter::game::SubsystemProvider::SetSubsystemProviderAddress(m_pSubsystemProvider);
 
-    m_pGameState = 
-        pAllocator->Create<GameState>(
-            m_pAssetStorageProvider,
-            m_pSubsystemProvider);
+    m_pGameState = pAllocator->Create<GameState>(m_pAssetStorageProvider);
     GameState::SetGameStateAddress(m_pGameState);
 }
 
