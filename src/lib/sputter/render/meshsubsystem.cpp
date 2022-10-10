@@ -1,5 +1,8 @@
 #include "meshsubsystem.h"
 
+#include <sputter/core/check.h>
+
+using namespace sputter;
 using namespace sputter::render;
 
 MeshSubsystem::MeshSubsystem(
@@ -39,6 +42,26 @@ void MeshSubsystem::ReleaseComponent(Mesh* pMesh)
     {
         m_meshes.erase(std::begin(m_meshes) + indexToRemove);
     }
+}
+
+core::ComponentHandle MeshSubsystem::GetComponentHandle(Mesh* pMesh) const
+{
+    for (uint16_t i = 0; i < m_meshes.size(); ++i)
+    {
+        if (pMesh == &m_meshes[i])
+        {
+            return core::CreateComponentHandle<Mesh>(i);
+        }
+    }
+
+    return core::kInvalidComponentHandle;
+}
+
+Mesh* MeshSubsystem::GetComponentFromHandle(core::ComponentHandle handle)
+{
+    RELEASE_CHECK(handle != core::kInvalidComponentHandle, "Invalid mesh handle");
+    const uint16_t Index = core::GetComponentIndexFromHandle(handle);
+    return &m_meshes[Index];
 }
 
 void MeshSubsystem::Draw(const glm::mat4& projMatrix, const glm::mat4& viewMatrix) 

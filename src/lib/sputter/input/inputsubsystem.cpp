@@ -1,10 +1,11 @@
 #include "inputsubsystem.h"
 #include "keyboarddevice.h"
 
+#include <sputter/core/check.h>
 #include <sputter/render/window.h>
-
 #include <sputter/system/system.h>
 
+using namespace sputter::core;
 using namespace sputter::input;
 
 InputSubsystem::InputSubsystem(const InputSubsystemSettings& settings)
@@ -55,6 +56,26 @@ InputSource* InputSubsystem::CreateComponent(const InputSource::InitializationPa
 
 void InputSubsystem::ReleaseComponent(InputSource* pInputSource)
 {
+}
+
+ComponentHandle InputSubsystem::GetComponentHandle(InputSource* pInputSource) const
+{
+    for (uint16_t i = 0; i < m_inputSources.size(); ++i)
+    {
+        if (pInputSource == &m_inputSources[i])
+        {
+            return CreateComponentHandle<InputSource>(i);
+        }
+    }
+
+    return kInvalidComponentHandle;
+}
+
+InputSource* InputSubsystem::GetComponentFromHandle(ComponentHandle handle)
+{
+    RELEASE_CHECK(handle != kInvalidComponentHandle, "Invalid input source handle");
+    const uint16_t Index = GetComponentIndexFromHandle(handle);
+    return &m_inputSources[Index];
 }
 
 const InputSource* InputSubsystem::GetInputSource(uint8_t playerIndex) const

@@ -7,6 +7,7 @@
 
 #include <algorithm>
 
+using namespace sputter;
 using namespace sputter::render;
 
 ShaderStorage::~ShaderStorage()
@@ -120,6 +121,26 @@ ShaderPtr ShaderStorage::FindShaderByName(const std::string& shaderName) const
     }
 
     return nullptr;
+}
+
+assets::ResourceHandle ShaderStorage::FindShaderHandleByName(const std::string& shaderName) const
+{
+    for (uint16_t i = 0; i < m_storageVector.size(); ++i)
+    {
+        const ShaderPtr& spShader = m_storageVector[i];
+        if (spShader->GetName() == shaderName)
+        {
+            return assets::CreateResourceHandle<ShaderStorage>(i);
+        }
+    }
+
+    return assets::kInvalidResourceHandle;
+}
+
+ShaderPtr ShaderStorage::GetShaderFromHandle(assets::ResourceHandle handle) const
+{
+    const uint16_t Index = assets::GetResourceIndexFromHandle(handle);
+    return m_storageVector[Index];
 }
 
 uint32_t ShaderStorage::CompileVertexShader(const std::string& source) 

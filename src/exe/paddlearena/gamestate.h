@@ -22,10 +22,13 @@ namespace sputter
 
 struct GameState
 {
+    // Static accessor/mutator pair to grab the address all singleton-like
+    static GameState* GetGameStateAddress();
+    static void SetGameStateAddress(GameState* pGameState);
+
     GameState(
         sputter::assets::AssetStorageProvider* pStorageProvider,
-        sputter::game::SubsystemProvider* pSubsystemProvider
-        );
+        sputter::game::SubsystemProvider* pSubsystemProvider);
     
     enum class State 
     {
@@ -52,4 +55,7 @@ struct GameState
     using TimerSystem = sputter::game::TimerSystem;
     TimerSystem::TimerHandle CountdownTimerHandle = TimerSystem::kInvalidTimerHandle;
     uint8_t          CountdownTimeRemaining = 0;
+
+private:
+    static GameState* s_pGameState;
 };

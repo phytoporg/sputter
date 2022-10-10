@@ -2,6 +2,7 @@
 
 #include "inputsource.h"
 #include <sputter/core/subsystem.h>
+#include <sputter/core/component.h>
 #include <sputter/game/subsystemtype.h>
 #include <vector>
 
@@ -48,6 +49,9 @@ namespace sputter { namespace input {
 
         virtual InputSource* CreateComponent(const InputSource::InitializationParameters& params) override;
         virtual void ReleaseComponent(InputSource* pInputSource) override;
+
+        core::ComponentHandle GetComponentHandle(InputSource* pInputSource) const;
+        InputSource* GetComponentFromHandle(core::ComponentHandle handle);
 
         const InputSource* GetInputSource(uint8_t playerIndex) const;
 

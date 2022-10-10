@@ -25,6 +25,7 @@
 
 #include <fpm/math.hpp>
 
+using namespace sputter::core;
 using namespace sputter::render;
 using namespace sputter::game;
 using namespace sputter::assets;
@@ -37,18 +38,17 @@ const std::string Paddle::kPaddleFragmentShaderAssetName = "cube_frag";
 const std::string Paddle::kPaddleShaderName = "cube_shader";
 
 Paddle::Paddle(
-    GameState* pGameState,
     uint32_t playerId,
     AssetStorageProvider* pStorageProvider,
     SubsystemProvider* pSubsystemProvider
 ) : Object(kPaddleArenaObjectTypePaddle, pStorageProvider, pSubsystemProvider),
-    m_pGameState(pGameState),
     m_playerId(playerId)
 {
     {
         sputter::render::Mesh::InitializationParameters params = {};
-        CreateAndSetComponentByType<MeshSubsystem>(&m_pMeshComponent, params);
-        if (!m_pMeshComponent)
+
+        sputter::core::ComponentHandle meshComponentHandle;
+        if (CreateAndSetComponentByType<MeshSubsystem>(params) == kInvalidComponentHandle)
         {
             sputter::system::LogAndFail("Failed to create mesh component in Paddle object.");
         }
@@ -56,8 +56,7 @@ Paddle::Paddle(
 
     {
         sputter::physics::Collision::InitializationParameters params = {};
-        CreateAndSetComponentByType<CollisionSubsystem>(&m_pCollisionComponent, params);
-        if (!m_pCollisionComponent)
+        if (CreateAndSetComponentByType<CollisionSubsystem>(params) == kInvalidComponentHandle)
         {
             sputter::system::LogAndFail("Failed to create collision component in Paddle object.");
         }
@@ -66,16 +65,15 @@ Paddle::Paddle(
     {
         InputSource::InitializationParameters params;
         params.PlayerId = playerId;
-        CreateAndSetComponentByType<InputSubsystem>(&m_pInputSource, params);
-        if (!m_pInputSource)
+        if (CreateAndSetComponentByType<InputSubsystem>(params) == kInvalidComponentHandle)
         {
             sputter::system::LogAndFail("Failed to create input source in Paddle object.");
         }
     }
 
     auto pShaderStorage = pStorageProvider->GetStorageByType<ShaderStorage>();
-    m_spShader = pShaderStorage->FindShaderByName(kPaddleShaderName);
-    if (!m_spShader)
+    m_shaderHandle = pShaderStorage->FindShaderHandleByName(kPaddleShaderName);
+    if (m_shaderHandle == kInvalidResourceHandle)
     {
         if (!pShaderStorage->AddShaderFromShaderAssetNames(
             pStorageProvider->GetGeneralStorage(),
@@ -87,8 +85,8 @@ Paddle::Paddle(
         }
     }
 
-    m_spShader = pShaderStorage->FindShaderByName(kPaddleShaderName);
-    if (!m_spShader)
+    m_shaderHandle = pShaderStorage->FindShaderHandleByName(kPaddleShaderName);
+    if (m_shaderHandle == kInvalidResourceHandle)
     {
         sputter::system::LogAndFail("Failed to retrieve shader for paddle.");
     }
@@ -105,10 +103,11 @@ void Paddle::Tick(FixedPoint deltaTime)
         }
 
         // TEMP: simple "AI" for testing purposes, for the second paddle
+        GameState* pGameState = GameState::GetGameStateAddress();
         const FixedPoint PaddleY = m_localTransform.GetTranslation().GetY();
         const FixedPoint PaddleX = m_localTransform.GetTranslation().GetX();
-        const FixedPoint BallY = m_pGameState->TheBall.GetPosition().GetY();
-        const FixedPoint BallX = m_pGameState->TheBall.GetPosition().GetX();
+        const FixedPoint BallY = pGameState->TheBall.GetPosition().GetY();
+        const FixedPoint BallX = pGameState->TheBall.GetPosition().GetX();
         const FixedPoint VerticalDelta = BallY - PaddleY;
         const FixedPoint HorizontalDelta = fpm::abs(BallX - PaddleX);
 
@@ -129,16 +128,17 @@ void Paddle::Tick(FixedPoint deltaTime)
     }
     else
     {
-        if (m_pInputSource->IsInputHeld(static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_UP)))
+        InputSource* pInputSource = GetComponentByType<InputSource>();
+        if (pInputSource->IsInputHeld(static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_UP)))
         {
             velocity += FPVector3D(0, 1, 0);
         }
-        else if (m_pInputSource->IsInputHeld(static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_DOWN)))
+        else if (pInputSource->IsInputHeld(static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_DOWN)))
         {
             velocity += FPVector3D(0, -1, 0);
         }
 
-        if (m_pInputSource->IsInputPressed(static_cast<uint32_t>(PaddleArenaInput::INPUT_DASH)))
+        if (pInputSource->IsInputPressed(static_cast<uint32_t>(PaddleArenaInput::INPUT_DASH)))
         {
             if (!velocity.IsZero() && m_dashVelocityY == FPZero)
             {
@@ -148,7 +148,7 @@ void Paddle::Tick(FixedPoint deltaTime)
 
         if (IsBallAttached())
         {
-            if (m_pInputSource->IsInputPressed(static_cast<uint32_t>(PaddleArenaInput::INPUT_SERVE)))
+            if (pInputSource->IsInputPressed(static_cast<uint32_t>(PaddleArenaInput::INPUT_SERVE)))
             {
                 const FPVector2D Velocity2D(velocity.GetX(), velocity.GetY());
                 DetachBall(GetFacingDirection() + Velocity2D);
@@ -158,11 +158,11 @@ void Paddle::Tick(FixedPoint deltaTime)
 
 // Just vertical movement for now
 #if 0
-    if (m_pInputSource->IsInputHeld(static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_LEFT)))
+    if (pInputSource->IsInputHeld(static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_LEFT)))
     {
         velocity += FPVector3D(-1, 0, 0);
     }
-    else if (m_pInputSource->IsInputHeld(static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_RIGHT)))
+    else if (pInputSource->IsInputHeld(static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_RIGHT)))
     {
         velocity += FPVector3D(1, 0, 0);
     }
@@ -191,17 +191,19 @@ void Paddle::Tick(FixedPoint deltaTime)
 
 void Paddle::PostTick(FixedPoint deltaTime)
 {
-    for (CollisionResult& collisionResult : m_pCollisionComponent->CollisionsThisFrame)
+    Collision* pCollisionComponent = GetComponentByType<Collision>();
+    RELEASE_CHECK(pCollisionComponent, "Could not find collision component on paddle")
+    for (CollisionResult& collisionResult : pCollisionComponent->CollisionsThisFrame)
     {
-        const Collision& OtherCollision = collisionResult.pCollisionA == m_pCollisionComponent ?
+        const Collision& OtherCollision = collisionResult.pCollisionA == pCollisionComponent ?
             *collisionResult.pCollisionB : *collisionResult.pCollisionA;
         if (OtherCollision.pObject->GetType() == kPaddleArenaObjectTypeStage)
         {
-            const ICollisionShape* pOtherShape = collisionResult.pCollisionA == m_pCollisionComponent ?
+            const ICollisionShape* pOtherShape = collisionResult.pCollisionA == pCollisionComponent ?
                 collisionResult.pCollisionShapeB : collisionResult.pCollisionShapeA;
 
             // lol this is hideous
-            AABB* pMyAABB = static_cast<AABB*>(m_pCollisionComponent->CollisionShapes.back());
+            AABB* pMyAABB = static_cast<AABB*>(pCollisionComponent->CollisionShapes.back());
             const AABB* pOtherAABB = static_cast<const AABB*>(pOtherShape);
             const FPVector3D Separation = pMyAABB->GetSeparation2D(pOtherAABB);
 
@@ -231,81 +233,99 @@ void Paddle::Initialize(
 
     const uint32_t NumVertices = sizeof(VertexPositions) / sizeof(VertexPositions[0]); 
     const uint32_t NumIndices = sizeof(VertexIndices) / sizeof(VertexIndices[0]); 
-    m_pMeshComponent->SetPositions(VertexPositions, NumVertices);
-    m_pMeshComponent->SetNormals(VertexNormals, NumVertices);
-    m_pMeshComponent->SetTextureCoordinates(VertexUVs, NumVertices);
-    m_pMeshComponent->SetIndices(VertexIndices, NumIndices);
-    m_pMeshComponent->SetShader(m_spShader);
-    m_pMeshComponent->SetModelMatrix(m_localTransform.ToMat4());
+
+    auto pShaderStorage = m_pAssetStorageProvider->GetStorageByType<ShaderStorage>();
+    ShaderPtr spShader = pShaderStorage->GetShaderFromHandle(m_shaderHandle);
+
+    Mesh* pMesh = GetComponentByType<Mesh>();
+    RELEASE_CHECK(pMesh, "Could not find mesh component")
+    pMesh->SetPositions(VertexPositions, NumVertices);
+    pMesh->SetNormals(VertexNormals, NumVertices);
+    pMesh->SetTextureCoordinates(VertexUVs, NumVertices);
+    pMesh->SetIndices(VertexIndices, NumIndices);
+    pMesh->SetShader(spShader);
+    pMesh->SetModelMatrix(m_localTransform.ToMat4());
 
     static const glm::vec3 White(1.0, 1.0, 1.0);
-    m_pMeshComponent->SetMeshUniforms({ MeshUniformValue("color", UniformType::Vec3, &White) });
+    pMesh->SetMeshUniforms({ MeshUniformValue("color", UniformType::Vec3, &White) });
 
     // Now, set up collision geometry! Defined in *global* space at the moment. TODO: Fix that
     // Because of this, gotta update geometry on tick... D: D:
 
-    m_pCollisionComponent->CollisionFlags = (1 << m_playerId);
-    m_pCollisionComponent->pObject = this;
-    m_pCollisionComponent->CollisionShapes.clear();
+    Collision* pCollisionComponent = GetComponentByType<Collision>();
+    RELEASE_CHECK(pCollisionComponent, "Could not find collision component on paddle")
+    pCollisionComponent->CollisionFlags = (1 << m_playerId);
+    pCollisionComponent->pObject = this;
+    pCollisionComponent->CollisionShapes.clear();
     
     const FPVector3D PaddleLowerLeft = FPVector3D(-dimensions.GetX() / FPTwo, -dimensions.GetY() / FPTwo, FPOne / FPTwo);
     AABB* pShape = new AABB(
          PaddleLowerLeft + location,
          FPVector3D(dimensions.GetX(), dimensions.GetY(), FPOne)
          );
-    m_pCollisionComponent->CollisionShapes.push_back(pShape);
+    pCollisionComponent->CollisionShapes.push_back(pShape);
 }
 
 void Paddle::TranslatePaddle(const FPVector3D& translation)
 {
     const FPVector3D CurrentTranslation = m_localTransform.GetTranslation();
     m_localTransform.SetTranslation(CurrentTranslation + translation);
-    m_pMeshComponent->SetModelMatrix(m_localTransform.ToMat4());
+
+    Mesh* pMesh = GetComponentByType<Mesh>();
+    RELEASE_CHECK(pMesh, "Could not find mesh component")
+    pMesh->SetModelMatrix(m_localTransform.ToMat4());
 
     // Update collision transform as well
     const FPVector3D Scale = m_localTransform.GetScale();
     const FPVector3D PaddleLowerLeft = FPVector3D(-Scale.GetX() / FPTwo, -Scale.GetY() / FPTwo, FPOne / FPTwo);
 
-    AABB* pMyAABB = static_cast<AABB*>(m_pCollisionComponent->CollisionShapes.back());
+    Collision* pCollisionComponent = GetComponentByType<Collision>();
+    RELEASE_CHECK(pCollisionComponent, "Could not find collision component on paddle")
+    AABB* pMyAABB = static_cast<AABB*>(pCollisionComponent->CollisionShapes.back());
     pMyAABB->SetLowerLeft(PaddleLowerLeft + m_localTransform.GetTranslation());
 
     if (IsBallAttached())
     {
-        m_pAttachedBall->TranslateBall(translation);
+        GameState* pGameState = GameState::GetGameStateAddress();
+        pGameState->TheBall.TranslateBall(translation);
     }
 }
 
 void Paddle::AttachBall(Ball* pBall)
 {
-    RELEASE_CHECK(!m_pAttachedBall, "Attempting to attach ball to paddle, but a ball is already attached.");
-    m_pAttachedBall = pBall;
+    RELEASE_CHECK(!IsBallAttached(), "Attempting to attach ball to paddle, but a ball is already attached.");
+    m_ballAttached = true;
 
     // Temporarily avoid colliding with the ball
-    m_pAttachedBall->SetCanCollideWithPaddle(m_playerId, false);
+    pBall->SetCanCollideWithPaddle(m_playerId, false);
 
     // Figure out where to place the ball, now that it's attached.
     const FixedPoint MyHalfWidth = GetDimensions().GetX() / FPTwo;
-    const FixedPoint BallHalfWidth = m_pAttachedBall->GetDimensions().GetX() / FPTwo;
+    const FixedPoint BallHalfWidth = pBall->GetDimensions().GetX() / FPTwo;
 
     const FPVector2D NewBallLocation2D = GetPosition() + (GetFacingDirection() * (MyHalfWidth + BallHalfWidth));
     const FPVector3D NewBallLocation3D(NewBallLocation2D.GetX(), NewBallLocation2D.GetY(), -FPOneHalf);
     const FPVector2D& BallStartVelocity = FPVector2D::ZERO;
-    m_pAttachedBall->Reset(NewBallLocation3D, BallStartVelocity);
+    pBall->Reset(NewBallLocation3D, BallStartVelocity);
 }
 
 void Paddle::DetachBall(const FPVector2D& detachVelocity)
 {
-    RELEASE_CHECK(m_pAttachedBall, "Attempting to detach ball from paddle, but no ball is attached.");
+    RELEASE_CHECK(IsBallAttached(), "Attempting to detach ball from paddle, but no ball is attached.");
 
     // Reenable collision
-    m_pAttachedBall->SetCanCollideWithPaddle(m_playerId, true);
-    m_pAttachedBall->SetVelocity(detachVelocity);
-    m_pAttachedBall = nullptr;
+    GameState* pGameState = GameState::GetGameStateAddress();
+    RELEASE_CHECK(pGameState, "Failed to get game state address");
+    Ball* pBall = &pGameState->TheBall;
+
+    pBall->SetCanCollideWithPaddle(m_playerId, true);
+    pBall->SetVelocity(detachVelocity);
+    m_ballAttached = false;
 }
 
 bool Paddle::IsBallAttached() const
 {
-    return m_pAttachedBall != nullptr;
+    return m_ballAttached;
 }
 
 FPVector2D Paddle::GetFacingDirection() const

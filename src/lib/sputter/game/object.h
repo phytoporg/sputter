@@ -2,8 +2,10 @@
 
 #include "subsystemtype.h"
 
+#include <sputter/core/component.h>
 #include <sputter/game/subsystemprovider.h>
 #include <sputter/math/fixedpoint.h>
+#include <sputter/system/system.h>
 
 #include <array>
 
@@ -33,6 +35,13 @@ namespace sputter { namespace game {
         }
 
         template<typename ComponentType>
+        core::ComponentHandle* GetComponentHandleByType()
+        {
+            ComponentType* pComponent = GetComponentByType<ComponentType>();
+            return pComponent->GetComponentHandle(pComponent);
+        }
+
+        template<typename ComponentType>
         void SetComponentByType(ComponentType* pComponent)
         {
             m_components[ComponentType::ComponentId] = pComponent;
@@ -49,6 +58,23 @@ namespace sputter { namespace game {
             }
 
             SetComponentByType(pComponent);
+        }
+
+        template<typename SubsystemType>
+        sputter::core::ComponentHandle CreateAndSetComponentByType(const typename SubsystemType::Component::InitializationParameters& params)
+        {
+            auto pSubsystem = m_pSubsystemProvider->GetSubsystemByType<SubsystemType>();
+            typename SubsystemType::Component* pComponent = pSubsystem->CreateComponent(params);
+            if (pComponent)
+            {
+                SetComponentByType(pComponent);
+                return pSubsystem->GetComponentHandle(pComponent);
+            }
+            else
+            {
+                system::LogAndFail("Failed to create and set component by type");
+                return sputter::core::kInvalidComponentHandle; // Appease the compiler
+            }
         }
 
         uint32_t GetType() const;

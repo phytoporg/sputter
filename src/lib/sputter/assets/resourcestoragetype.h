@@ -1,7 +1,9 @@
 #pragma once
 
+#include <cstdint>
+
 namespace sputter { namespace assets {
-    enum ResourceStorageType
+    enum ResourceStorageType : uint16_t
     {
         TYPE_INVALID = 0,
         TYPE_TEXTURE,

@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <sputter/core/subsystem.h>
+#include <sputter/core/component.h>
 
 #include <sputter/physics/collision.h>
 
@@ -39,6 +40,9 @@ namespace sputter { namespace physics {
         virtual Collision* CreateComponent(const Collision::InitializationParameters& params) override;
         virtual void ReleaseComponent(Collision* pComponent) override;
         // End ISubsystem
+
+        core::ComponentHandle GetComponentHandle(Collision* pCollision) const;
+        Collision* GetComponentFromHandle(core::ComponentHandle handle);
 
     private:
         // No default or copy construction allowed here

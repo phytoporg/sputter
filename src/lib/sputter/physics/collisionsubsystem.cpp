@@ -1,9 +1,10 @@
 #include "collisionsubsystem.h"
-
 #include "collisionshape.h"
 
-#include <sputter/game/object.h>
+#include <sputter/system/system.h>
+#include <sputter/core/check.h>
 
+using namespace sputter::core;
 using namespace sputter::physics;
 
 CollisionResult::CollisionResult(
@@ -64,4 +65,24 @@ Collision* CollisionSubsystem::CreateComponent(const Collision::InitializationPa
 void CollisionSubsystem::ReleaseComponent(Collision* pComponent) 
 {
     // TODO
+}
+
+ComponentHandle CollisionSubsystem::GetComponentHandle(Collision* pCollision) const
+{
+    for (uint16_t i = 0; i < m_collisions.size(); ++i)
+    {
+        if (pCollision == &m_collisions[i])
+        {
+            return CreateComponentHandle<Collision>(i);
+        }
+    }
+
+    return kInvalidComponentHandle;
+}
+
+Collision* CollisionSubsystem::GetComponentFromHandle(ComponentHandle handle)
+{
+    RELEASE_CHECK(handle != kInvalidComponentHandle, "Invalid collision handle");
+    const uint16_t Index = GetComponentIndexFromHandle(handle);
+    return &m_collisions[Index];
 }

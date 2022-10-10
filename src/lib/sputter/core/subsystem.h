@@ -11,6 +11,8 @@ namespace sputter { namespace core {
     class ISubsystem
     {
     public:
+        using Component = ComponentType;
+
         virtual void Tick(math::FixedPoint dt) {}
         virtual void PostTick(math::FixedPoint dt) {}
 

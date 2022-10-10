@@ -40,6 +40,9 @@ namespace sputter { namespace render {
 
         ShaderPtr FindShaderByName(const std::string& shaderName) const;
 
+        assets::ResourceHandle FindShaderHandleByName(const std::string& shaderName) const;
+        ShaderPtr GetShaderFromHandle(assets::ResourceHandle handle) const;
+
     private:
         uint32_t CompileVertexShader(const std::string& source);
         uint32_t CompileFragmentShader(const std::string& source);

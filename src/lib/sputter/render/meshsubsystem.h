@@ -2,6 +2,7 @@
 
 #include "mesh.h"
 #include <sputter/core/subsystem.h>
+#include <sputter/core/component.h>
 #include <sputter/game/subsystemtype.h>
 #include <sputter/containers/fixedmemoryvector.h>
 #include <sputter/memory/fixedmemoryallocator.h>
@@ -29,6 +30,9 @@ namespace sputter { namespace render {
 
         virtual Mesh* CreateComponent(const Mesh::InitializationParameters& params) override;
         virtual void ReleaseComponent(Mesh* pMesh) override;
+
+        core::ComponentHandle GetComponentHandle(Mesh* pMesh) const;
+        Mesh* GetComponentFromHandle(core::ComponentHandle handle);
 
         void Draw(const glm::mat4& projMatrix, const glm::mat4& viewMatrix);
 

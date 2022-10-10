@@ -75,6 +75,7 @@ GameInstance::GameInstance(
         pAllocator->Create<GameState>(
             m_pAssetStorageProvider,
             m_pSubsystemProvider);
+    GameState::SetGameStateAddress(m_pGameState);
 }
 
 void GameInstance::Initialize()
