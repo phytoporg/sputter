@@ -3,6 +3,8 @@
 #include <string>
 #include <memory>
 
+#include <sputter/assets/resourcestorage.h>
+#include <sputter/core/component.h>
 #include <sputter/game/object.h>
 #include <sputter/math/fixedpoint.h>
 #include <sputter/math/fptransform3d.h>
@@ -65,14 +67,10 @@ private:
     static const std::string       kBallFragmentShaderAssetName;
     static const std::string       kBallShaderName;
 
-    sputter::render::Mesh*                   m_pMeshComponent = nullptr;
-    std::shared_ptr<sputter::render::Shader> m_spShader = nullptr;
-    sputter::physics::Collision*             m_pCollisionComponent = nullptr;
+    sputter::math::FPTransform3D   m_localTransform;
+    sputter::math::FPVector3D      m_initialLocation;
+    sputter::math::FPVector2D      m_travelVector;
 
-    sputter::math::FPTransform3D             m_localTransform;
-    sputter::math::FPVector3D                m_initialLocation;
-    sputter::math::FPVector2D                m_travelVector;
-
-    bool                                     m_isAlive = false;
-    bool                                     m_isInitialized = false;
+    bool                           m_isAlive = false;
+    bool                           m_isInitialized = false;
 };

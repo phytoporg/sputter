@@ -44,8 +44,7 @@ Ball::Ball(
 {
     {
         sputter::render::Mesh::InitializationParameters params = {};
-        CreateAndSetComponentByType<MeshSubsystem>(&m_pMeshComponent, params);
-        if (!m_pMeshComponent)
+        if (CreateAndSetComponentByType<MeshSubsystem>(params) == kInvalidComponentHandle)
         {
             sputter::system::LogAndFail("Failed to create mesh component in Ball object.");
         }
@@ -53,16 +52,15 @@ Ball::Ball(
 
     {
         sputter::physics::Collision::InitializationParameters params = {};
-        CreateAndSetComponentByType<CollisionSubsystem>(&m_pCollisionComponent, params);
-        if (!m_pCollisionComponent)
+        if (CreateAndSetComponentByType<CollisionSubsystem>(params) == kInvalidComponentHandle)
         {
             sputter::system::LogAndFail("Failed to create collision component in Ball object.");
         }
     }
 
     auto pShaderStorage = pStorageProvider->GetStorageByType<ShaderStorage>();
-    m_spShader = pShaderStorage->FindShaderByName(kBallShaderName);
-    if (!m_spShader)
+    ResourceHandle shaderHandle = pShaderStorage->FindShaderHandleByName(kBallShaderName);
+    if (shaderHandle == kInvalidResourceHandle)
     {
         if (!pShaderStorage->AddShaderFromShaderAssetNames(
             pStorageProvider->GetGeneralStorage(),
@@ -74,8 +72,8 @@ Ball::Ball(
         }
     }
 
-    m_spShader = pShaderStorage->FindShaderByName(kBallShaderName);
-    if (!m_spShader)
+    shaderHandle = pShaderStorage->FindShaderHandleByName(kBallShaderName);
+    if (shaderHandle == kInvalidResourceHandle)
     {
         sputter::system::LogAndFail("Failed to retrieve shader for ball.");
     }
@@ -105,17 +103,19 @@ void Ball::PostTick(sputter::math::FixedPoint deltaTime)
         return;
     }
 
-    for (CollisionResult& collisionResult : m_pCollisionComponent->CollisionsThisFrame)
+    Collision* pCollision = GetComponentByType<Collision>();
+    RELEASE_CHECK(pCollision, "Could not get collision component on Ball");
+    for (CollisionResult& collisionResult : pCollision->CollisionsThisFrame)
     {
-        const Collision& OtherCollision = collisionResult.pCollisionA == m_pCollisionComponent ?
+        const Collision& OtherCollision = collisionResult.pCollisionA == pCollision ?
             *collisionResult.pCollisionB : *collisionResult.pCollisionA;
         if (OtherCollision.pObject->GetType() == kPaddleArenaObjectTypeStage)
         {
-            const ICollisionShape* pOtherShape = collisionResult.pCollisionA == m_pCollisionComponent ?
+            const ICollisionShape* pOtherShape = collisionResult.pCollisionA == pCollision ?
                 collisionResult.pCollisionShapeB : collisionResult.pCollisionShapeA;
 
             // lol this is hideous
-            AABB* pMyAABB = static_cast<AABB*>(m_pCollisionComponent->CollisionShapes.back());
+            AABB* pMyAABB = static_cast<AABB*>(pCollision->CollisionShapes.back());
             const AABB* pOtherAABB = static_cast<const AABB*>(pOtherShape);
             const FPVector3D Separation = pMyAABB->GetSeparation2D(pOtherAABB);
 
@@ -129,16 +129,19 @@ void Ball::PostTick(sputter::math::FixedPoint deltaTime)
             {
                 // Colliding with side of the arena. Time to DIE. Abruptly for the time being.
                 m_isAlive = false;
-                m_pMeshComponent->SetVisibility(false);
+
+                Mesh* pMeshComponent = GetComponentByType<Mesh>();
+                RELEASE_CHECK(pMeshComponent, "Could not find mesh component on ball");
+                pMeshComponent->SetVisibility(false);
             }
         }
         else if (OtherCollision.pObject->GetType() == kPaddleArenaObjectTypePaddle)
         {
-            const ICollisionShape* pOtherShape = collisionResult.pCollisionA == m_pCollisionComponent ?
+            const ICollisionShape* pOtherShape = collisionResult.pCollisionA == pCollision ?
                 collisionResult.pCollisionShapeB : collisionResult.pCollisionShapeA;
 
             // lol this is also hideous
-            AABB* pMyAABB = static_cast<AABB*>(m_pCollisionComponent->CollisionShapes.back());
+            AABB* pMyAABB = static_cast<AABB*>(pCollision->CollisionShapes.back());
             const AABB* pOtherAABB = static_cast<const AABB*>(pOtherShape);
             const FPVector3D Separation = pMyAABB->GetSeparation2D(pOtherAABB);
 
@@ -194,21 +197,31 @@ void Ball::Initialize(
 
     const uint32_t NumVertices = sizeof(VertexPositions) / sizeof(VertexPositions[0]); 
     const uint32_t NumIndices = sizeof(VertexIndices) / sizeof(VertexIndices[0]); 
-    m_pMeshComponent->SetPositions(VertexPositions, NumVertices);
-    m_pMeshComponent->SetNormals(VertexNormals, NumVertices);
-    m_pMeshComponent->SetTextureCoordinates(VertexUVs, NumVertices);
-    m_pMeshComponent->SetIndices(VertexIndices, NumIndices);
-    m_pMeshComponent->SetShader(m_spShader);
-    m_pMeshComponent->SetModelMatrix(m_localTransform.ToMat4());
+
+    auto pShaderStorage = m_pAssetStorageProvider->GetStorageByType<ShaderStorage>();
+    ShaderPtr spShader = pShaderStorage->FindShaderByName(kBallShaderName);
+
+    Mesh* pMeshComponent = GetComponentByType<Mesh>();
+    RELEASE_CHECK(pMeshComponent, "Could not find mesh component on ball");
+
+    pMeshComponent->SetPositions(VertexPositions, NumVertices);
+    pMeshComponent->SetNormals(VertexNormals, NumVertices);
+    pMeshComponent->SetTextureCoordinates(VertexUVs, NumVertices);
+    pMeshComponent->SetIndices(VertexIndices, NumIndices);
+    pMeshComponent->SetShader(spShader);
+    pMeshComponent->SetModelMatrix(m_localTransform.ToMat4());
 
     static const glm::vec3 White(1.0, 1.0, 1.0);
-    m_pMeshComponent->SetMeshUniforms({ MeshUniformValue("color", UniformType::Vec3, &White) });
+    pMeshComponent->SetMeshUniforms({ MeshUniformValue("color", UniformType::Vec3, &White) });
 
     // Now, set up collision geometry! Defined in *global* space at the moment. TODO: Fix that
     // Because of this, gotta update geometry on tick... D: D:
-    m_pCollisionComponent->CollisionFlags = 0b111;
-    m_pCollisionComponent->pObject = this;
-    m_pCollisionComponent->CollisionShapes.clear();
+    Collision* pCollision = GetComponentByType<Collision>();
+    RELEASE_CHECK(pCollision, "Could not get collision component on Ball");
+
+    pCollision->CollisionFlags = 0b111;
+    pCollision->pObject = this;
+    pCollision->CollisionShapes.clear();
 
     // Collides with everything
     const FPVector3D BallLowerLeft = FPVector3D(-dimensions.GetX() / FPTwo, -dimensions.GetY() / FPTwo, FPOne / FPTwo);
@@ -216,7 +229,7 @@ void Ball::Initialize(
          BallLowerLeft + location,
          FPVector3D(dimensions.GetX(), dimensions.GetY(), FPOne)
          );
-    m_pCollisionComponent->CollisionShapes.push_back(pShape);
+    pCollision->CollisionShapes.push_back(pShape);
 
     Reset(location, startVector);
     m_isInitialized = true;
@@ -242,7 +255,10 @@ void Ball::Reset(
     }
 
     m_isAlive = true;
-    m_pMeshComponent->SetVisibility(true);
+
+    Mesh* pMeshComponent = GetComponentByType<Mesh>();
+    RELEASE_CHECK(pMeshComponent, "Could not find mesh component on ball");
+    pMeshComponent->SetVisibility(true);
 }
 
 bool Ball::IsDead() const
@@ -254,14 +270,17 @@ void Ball::SetCanCollideWithPaddle(uint32_t paddleIndex, bool canCollide)
 {
     RELEASE_CHECK(paddleIndex == 0 || paddleIndex == 1, "Unexpected paddle index!");
 
+    Collision* pCollision = GetComponentByType<Collision>();
+    RELEASE_CHECK(pCollision, "Could not get collision component on Ball");
+
     const uint32_t BitFlags = 1 << paddleIndex;
     if (canCollide)
     {
-        m_pCollisionComponent->CollisionFlags |= BitFlags;
+        pCollision->CollisionFlags |= BitFlags;
     }
     else
     {
-        m_pCollisionComponent->CollisionFlags &= ~BitFlags;
+        pCollision->CollisionFlags &= ~BitFlags;
     }
 }
 
@@ -299,13 +318,18 @@ void Ball::TranslateBall(const FPVector3D& translation)
 {
     const FPVector3D CurrentTranslation = m_localTransform.GetTranslation();
     m_localTransform.SetTranslation(CurrentTranslation + translation);
-    m_pMeshComponent->SetModelMatrix(m_localTransform.ToMat4());
+
+    Mesh* pMeshComponent = GetComponentByType<Mesh>();
+    RELEASE_CHECK(pMeshComponent, "Could not find mesh component on ball");
+    pMeshComponent->SetModelMatrix(m_localTransform.ToMat4());
 
     // Update collision transform as well
     const FPVector3D Scale = m_localTransform.GetScale();
     const FPVector3D BallLowerLeft = FPVector3D(-Scale.GetX() / FPTwo, -Scale.GetY() / FPTwo, FPOne / FPTwo);
 
-    AABB* pMyAABB = static_cast<AABB*>(m_pCollisionComponent->CollisionShapes.back());
+    Collision* pCollision = GetComponentByType<Collision>();
+    RELEASE_CHECK(pCollision, "Could not get collision component on Ball");
+    AABB* pMyAABB = static_cast<AABB*>(pCollision->CollisionShapes.back());
     pMyAABB->SetLowerLeft(BallLowerLeft + m_localTransform.GetTranslation());
 }
 
