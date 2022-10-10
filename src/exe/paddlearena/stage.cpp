@@ -23,6 +23,7 @@ using namespace sputter::math;
 using namespace sputter::assets;
 using namespace sputter::render;
 using namespace sputter::physics;
+using namespace sputter::core;
 
 const std::string Stage::kArenaVertexShaderAssetName = "cube_vert";
 const std::string Stage::kArenaFragmentShaderAssetName = "cube_frag";
@@ -35,8 +36,7 @@ Stage::Stage(
 {
     {
         sputter::render::Mesh::InitializationParameters params = {};
-        CreateAndSetComponentByType<MeshSubsystem>(&m_pMeshComponent, params);
-        if (!m_pMeshComponent)
+        if (CreateAndSetComponentByType<MeshSubsystem>(params) == kInvalidComponentHandle)
         {
             sputter::system::LogAndFail("Failed to create mesh component in stage object.");
         }
@@ -44,8 +44,7 @@ Stage::Stage(
 
     {
         sputter::physics::Collision::InitializationParameters params = {};
-        CreateAndSetComponentByType<CollisionSubsystem>(&m_pCollisionComponent, params);
-        if (!m_pCollisionComponent)
+        if (CreateAndSetComponentByType<CollisionSubsystem>(params) == kInvalidComponentHandle)
         {
             sputter::system::LogAndFail("Failed to create collision component in stage object.");
         }
@@ -61,8 +60,8 @@ Stage::Stage(
         sputter::system::LogAndFail("Failed to add shader for the arena.");
     }
 
-    m_spShader = pShaderStorage->FindShaderByName(kArenaShaderName);
-    if (!m_spShader)
+    ShaderPtr spShader = pShaderStorage->FindShaderByName(kArenaShaderName);
+    if (!spShader)
     {
         sputter::system::LogAndFail("Failed to retrieve shader for character cube.");
     }
@@ -70,7 +69,9 @@ Stage::Stage(
 
 void Stage::Tick(FixedPoint deltaTime)
 {
-    m_pMeshComponent->SetModelMatrix(m_localTransform.ToMat4());
+    Mesh* pMeshComponent = GetComponentByType<Mesh>();
+    RELEASE_CHECK(pMeshComponent, "Could not find mesh component for stage");
+    pMeshComponent->SetModelMatrix(m_localTransform.ToMat4());
 }
 
 void Stage::Initialize(FPVector2D stageDimensions)
@@ -91,22 +92,30 @@ void Stage::Initialize(FPVector2D stageDimensions)
         sputter::system::LogAndFail("Failed to create a unit cube. What's up with that.");
     }
 
+    auto pShaderStorage = m_pAssetStorageProvider->GetStorageByType<ShaderStorage>();
+    ShaderPtr spShader = pShaderStorage->FindShaderByName(kArenaShaderName);
+
+    Mesh* pMeshComponent = GetComponentByType<Mesh>();
+    RELEASE_CHECK(pMeshComponent, "Could not find mesh component for stage");
+
     const uint32_t NumVertices = sizeof(VertexPositions) / sizeof(VertexPositions[0]); 
     const uint32_t NumIndices = sizeof(VertexIndices) / sizeof(VertexIndices[0]); 
-    m_pMeshComponent->SetPositions(VertexPositions, NumVertices);
-    m_pMeshComponent->SetNormals(VertexNormals, NumVertices);
-    m_pMeshComponent->SetTextureCoordinates(VertexUVs, NumVertices);
-    m_pMeshComponent->SetIndices(VertexIndices, NumIndices);
-    m_pMeshComponent->SetShader(m_spShader);
-    m_pMeshComponent->SetModelMatrix(m_localTransform.ToMat4());
+    pMeshComponent->SetPositions(VertexPositions, NumVertices);
+    pMeshComponent->SetNormals(VertexNormals, NumVertices);
+    pMeshComponent->SetTextureCoordinates(VertexUVs, NumVertices);
+    pMeshComponent->SetIndices(VertexIndices, NumIndices);
+    pMeshComponent->SetShader(spShader);
+    pMeshComponent->SetModelMatrix(m_localTransform.ToMat4());
 
     static const glm::vec3 Gray(0.5, 0.5, 0.5);
-    m_pMeshComponent->SetMeshUniforms({ MeshUniformValue("color", UniformType::Vec3, &Gray) });
+    pMeshComponent->SetMeshUniforms({ MeshUniformValue("color", UniformType::Vec3, &Gray) });
 
     // Now, set up collision geometry! Defined in *global* space at the moment. TODO: Fix that
-    m_pCollisionComponent->CollisionFlags = 0b111;
-    m_pCollisionComponent->pObject = this;
-    m_pCollisionComponent->CollisionShapes.clear();
+    Collision* pCollision = GetComponentByType<Collision>();
+    RELEASE_CHECK(pCollision, "Could not find collision component for stage");
+    pCollision->CollisionFlags = 0b111;
+    pCollision->pObject = this;
+    pCollision->CollisionShapes.clear();
 
     // Left and right AABBs
     const FPVector3D SideCollisionExtents(
@@ -122,8 +131,8 @@ void Stage::Initialize(FPVector2D stageDimensions)
         (stageDimensions.GetX() / FPTwo), 
         -(stageDimensions.GetY() / FPTwo),
         -FPTwo);
-    m_pCollisionComponent->CollisionShapes.push_back(new AABB(LeftLowerLeft, SideCollisionExtents));
-    m_pCollisionComponent->CollisionShapes.push_back(new AABB(RightLowerLeft, SideCollisionExtents));
+    pCollision->CollisionShapes.push_back(new AABB(LeftLowerLeft, SideCollisionExtents));
+    pCollision->CollisionShapes.push_back(new AABB(RightLowerLeft, SideCollisionExtents));
 
     // Top and bottom AABBs
     const FPVector3D TopAndBottomCollisionExtents(
@@ -139,6 +148,6 @@ void Stage::Initialize(FPVector2D stageDimensions)
         -(stageDimensions.GetX() / FPTwo), 
         -(stageDimensions.GetY() / FPTwo) - TopAndBottomCollisionExtents.GetY(),
         -FPTwo);
-    m_pCollisionComponent->CollisionShapes.push_back(new AABB(TopLowerLeft, TopAndBottomCollisionExtents));
-    m_pCollisionComponent->CollisionShapes.push_back(new AABB(BottomLowerLeft, TopAndBottomCollisionExtents));
+    pCollision->CollisionShapes.push_back(new AABB(TopLowerLeft, TopAndBottomCollisionExtents));
+    pCollision->CollisionShapes.push_back(new AABB(BottomLowerLeft, TopAndBottomCollisionExtents));
 }

@@ -2,6 +2,7 @@
 
 #include <string>
 #include <memory>
+#include <sputter/core/component.h>
 #include <sputter/game/object.h>
 #include <sputter/math/fpvector2d.h>
 #include <sputter/math/fptransform3d.h>
@@ -32,14 +33,10 @@ public:
         );
 
 private:
-    static const std::string       kArenaVertexShaderAssetName;
-    static const std::string       kArenaFragmentShaderAssetName;
-    static const std::string       kArenaShaderName;
+    static const std::string     kArenaVertexShaderAssetName;
+    static const std::string     kArenaFragmentShaderAssetName;
+    static const std::string     kArenaShaderName;
 
-    sputter::render::Mesh*                   m_pMeshComponent = nullptr;
-    sputter::physics::Collision*             m_pCollisionComponent = nullptr;
-    std::shared_ptr<sputter::render::Shader> m_spShader;
-
-    sputter::math::FPTransform3D             m_localTransform;
-    sputter::math::FPVector3D                m_initialLocation;
+    sputter::math::FPTransform3D m_localTransform;
+    sputter::math::FPVector3D    m_initialLocation;
 };
