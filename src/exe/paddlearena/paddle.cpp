@@ -200,7 +200,7 @@ void Paddle::PostTick(FixedPoint deltaTime)
                 collisionResult.pCollisionShapeB : collisionResult.pCollisionShapeA;
 
             // lol this is hideous
-            AABB* pMyAABB = static_cast<AABB*>(pCollisionComponent->CollisionShapes.back());
+            AABB* pMyAABB = &pCollisionComponent->CollisionShapes[pCollisionComponent->NumCollisionShapes - 1];
             const AABB* pOtherAABB = static_cast<const AABB*>(pOtherShape);
             const FPVector3D Separation = pMyAABB->GetSeparation2D(pOtherAABB);
 
@@ -254,14 +254,14 @@ void Paddle::Initialize(
     RELEASE_CHECK(pCollisionComponent, "Could not find collision component on paddle")
     pCollisionComponent->CollisionFlags = (1 << m_playerId);
     pCollisionComponent->pObject = this;
-    pCollisionComponent->CollisionShapes.clear();
+    pCollisionComponent->NumCollisionShapes = 0;
     
     const FPVector3D PaddleLowerLeft = FPVector3D(-dimensions.GetX() / FPTwo, -dimensions.GetY() / FPTwo, FPOne / FPTwo);
-    AABB* pShape = new AABB(
+    pCollisionComponent->CollisionShapes[pCollisionComponent->NumCollisionShapes++] = AABB(
          PaddleLowerLeft + location,
          FPVector3D(dimensions.GetX(), dimensions.GetY(), FPOne)
          );
-    pCollisionComponent->CollisionShapes.push_back(pShape);
+
 }
 
 void Paddle::TranslatePaddle(const FPVector3D& translation)
@@ -279,8 +279,8 @@ void Paddle::TranslatePaddle(const FPVector3D& translation)
 
     Collision* pCollisionComponent = GetComponentByType<Collision>();
     RELEASE_CHECK(pCollisionComponent, "Could not find collision component on paddle")
-    AABB* pMyAABB = static_cast<AABB*>(pCollisionComponent->CollisionShapes.back());
-    pMyAABB->SetLowerLeft(PaddleLowerLeft + m_localTransform.GetTranslation());
+    AABB& myAABB = pCollisionComponent->CollisionShapes[pCollisionComponent->NumCollisionShapes - 1];
+    myAABB.SetLowerLeft(PaddleLowerLeft + m_localTransform.GetTranslation());
 
     if (IsBallAttached())
     {

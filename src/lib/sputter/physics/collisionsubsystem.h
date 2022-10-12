@@ -8,21 +8,6 @@
 
 namespace sputter { namespace physics {
     class ICollisionShape;
-    struct CollisionResult
-    {
-        CollisionResult() {}
-        CollisionResult(
-            const Collision* pA,
-            const Collision* pB,
-            const ICollisionShape* pShapeA,
-            const ICollisionShape* pShapeB);
-
-        const Collision* pCollisionA = nullptr;
-        const Collision* pCollisionB = nullptr;
-        const ICollisionShape* pCollisionShapeA = nullptr;
-        const ICollisionShape* pCollisionShapeB = nullptr;
-    };
-
     struct CollisionSubsystemSettings
     {
         // TODO?
@@ -49,6 +34,8 @@ namespace sputter { namespace physics {
         CollisionSubsystem() = delete;
         CollisionSubsystem(const CollisionSubsystem& other) = delete;
 
-        std::vector<Collision>       m_collisions;
+        static const size_t kMaxCollisions = 10;
+        Collision m_collisions[kMaxCollisions] = {};
+        size_t    m_collisionCount = 0;
     };
 }}

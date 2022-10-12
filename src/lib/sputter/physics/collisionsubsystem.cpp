@@ -16,21 +16,18 @@ CollisionResult::CollisionResult(
 {}
 
 CollisionSubsystem::CollisionSubsystem(const CollisionSubsystemSettings& settings)
-{
-    // TODO: Fixed-size allocation :P
-    m_collisions.reserve(100);
-}
+{}
 
 void CollisionSubsystem::PostTick(math::FixedPoint dt) 
 {
-    for (size_t i = 0; i < m_collisions.size(); i++)
+    for (size_t i = 0; i < m_collisionCount; i++)
     {
-        m_collisions[i].CollisionsThisFrame.clear();
+        m_collisions[i].NumCollisionsThisFrame = 0;
     }
 
-    for (size_t i = 0; i < m_collisions.size(); i++)
+    for (size_t i = 0; i < m_collisionCount; i++)
     {
-        for (size_t j = i + 1; j < m_collisions.size(); ++j)
+        for (size_t j = i + 1; j < m_collisionCount; ++j)
         {
             Collision& A = m_collisions[i];
             Collision& B = m_collisions[j];
@@ -47,8 +44,8 @@ void CollisionSubsystem::PostTick(math::FixedPoint dt)
                 // TODO: collisions shouldn't necessarily be bidirectional. This is
                 // wasteful in cases for instances where A has to take no action
                 // in response to this collision, but B does.
-                A.CollisionsThisFrame.push_back(result);
-                B.CollisionsThisFrame.push_back(result);
+                A.CollisionsThisFrame[A.NumCollisionsThisFrame++] = result;
+                B.CollisionsThisFrame[B.NumCollisionsThisFrame++] = result;
 
                result.pCollisionShapeA->GetSeparation2D(result.pCollisionShapeB);
             }
@@ -58,8 +55,8 @@ void CollisionSubsystem::PostTick(math::FixedPoint dt)
 
 Collision* CollisionSubsystem::CreateComponent(const Collision::InitializationParameters& params) 
 {
-    m_collisions.emplace_back();
-    return &m_collisions.back();
+    m_collisions[m_collisionCount] = Collision();
+    return &m_collisions[m_collisionCount++];
 }
 
 void CollisionSubsystem::ReleaseComponent(Collision* pComponent) 
@@ -69,7 +66,7 @@ void CollisionSubsystem::ReleaseComponent(Collision* pComponent)
 
 ComponentHandle CollisionSubsystem::GetComponentHandle(Collision* pCollision) const
 {
-    for (uint16_t i = 0; i < m_collisions.size(); ++i)
+    for (uint16_t i = 0; i < m_collisionCount; ++i)
     {
         if (pCollision == &m_collisions[i])
         {

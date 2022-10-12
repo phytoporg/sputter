@@ -13,7 +13,6 @@
 namespace sputter { namespace physics {
     struct RigidBodySubsystemSettings
     {
-        size_t           MaxRigidBodies   = 10;
         bool             IsGravityEnabled = true;
         math::FPVector2D Gravity          = math::FPVector2D(math::FPZero, -math::FPTen);
     };
@@ -36,12 +35,12 @@ namespace sputter { namespace physics {
         RigidBodySubsystem() = delete;
         RigidBodySubsystem(const RigidBodySubsystem& other) = delete;
 
-        std::vector<RigidBody2D> m_rigidBodies;
-        std::vector<bool>        m_validRigidBodyVector;
+        static const size_t kMaxRigidBodies = 5;
+        RigidBody2D              m_rigidBodies[kMaxRigidBodies] = {};
+        bool                     m_validRigidBodyVector[kMaxRigidBodies] = {};
 
         bool                     m_isGravityEnabled;
         math::FPVector2D         m_gravity;
-        size_t                   m_maxRigidBodies;
-        size_t                   m_rigidBodyCount;
+        size_t                   m_rigidBodyCount = 0;
     };
 }}

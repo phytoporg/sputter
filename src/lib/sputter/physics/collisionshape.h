@@ -14,7 +14,7 @@ namespace sputter { namespace physics {
     {
     public:
         virtual CollisionShapeType GetShapeType() const = 0;
-        virtual bool Intersects(ICollisionShape* const pOtherShape) const = 0;
+        virtual bool Intersects(const ICollisionShape* pOtherShape) const = 0;
         virtual sputter::math::FPVector3D GetSeparation2D(const ICollisionShape* pOtherShape) const = 0;
     };
 }}

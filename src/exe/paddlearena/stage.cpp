@@ -115,7 +115,7 @@ void Stage::Initialize(FPVector2D stageDimensions)
     RELEASE_CHECK(pCollision, "Could not find collision component for stage");
     pCollision->CollisionFlags = 0b111;
     pCollision->pObject = this;
-    pCollision->CollisionShapes.clear();
+    pCollision->NumCollisionShapes = 0;
 
     // Left and right AABBs
     const FPVector3D SideCollisionExtents(
@@ -131,8 +131,8 @@ void Stage::Initialize(FPVector2D stageDimensions)
         (stageDimensions.GetX() / FPTwo), 
         -(stageDimensions.GetY() / FPTwo),
         -FPTwo);
-    pCollision->CollisionShapes.push_back(new AABB(LeftLowerLeft, SideCollisionExtents));
-    pCollision->CollisionShapes.push_back(new AABB(RightLowerLeft, SideCollisionExtents));
+    pCollision->CollisionShapes[pCollision->NumCollisionShapes++] = AABB(LeftLowerLeft, SideCollisionExtents);
+    pCollision->CollisionShapes[pCollision->NumCollisionShapes++] = AABB(RightLowerLeft, SideCollisionExtents);
 
     // Top and bottom AABBs
     const FPVector3D TopAndBottomCollisionExtents(
@@ -148,6 +148,6 @@ void Stage::Initialize(FPVector2D stageDimensions)
         -(stageDimensions.GetX() / FPTwo), 
         -(stageDimensions.GetY() / FPTwo) - TopAndBottomCollisionExtents.GetY(),
         -FPTwo);
-    pCollision->CollisionShapes.push_back(new AABB(TopLowerLeft, TopAndBottomCollisionExtents));
-    pCollision->CollisionShapes.push_back(new AABB(BottomLowerLeft, TopAndBottomCollisionExtents));
+    pCollision->CollisionShapes[pCollision->NumCollisionShapes++] = AABB(TopLowerLeft, SideCollisionExtents);
+    pCollision->CollisionShapes[pCollision->NumCollisionShapes++] = AABB(BottomLowerLeft, SideCollisionExtents);
 }

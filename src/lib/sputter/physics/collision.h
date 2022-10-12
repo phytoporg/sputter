@@ -2,7 +2,11 @@
 
 #include <vector>
 #include <cstdint>
+
 #include <sputter/game/subsystemtype.h>
+#include <sputter/physics/aabb.h>
+
+#include "collisionresult.h"
 
 namespace sputter { namespace game {
     class Object;
@@ -16,8 +20,6 @@ namespace sputter { namespace physics {
     {
         static const game::SubsystemType ComponentId = game::SubsystemType::TYPE_COLLISION;
 
-        Collision() { CollisionShapes.reserve(100); }
-
         bool Intersects(const Collision& other) const;
         bool TestIntersection(const Collision& other, CollisionResult* pCollisionResultOut) const;
 
@@ -27,11 +29,13 @@ namespace sputter { namespace physics {
         // TODO: Object ID, not a pointer
         sputter::game::Object* pObject = nullptr;
 
-        // TODO: Fixed vector
-        std::vector<ICollisionShape*> CollisionShapes;
+        static const size_t kMaxCollisionShapes = 2;
+        AABB            CollisionShapes[kMaxCollisionShapes];
+        size_t          NumCollisionShapes = 0;
 
-        // TODO: Fixed vector
-        std::vector<CollisionResult> CollisionsThisFrame;
+        const static size_t kMaxCollisionResults = 5;
+        CollisionResult CollisionsThisFrame[kMaxCollisionResults];
+        size_t          NumCollisionsThisFrame = 0;
 
         // Game-specified bitfields. Only objects with the same bits set can collide.
         uint32_t CollisionFlags = 0;

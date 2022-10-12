@@ -1,6 +1,5 @@
 #include "collision.h"
 #include "collisionshape.h"
-#include "collisionsubsystem.h"
 
 using namespace sputter::physics;
 
@@ -12,15 +11,20 @@ bool Collision::Intersects(const Collision& other) const
 
 bool Collision::TestIntersection(const Collision& other, CollisionResult* pCollisionResultOut) const
 {
-    for (size_t ai = 0; ai < CollisionShapes.size(); ai++)
+    for (size_t ai = 0; ai < NumCollisionShapes; ai++)
     {
-        for (size_t bi = 0; bi < other.CollisionShapes.size(); bi++)
+        for (size_t bi = 0; bi < other.NumCollisionShapes; bi++)
         {
-            if (CollisionShapes[ai]->Intersects(other.CollisionShapes[bi]))
+            const ICollisionShape* pOtherShape = static_cast<const ICollisionShape*>(&other.CollisionShapes[bi]);
+            if (CollisionShapes[ai].Intersects(pOtherShape))
             {
                 if (pCollisionResultOut)
                 {
-                    *pCollisionResultOut = CollisionResult{this, &other, CollisionShapes[ai], other.CollisionShapes[bi]};
+                    *pCollisionResultOut = CollisionResult(
+                        this,
+                        &other,
+                        static_cast<const ICollisionShape*>(&CollisionShapes[ai]),
+                        static_cast<const ICollisionShape*>(&other.CollisionShapes[bi]));
                 }
 
                 return true;

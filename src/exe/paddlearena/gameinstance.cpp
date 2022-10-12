@@ -54,7 +54,6 @@ GameInstance::GameInstance(
       m_pAssetStorageProvider(pAssetStorageProvider)
 {
     physics::RigidBodySubsystemSettings rigidBodySubsystemSettings;
-    rigidBodySubsystemSettings.MaxRigidBodies = 5;
     m_pRigidBodySubsystem = 
         pAllocator->Create<physics::RigidBodySubsystem>(rigidBodySubsystemSettings);
 

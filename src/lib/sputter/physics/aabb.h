@@ -7,10 +7,11 @@ namespace sputter { namespace physics {
     class AABB : public ICollisionShape
     {
     public:
+        AABB();
         AABB(const sputter::math::FPVector3D& lowerLeft, const sputter::math::FPVector3D& extents);
 
         virtual CollisionShapeType GetShapeType() const override;
-        virtual bool Intersects(ICollisionShape* const pOtherShape) const override;
+        virtual bool Intersects(const ICollisionShape* pOtherShape) const override;
         virtual sputter::math::FPVector3D GetSeparation2D(const ICollisionShape* pOtherShape) const override;
 
         sputter::math::FPVector3D GetLowerLeft() const;

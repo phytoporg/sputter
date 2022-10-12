@@ -113,7 +113,7 @@ void Ball::PostTick(sputter::math::FixedPoint deltaTime)
                 collisionResult.pCollisionShapeB : collisionResult.pCollisionShapeA;
 
             // lol this is hideous
-            AABB* pMyAABB = static_cast<AABB*>(pCollision->CollisionShapes.back());
+            AABB* pMyAABB = &pCollision->CollisionShapes[pCollision->NumCollisionShapes - 1];
             const AABB* pOtherAABB = static_cast<const AABB*>(pOtherShape);
             const FPVector3D Separation = pMyAABB->GetSeparation2D(pOtherAABB);
 
@@ -139,7 +139,7 @@ void Ball::PostTick(sputter::math::FixedPoint deltaTime)
                 collisionResult.pCollisionShapeB : collisionResult.pCollisionShapeA;
 
             // lol this is also hideous
-            AABB* pMyAABB = static_cast<AABB*>(pCollision->CollisionShapes.back());
+            AABB* pMyAABB = &pCollision->CollisionShapes[pCollision->NumCollisionShapes - 1];
             const AABB* pOtherAABB = static_cast<const AABB*>(pOtherShape);
             const FPVector3D Separation = pMyAABB->GetSeparation2D(pOtherAABB);
 
@@ -220,15 +220,14 @@ void Ball::Initialize(
 
     pCollision->CollisionFlags = 0b111;
     pCollision->pObject = this;
-    pCollision->CollisionShapes.clear();
+    pCollision->NumCollisionShapes = 0;
 
     // Collides with everything
     const FPVector3D BallLowerLeft = FPVector3D(-dimensions.GetX() / FPTwo, -dimensions.GetY() / FPTwo, FPOne / FPTwo);
-    AABB* pShape = new AABB(
+    pCollision->CollisionShapes[pCollision->NumCollisionShapes++] = AABB(
          BallLowerLeft + location,
          FPVector3D(dimensions.GetX(), dimensions.GetY(), FPOne)
          );
-    pCollision->CollisionShapes.push_back(pShape);
 
     Reset(location, startVector);
     m_isInitialized = true;
@@ -328,8 +327,8 @@ void Ball::TranslateBall(const FPVector3D& translation)
 
     Collision* pCollision = GetComponentByType<Collision>();
     RELEASE_CHECK(pCollision, "Could not get collision component on Ball");
-    AABB* pMyAABB = static_cast<AABB*>(pCollision->CollisionShapes.back());
-    pMyAABB->SetLowerLeft(BallLowerLeft + m_localTransform.GetTranslation());
+    AABB& myAABB = pCollision->CollisionShapes[pCollision->NumCollisionShapes - 1];
+    myAABB.SetLowerLeft(BallLowerLeft + m_localTransform.GetTranslation());
 }
 
 const FPVector2D Ball::ComputeBallDeflectionFromPaddle(const Paddle* pPaddle) const

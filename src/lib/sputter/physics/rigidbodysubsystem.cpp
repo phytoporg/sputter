@@ -8,12 +8,10 @@
 namespace sputter { namespace physics {
     RigidBodySubsystem::RigidBodySubsystem(const RigidBodySubsystemSettings& settings)
         : m_isGravityEnabled(settings.IsGravityEnabled),
-          m_gravity(settings.Gravity),
-          m_maxRigidBodies(settings.MaxRigidBodies),
-          m_rigidBodyCount(0)
+          m_gravity(settings.Gravity)
     {
-        m_rigidBodies.reserve(m_maxRigidBodies);
-        m_validRigidBodyVector.reserve(m_maxRigidBodies);
+        memset(m_rigidBodies, 0, sizeof(m_rigidBodies));
+        memset(m_validRigidBodyVector, 0, sizeof(m_validRigidBodyVector));
     }
 
     void RigidBodySubsystem::Tick(math::FixedPoint dt)
@@ -27,7 +25,7 @@ namespace sputter { namespace physics {
         // applied during simulation. Right now, assuming constant acceleration
         // (which is the simplification, i.e. a_n+1 = a_n always).
 
-        for (size_t i = 0; i < m_rigidBodies.size(); ++i)
+        for (size_t i = 0; i < m_rigidBodyCount; ++i)
         {
             if (!m_validRigidBodyVector[i]) { continue; }
 
@@ -56,16 +54,16 @@ namespace sputter { namespace physics {
         // max number of rigidbodies when initializing the subsystem; that's
         // a pattern which will likely continue across most of Sputter, where
         // it makes sense anyway.
-        if (m_rigidBodyCount >= m_maxRigidBodies)
+        if (m_rigidBodyCount >= kMaxRigidBodies)
         {
             system::LogAndFail(
                 "Reached the max number of rigidbodies: " +
-                std::to_string(m_maxRigidBodies));
+                std::to_string(kMaxRigidBodies));
         }
 
         const size_t BadIndex = static_cast<size_t>(-1);
         size_t nextIndex = BadIndex;
-        for (size_t i = 0; i < m_validRigidBodyVector.size(); ++i)
+        for (size_t i = 0; i < m_rigidBodyCount; ++i)
         {
             if (!m_validRigidBodyVector[i])
             {
@@ -75,15 +73,15 @@ namespace sputter { namespace physics {
         }
 
         // All paths from here lead to adding a new rigidbody, so increment now.
-        ++m_rigidBodyCount;
         if (nextIndex == BadIndex)
         {
-            m_rigidBodies.push_back(RigidBody2D());
-            m_validRigidBodyVector.push_back(true);
-            return &m_rigidBodies.back();
+            m_rigidBodies[m_rigidBodyCount] = RigidBody2D();
+            m_validRigidBodyVector[m_rigidBodyCount] = true;
+            return &m_rigidBodies[m_rigidBodyCount++];
         }
         else
         {
+            ++m_rigidBodyCount;
             m_validRigidBodyVector[nextIndex] = true;
             return &m_rigidBodies[nextIndex];
         }
@@ -93,9 +91,8 @@ namespace sputter { namespace physics {
     {
         // This pointer really should be in the array. Make sure that's the
         // case.
-        const size_t Index =
-            static_cast<size_t>(pComponent - m_rigidBodies.data());
-        if (Index >= m_rigidBodies.size())
+        const size_t Index = static_cast<size_t>(pComponent - &m_rigidBodies[0]);
+        if (Index >= m_rigidBodyCount)
         {
             system::LogAndFail(
                 "RigidBodySubsystem::ReleaseComponent: bad pointer arg");

@@ -11,6 +11,10 @@
 using namespace sputter::physics;
 using namespace sputter::math;
 
+AABB::AABB()
+    : m_lowerLeft(FPVector3D::ZERO), m_extents(FPVector3D::ZERO)
+{}
+
 AABB::AABB(const FPVector3D& lowerLeft, const FPVector3D& extents)
     : m_lowerLeft(lowerLeft), m_extents(extents)
 {}
@@ -20,13 +24,13 @@ CollisionShapeType AABB::GetShapeType() const
     return CollisionShapeType::AABB;
 }
 
-bool AABB::Intersects(ICollisionShape* const pOtherShape) const
+bool AABB::Intersects(const ICollisionShape* pOtherShape) const
 {
     switch (pOtherShape->GetShapeType())
     {
     case CollisionShapeType::AABB:
         {
-            AABB* pOtherAABB = static_cast<AABB*>(pOtherShape);
+            const AABB* pOtherAABB = static_cast<const AABB*>(pOtherShape);
             const FixedPoint minX = m_lowerLeft.GetX();
             const FixedPoint minY = m_lowerLeft.GetY();
             const FixedPoint minZ = m_lowerLeft.GetZ();
