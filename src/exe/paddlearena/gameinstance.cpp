@@ -146,9 +146,8 @@ void GameInstance::Tick(math::FixedPoint dt)
             m_pGameState->Player1Paddle.AttachBall(&m_pGameState->TheBall);
             SetGameState(GameState::State::Playing);
         }
-    }
-
-    if (CurrentState == GameState::State::Playing)
+    } 
+    else if (CurrentState == GameState::State::Playing) 
     {
         m_pGameState->TheBall.Tick(dt);
         m_pGameState->Arena.Tick(dt);
@@ -159,19 +158,16 @@ void GameInstance::Tick(math::FixedPoint dt)
         {
             SetGameState(GameState::State::Paused);
         }
-    }
-
-    if (CurrentState == GameState::State::Paused && CheckPauseInput())
+    } 
+    else if (CurrentState == GameState::State::Paused && CheckPauseInput())
     {
         SetGameState(GameState::State::Playing);
-    }
-
-    if (CurrentState == GameState::State::Restarting)
+    } 
+    else if (CurrentState == GameState::State::Restarting)
     {
         Initialize();
     }
-
-    if (CurrentState == GameState::State::Exiting)
+    else if (CurrentState == GameState::State::Exiting)
     {
         // NOOP for now
     }

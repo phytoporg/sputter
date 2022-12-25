@@ -29,11 +29,11 @@ namespace sputter { namespace physics {
         // TODO: Object ID, not a pointer
         sputter::game::Object* pObject = nullptr;
 
-        static const size_t kMaxCollisionShapes = 2;
+        static const size_t kMaxCollisionShapes = 8;
         AABB            CollisionShapes[kMaxCollisionShapes];
         size_t          NumCollisionShapes = 0;
 
-        const static size_t kMaxCollisionResults = 5;
+        const static size_t kMaxCollisionResults = 16;
         CollisionResult CollisionsThisFrame[kMaxCollisionResults];
         size_t          NumCollisionsThisFrame = 0;
 

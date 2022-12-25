@@ -103,8 +103,11 @@ void Ball::PostTick(sputter::math::FixedPoint deltaTime)
 
     Collision* pCollision = GetComponentByType<Collision>();
     RELEASE_CHECK(pCollision, "Could not get collision component on Ball");
-    for (CollisionResult& collisionResult : pCollision->CollisionsThisFrame)
+    for (size_t i = 0; i < pCollision->NumCollisionsThisFrame; ++i)
     {
+        const CollisionResult& collisionResult = pCollision->CollisionsThisFrame[i];
+        RELEASE_CHECK(collisionResult.pCollisionA && collisionResult.pCollisionB, "Invalid collision result!");
+
         const Collision& OtherCollision = collisionResult.pCollisionA == pCollision ?
             *collisionResult.pCollisionB : *collisionResult.pCollisionA;
         if (OtherCollision.pObject->GetType() == kPaddleArenaObjectTypeStage)

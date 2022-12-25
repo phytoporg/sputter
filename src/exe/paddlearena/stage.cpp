@@ -148,6 +148,6 @@ void Stage::Initialize(FPVector2D stageDimensions)
         -(stageDimensions.GetX() / FPTwo), 
         -(stageDimensions.GetY() / FPTwo) - TopAndBottomCollisionExtents.GetY(),
         -FPTwo);
-    pCollision->CollisionShapes[pCollision->NumCollisionShapes++] = AABB(TopLowerLeft, SideCollisionExtents);
-    pCollision->CollisionShapes[pCollision->NumCollisionShapes++] = AABB(BottomLowerLeft, SideCollisionExtents);
+    pCollision->CollisionShapes[pCollision->NumCollisionShapes++] = AABB(TopLowerLeft, TopAndBottomCollisionExtents);
+    pCollision->CollisionShapes[pCollision->NumCollisionShapes++] = AABB(BottomLowerLeft, TopAndBottomCollisionExtents);
 }

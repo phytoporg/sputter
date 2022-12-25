@@ -190,8 +190,9 @@ void Paddle::PostTick(FixedPoint deltaTime)
 {
     Collision* pCollisionComponent = GetComponentByType<Collision>();
     RELEASE_CHECK(pCollisionComponent, "Could not find collision component on paddle")
-    for (CollisionResult& collisionResult : pCollisionComponent->CollisionsThisFrame)
+    for (size_t i = 0; i < pCollisionComponent->NumCollisionsThisFrame; ++i)
     {
+        const CollisionResult& collisionResult = pCollisionComponent->CollisionsThisFrame[i];
         const Collision& OtherCollision = collisionResult.pCollisionA == pCollisionComponent ?
             *collisionResult.pCollisionB : *collisionResult.pCollisionA;
         if (OtherCollision.pObject->GetType() == kPaddleArenaObjectTypeStage)
@@ -252,7 +253,7 @@ void Paddle::Initialize(
 
     Collision* pCollisionComponent = GetComponentByType<Collision>();
     RELEASE_CHECK(pCollisionComponent, "Could not find collision component on paddle")
-    pCollisionComponent->CollisionFlags = (1 << m_playerId);
+    pCollisionComponent->CollisionFlags = 0b111;
     pCollisionComponent->pObject = this;
     pCollisionComponent->NumCollisionShapes = 0;
     
@@ -291,7 +292,9 @@ void Paddle::TranslatePaddle(const FPVector3D& translation)
 
 void Paddle::AttachBall(Ball* pBall)
 {
+    // RELEASE_CHECK() may be overkill here, but this is currently unexpected
     RELEASE_CHECK(!IsBallAttached(), "Attempting to attach ball to paddle, but a ball is already attached.");
+
     m_ballAttached = true;
 
     // Temporarily avoid colliding with the ball
