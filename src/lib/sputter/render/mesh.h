@@ -9,6 +9,8 @@
 #include <sputter/math/fpvector3d.h>
 #include <sputter/containers/fixedmemoryvector.h>
 #include <sputter/game/subsystemtype.h>
+#include <sputter/render/attribute.h>
+#include <sputter/render/indexbuffer.h>
 
 namespace sputter { namespace render {
     class Shader;
@@ -82,7 +84,35 @@ namespace sputter { namespace render {
             // TODO: texture(s)?
 
         private:
-            struct PImpl;
-            std::shared_ptr<PImpl> m_spPimpl = nullptr;
+            void CopyTo(Mesh& other) const;
+            void BindAttributes();
+            void UnbindAttributes();
+
+            // Inlining all of the pimpl stuff !
+            Attribute<glm::vec3>           m_VertexPositionAttribute;
+            Attribute<glm::vec3>           m_VertexNormalAttribute;
+            Attribute<glm::vec2>           m_VertexTextureCoordinateAttribute;
+            IndexBuffer                    m_Indices;
+
+            // Data
+            std::vector<glm::vec3>         m_VertexPositions;
+            std::vector<glm::vec3>         m_VertexNormals;
+            std::vector<glm::vec2>         m_VertexTextureCoordinates;
+            std::vector<uint32_t>          m_VertexIndices;
+
+            std::vector<MeshUniformValue>  m_MeshUniformValues;
+
+            glm::mat4              m_ModelMatrix;
+
+            ShaderPtr              m_spShader;
+
+            uint32_t               m_VAO;
+
+            uint32_t               m_ModelUniformHandle;
+            uint32_t               m_ViewUniformHandle;
+            uint32_t               m_ProjUniformHandle;
+
+            bool                   m_isDirty   = true;
+            bool                   m_isVisible = true;
     };
 }}

@@ -16,77 +16,46 @@ using namespace sputter::render;
 using namespace sputter::containers;
 using namespace sputter::math;
 
-struct Mesh::PImpl
+void Mesh::CopyTo(Mesh& other) const
 {
-    // Attributes & EOB
-    // Is this really needed per-mesh?
-    Attribute<glm::vec3>           VertexPositionAttribute;
-    Attribute<glm::vec3>           VertexNormalAttribute;
-    Attribute<glm::vec2>           VertexTextureCoordinateAttribute;
-    IndexBuffer                    Indices;
+    other.m_VertexPositionAttribute = m_VertexPositionAttribute;
+    other.m_VertexNormalAttribute = m_VertexNormalAttribute;
+    other.m_VertexTextureCoordinateAttribute = m_VertexTextureCoordinateAttribute;
+    other.m_Indices = m_Indices;
 
-    // Data
-    std::vector<glm::vec3>         VertexPositions;
-    std::vector<glm::vec3>         VertexNormals;
-    std::vector<glm::vec2>         VertexTextureCoordinates;
-    std::vector<uint32_t>          VertexIndices;
+    other.m_VertexPositions = m_VertexPositions;
+    other.m_VertexNormals = m_VertexNormals;
+    other.m_VertexTextureCoordinates = m_VertexTextureCoordinates;
+    other.m_VertexIndices = other.m_VertexIndices;
 
-    std::vector<MeshUniformValue>  MeshUniformValues;
+    other.m_MeshUniformValues = m_MeshUniformValues;
 
-    glm::mat4              ModelMatrix;
+    other.m_spShader = m_spShader;
 
-    ShaderPtr              spShader;
+    other.m_VAO = m_VAO;
 
-    uint32_t               VAO;
+    other.m_ModelUniformHandle = m_ModelUniformHandle;
+    other.m_ViewUniformHandle = m_ViewUniformHandle;
+    other.m_ProjUniformHandle = m_ProjUniformHandle;
 
-    uint32_t               ModelUniformHandle;
-    uint32_t               ViewUniformHandle;
-    uint32_t               ProjUniformHandle;
+    other.m_isVisible = m_isVisible;
 
-    bool                   IsDirty   = true;
-    bool                   IsVisible = true;
+    other.m_isDirty   = true;
+}
 
-    void CopyTo(Mesh::PImpl& other)
-    {
-        VertexPositionAttribute = other.VertexPositionAttribute;
-        VertexNormalAttribute = other.VertexNormalAttribute;
-        VertexTextureCoordinateAttribute = other.VertexTextureCoordinateAttribute;
-        Indices = other.Indices;
+void Mesh::BindAttributes()
+{
+    m_VertexPositionAttribute.BindTo(0);
+    m_VertexNormalAttribute.BindTo(1);
+    m_VertexTextureCoordinateAttribute.BindTo(2);
+}
 
-        VertexPositions = other.VertexPositions;
-        VertexNormals = other.VertexNormals;
-        VertexTextureCoordinates = other.VertexTextureCoordinates;
-        VertexIndices = other.VertexIndices;
-
-        MeshUniformValues = other.MeshUniformValues;
-
-        spShader = other.spShader;
-
-        VAO = other.VAO;
-
-        ModelUniformHandle = other.ModelUniformHandle;
-        ViewUniformHandle = other.ViewUniformHandle;
-        ProjUniformHandle = other.ProjUniformHandle;
-
-        IsVisible = other.IsVisible;
-
-        IsDirty   = true;
-    }
-
-    void BindAttributes()
-    {
-        VertexPositionAttribute.BindTo(0);
-        VertexNormalAttribute.BindTo(1);
-        VertexTextureCoordinateAttribute.BindTo(2);
-    }
-
-    void UnbindAttributes()
-    {
-        VertexPositionAttribute.UnbindFrom(0);
-        VertexNormalAttribute.UnbindFrom(1);
-        VertexTextureCoordinateAttribute.UnbindFrom(2);
-    }
-};
+void Mesh::UnbindAttributes()
+{
+    m_VertexPositionAttribute.UnbindFrom(0);
+    m_VertexNormalAttribute.UnbindFrom(1);
+    m_VertexTextureCoordinateAttribute.UnbindFrom(2);
+}
 
 Mesh::Mesh(size_t maxVertexCount, size_t maxIndexCount) 
 {
@@ -94,23 +63,22 @@ Mesh::Mesh(size_t maxVertexCount, size_t maxIndexCount)
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
 
-    m_spPimpl = std::make_shared<Mesh::PImpl>();
-    m_spPimpl->VertexPositions.reserve(maxVertexCount);
-    m_spPimpl->VertexPositionAttribute.Set(m_spPimpl->VertexPositions.data(), maxVertexCount);
-    m_spPimpl->VertexPositionAttribute.BindTo(0);
+    m_VertexPositions.reserve(maxVertexCount);
+    m_VertexPositionAttribute.Set(m_VertexPositions.data(), maxVertexCount);
+    m_VertexPositionAttribute.BindTo(0);
 
-    m_spPimpl->VertexNormals.reserve(maxVertexCount);
-    m_spPimpl->VertexNormalAttribute.Set(m_spPimpl->VertexNormals.data(), maxVertexCount);
-    m_spPimpl->VertexNormalAttribute.BindTo(1);
+    m_VertexNormals.reserve(maxVertexCount);
+    m_VertexNormalAttribute.Set(m_VertexNormals.data(), maxVertexCount);
+    m_VertexNormalAttribute.BindTo(1);
 
-    m_spPimpl->VertexTextureCoordinates.reserve(maxVertexCount);
-    m_spPimpl->VertexTextureCoordinateAttribute.Set(m_spPimpl->VertexTextureCoordinates.data(), maxVertexCount);
-    m_spPimpl->VertexTextureCoordinateAttribute.BindTo(2);
+    m_VertexTextureCoordinates.reserve(maxVertexCount);
+    m_VertexTextureCoordinateAttribute.Set(m_VertexTextureCoordinates.data(), maxVertexCount);
+    m_VertexTextureCoordinateAttribute.BindTo(2);
 
-    m_spPimpl->VertexIndices.reserve(maxIndexCount);
-    m_spPimpl->Indices.Set(m_spPimpl->VertexIndices.data(), maxIndexCount);
+    m_VertexIndices.reserve(maxIndexCount);
+    m_Indices.Set(m_VertexIndices.data(), maxIndexCount);
 
-    m_spPimpl->VAO = vao;
+    m_VAO = vao;
 
     glBindVertexArray(0);
 }
@@ -118,61 +86,51 @@ Mesh::Mesh(size_t maxVertexCount, size_t maxIndexCount)
 Mesh::Mesh(const Mesh& other)
 {
     // Deep copy
-    m_spPimpl = std::make_shared<Mesh::PImpl>();
-    other.m_spPimpl->CopyTo(*m_spPimpl);
+    other.CopyTo(*this);
 }
 
 Mesh& Mesh::operator=(const Mesh& other)
 {
-    m_spPimpl = std::make_shared<Mesh::PImpl>();
-    other.m_spPimpl->CopyTo(*m_spPimpl);
-    m_spPimpl->IsDirty = true;
+    other.CopyTo(*this);
+    m_isDirty = true;
     return *this;
 }
 
-bool Mesh::SetPositions(
-    const FixedMemoryVector<FPVector3D>& vertexPositions
-    )
+bool Mesh::SetPositions(const FixedMemoryVector<FPVector3D>& vertexPositions)
 {
     return SetPositions(vertexPositions.Data(), vertexPositions.Size());
 }
 
-bool Mesh::SetPositions(
-    const FPVector3D* positionsArray, uint32_t arrayLen
-    )
+bool Mesh::SetPositions(const FPVector3D* positionsArray, uint32_t arrayLen)
 {
     // Convert to floating-point representation for GPU
     for (uint32_t i = 0; i < arrayLen; ++i)
     {
-        m_spPimpl->VertexPositions.emplace_back(positionsArray[i].ToVec3());
+        m_VertexPositions.emplace_back(positionsArray[i].ToVec3());
     }
 
-    m_spPimpl->VertexPositionAttribute.Set(m_spPimpl->VertexPositions);
-    m_spPimpl->IsDirty = true;
+    m_VertexPositionAttribute.Set(m_VertexPositions);
+    m_isDirty = true;
     return true;
 }
 
-bool Mesh::SetNormals(
-    const FixedMemoryVector<FPVector3D>& vertexNormals
-    )
+bool Mesh::SetNormals(const FixedMemoryVector<FPVector3D>& vertexNormals)
 {
     return SetNormals(vertexNormals.Data(), vertexNormals.Size());
 }
 
-bool Mesh::SetNormals(
-    const FPVector3D* normalsArray, uint32_t arrayLen
-    )
+bool Mesh::SetNormals(const FPVector3D* normalsArray, uint32_t arrayLen)
 {
     // Convert to floating-point representation for GPU
-    m_spPimpl->VertexNormals.clear();
-    m_spPimpl->VertexNormals.reserve(arrayLen);
+    m_VertexNormals.clear();
+    m_VertexNormals.reserve(arrayLen);
     for (size_t i = 0; i < arrayLen; ++i)
     {
-        m_spPimpl->VertexNormals.emplace_back(normalsArray[i].ToVec3());
+        m_VertexNormals.emplace_back(normalsArray[i].ToVec3());
     }
 
-    m_spPimpl->VertexNormalAttribute.Set(m_spPimpl->VertexNormals);
-    m_spPimpl->IsDirty = true;
+    m_VertexNormalAttribute.Set(m_VertexNormals);
+    m_isDirty = true;
     return true;
 }
 
@@ -184,36 +142,32 @@ bool Mesh::SetTextureCoordinates(const FixedMemoryVector<FPVector2D>& vertexUVs)
 bool Mesh::SetTextureCoordinates(const FPVector2D* uvsArray, uint32_t arrayLen)
 {
     // Convert to floating-point representation for GPU
-    m_spPimpl->VertexTextureCoordinates.clear();
-    m_spPimpl->VertexTextureCoordinates.reserve(arrayLen);
+    m_VertexTextureCoordinates.clear();
+    m_VertexTextureCoordinates.reserve(arrayLen);
     for (size_t i = 0; i < arrayLen; ++i)
     {
-        m_spPimpl->VertexTextureCoordinates.emplace_back(uvsArray[i].ToVec2());
+        m_VertexTextureCoordinates.emplace_back(uvsArray[i].ToVec2());
     }
 
-    m_spPimpl->VertexTextureCoordinateAttribute.Set(m_spPimpl->VertexTextureCoordinates);
-    m_spPimpl->IsDirty = true;
+    m_VertexTextureCoordinateAttribute.Set(m_VertexTextureCoordinates);
+    m_isDirty = true;
     return true;
 }
 
-bool Mesh::SetIndices(
-    const FixedMemoryVector<int>& indices
-    )
+bool Mesh::SetIndices(const FixedMemoryVector<int>& indices)
 {
     return SetIndices(indices.Data(), indices.Size());
 }
 
-bool Mesh::SetIndices(
-    const int* indexArray, uint32_t arrayLen
-    )
+bool Mesh::SetIndices(const int* indexArray, uint32_t arrayLen)
 {    
     // No *real* need for conversion here, but for the sake of consistency...
-    m_spPimpl->VertexIndices.clear();
-    m_spPimpl->VertexIndices.resize(arrayLen);
+    m_VertexIndices.clear();
+    m_VertexIndices.resize(arrayLen);
 
-    memcpy(m_spPimpl->VertexIndices.data(), indexArray, arrayLen * sizeof(int));
-    m_spPimpl->Indices.Set(m_spPimpl->VertexIndices);
-    m_spPimpl->IsDirty = true;
+    memcpy(m_VertexIndices.data(), indexArray, arrayLen * sizeof(int));
+    m_Indices.Set(m_VertexIndices);
+    m_isDirty = true;
     return true;
 }
 
@@ -224,25 +178,25 @@ bool Mesh::SetShader(ShaderPtr spShader)
         return false;
     }
     
-    m_spPimpl->spShader = spShader;
-    m_spPimpl->ModelUniformHandle = spShader->GetUniform("model");
-    if (m_spPimpl->ModelUniformHandle == Shader::kInvalidHandleValue)
+    m_spShader = spShader;
+    m_ModelUniformHandle = spShader->GetUniform("model");
+    if (m_ModelUniformHandle == Shader::kInvalidHandleValue)
     {
         LOG(ERROR) << "Could not retrieve expected uniform 'model' from shader '" 
                    << spShader->GetName() << "'";
         return false;
     }
 
-    m_spPimpl->ViewUniformHandle = spShader->GetUniform("view");
-    if (m_spPimpl->ViewUniformHandle == Shader::kInvalidHandleValue)
+    m_ViewUniformHandle = spShader->GetUniform("view");
+    if (m_ViewUniformHandle == Shader::kInvalidHandleValue)
     {
         LOG(ERROR) << "Could not retrieve expected uniform 'view' from shader '" 
                    << spShader->GetName() << "'";
         return false;
     }
 
-    m_spPimpl->ProjUniformHandle = spShader->GetUniform("projection");
-    if (m_spPimpl->ProjUniformHandle == Shader::kInvalidHandleValue)
+    m_ProjUniformHandle = spShader->GetUniform("projection");
+    if (m_ProjUniformHandle == Shader::kInvalidHandleValue)
     {
         LOG(ERROR) << "Could not retrieve expected uniform 'projection' from shader '" 
                    << spShader->GetName() << "'";
@@ -254,12 +208,12 @@ bool Mesh::SetShader(ShaderPtr spShader)
 
 void Mesh::SetModelMatrix(const glm::mat4& modelMatrix) 
 {
-    m_spPimpl->ModelMatrix = modelMatrix;
+    m_ModelMatrix = modelMatrix;
 }
 
 void Mesh::SetMeshUniforms(const std::vector<MeshUniformValue>& uniformValues)
 {
-    m_spPimpl->MeshUniformValues = uniformValues;
+    m_MeshUniformValues = uniformValues;
 }
 
 void Mesh::Draw(const glm::mat4& projMatrix, const glm::mat4& viewMatrix) 
@@ -271,22 +225,22 @@ void Mesh::Draw(const glm::mat4& projMatrix, const glm::mat4& viewMatrix)
     }
     
 
-    if (!m_spPimpl->spShader || 
-         m_spPimpl->ModelUniformHandle == Shader::kInvalidHandleValue ||
-         m_spPimpl->ViewUniformHandle  == Shader::kInvalidHandleValue ||
-         m_spPimpl->ProjUniformHandle  == Shader::kInvalidHandleValue)
+    if (!m_spShader || 
+         m_ModelUniformHandle == Shader::kInvalidHandleValue ||
+         m_ViewUniformHandle  == Shader::kInvalidHandleValue ||
+         m_ProjUniformHandle  == Shader::kInvalidHandleValue)
     {
         LOG(WARNING) << "Attempting to render mesh with an improper or invalid shader.";
         return;
     }
 
-    m_spPimpl->spShader->Bind();
+    m_spShader->Bind();
 
-    for (MeshUniformValue& uniformValue : m_spPimpl->MeshUniformValues)
+    for (MeshUniformValue& uniformValue : m_MeshUniformValues)
     {
         if (uniformValue.Location == Shader::kInvalidHandleValue)
         {
-            uniformValue.Location = m_spPimpl->spShader->GetUniform(uniformValue.Name);
+            uniformValue.Location = m_spShader->GetUniform(uniformValue.Name);
         }
 
         if (uniformValue.Location != Shader::kInvalidHandleValue)
@@ -297,43 +251,43 @@ void Mesh::Draw(const glm::mat4& projMatrix, const glm::mat4& viewMatrix)
         {
             // Log something if we didn't get a valid response in the lookup
             LOG(ERROR) << "Failed to retrieve a location for uniform named '" << uniformValue.Name 
-                       << "' in shader '" << m_spPimpl->spShader->GetName() << "'";
+                       << "' in shader '" << m_spShader->GetName() << "'";
         }
     }
 
-    Uniform<glm::mat4>::Set(m_spPimpl->ModelUniformHandle, m_spPimpl->ModelMatrix);
-    Uniform<glm::mat4>::Set(m_spPimpl->ViewUniformHandle, viewMatrix);
-    Uniform<glm::mat4>::Set(m_spPimpl->ProjUniformHandle, projMatrix);
+    Uniform<glm::mat4>::Set(m_ModelUniformHandle, m_ModelMatrix);
+    Uniform<glm::mat4>::Set(m_ViewUniformHandle, viewMatrix);
+    Uniform<glm::mat4>::Set(m_ProjUniformHandle, projMatrix);
 
-    glBindVertexArray(m_spPimpl->VAO);
+    glBindVertexArray(m_VAO);
 
-    m_spPimpl->BindAttributes();
+    BindAttributes();
 
-    if (m_spPimpl->IsDirty)
+    if (m_isDirty)
     {
         // Update buffer objects
-        m_spPimpl->VertexPositionAttribute.Set(m_spPimpl->VertexPositions);
-        m_spPimpl->VertexNormalAttribute.Set(m_spPimpl->VertexNormals);
-        m_spPimpl->VertexTextureCoordinateAttribute.Set(m_spPimpl->VertexTextureCoordinates);
-        m_spPimpl->Indices.Set(m_spPimpl->VertexIndices);
-        m_spPimpl->IsDirty = false;
+        m_VertexPositionAttribute.Set(m_VertexPositions);
+        m_VertexNormalAttribute.Set(m_VertexNormals);
+        m_VertexTextureCoordinateAttribute.Set(m_VertexTextureCoordinates);
+        m_Indices.Set(m_VertexIndices);
+        m_isDirty = false;
     }
 
-    ::Draw(m_spPimpl->Indices, DrawMode::Triangles);
-    m_spPimpl->UnbindAttributes();
+    ::Draw(m_Indices, DrawMode::Triangles);
+    UnbindAttributes();
 
-    m_spPimpl->spShader->Unbind();
+    m_spShader->Unbind();
 
     glBindVertexArray(0);
 }
 
 void Mesh::SetVisibility(bool newVisibility)
 {
-    m_spPimpl->IsVisible = newVisibility;
+    m_isVisible = newVisibility;
 }
 
 bool Mesh::GetVisibility() const
 {
-    return m_spPimpl->IsVisible;
+    return m_isVisible;
 }
 
