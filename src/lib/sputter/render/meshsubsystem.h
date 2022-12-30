@@ -4,19 +4,11 @@
 #include <sputter/core/subsystem.h>
 #include <sputter/core/component.h>
 #include <sputter/game/subsystemtype.h>
-#include <sputter/containers/fixedmemoryvector.h>
-#include <sputter/memory/fixedmemoryallocator.h>
 
-#include <vector>
 #include <glm/glm.hpp>
 
 namespace sputter { namespace render {
-    struct MeshSubsystemSettings
-    {
-        size_t  MaxMeshCount = 1;
-        size_t  MaxVertexCount = 1;
-        size_t  MaxIndexCount = 1;
-    };
+    struct MeshSubsystemSettings { /*TODO*/ };
 
     class MeshSubsystem : public core::ISubsystem<Mesh>
     {
@@ -40,10 +32,10 @@ namespace sputter { namespace render {
         MeshSubsystem() = delete;
         MeshSubsystem(const MeshSubsystem& other) = delete;
 
-        size_t              m_maxMeshCount;
-        size_t              m_maxVertexCount;
-        size_t              m_maxIndexCount;
-
-        std::vector<Mesh>   m_meshes;
+        static const size_t kMaxVertices = 32;
+        static const size_t kMaxIndices = 16;
+        static const size_t kMaxMeshes = 8;
+        Mesh*               m_pMeshes[kMaxMeshes] = {};
+        size_t              m_meshCount = 0;
     };
 }}

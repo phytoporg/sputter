@@ -5,14 +5,8 @@
 using namespace sputter;
 using namespace sputter::render;
 
-MeshSubsystem::MeshSubsystem(
-    const MeshSubsystemSettings& settings
-    ) : m_maxMeshCount(settings.MaxMeshCount), 
-        m_maxVertexCount(settings.MaxVertexCount),
-        m_maxIndexCount(settings.MaxIndexCount)
-{
-    m_meshes.reserve(m_maxMeshCount);
-}
+MeshSubsystem::MeshSubsystem(const MeshSubsystemSettings& /*settings*/)
+{}
 
 void MeshSubsystem::Tick(math::FixedPoint dt) 
 {
@@ -21,17 +15,34 @@ void MeshSubsystem::Tick(math::FixedPoint dt)
 
 Mesh* MeshSubsystem::CreateComponent(const Mesh::InitializationParameters& /*params*/) 
 {
-    m_meshes.emplace_back(m_maxVertexCount, m_maxIndexCount);
-    return &m_meshes.back();
+    if (m_meshCount >= kMaxMeshes)
+    {
+        return nullptr;
+    }
+
+    // Find the first available slot
+    Mesh** ppMesh = &m_pMeshes[0];
+    while(*ppMesh != nullptr)
+    {
+        ++ppMesh;
+    }
+
+    RELEASE_CHECK(*ppMesh == nullptr, "Could not find available mesh slot");
+    // TODO: Use a fixed memory allocator?
+    *ppMesh = new Mesh(kMaxVertices, kMaxIndices);
+    RELEASE_CHECK(*ppMesh != nullptr, "Failed to allocate new mesh");
+
+    ++m_meshCount;
+    return *ppMesh;
 }
 
 void MeshSubsystem::ReleaseComponent(Mesh* pMesh) 
 {
     static const size_t InvalidIndex = static_cast<size_t>(-1);
     auto indexToRemove = InvalidIndex;
-    for (size_t i = 0; i < m_meshes.size(); ++i)
+    for (size_t i = 0; i < kMaxMeshes; ++i)
     {
-        if (&(m_meshes[i]) == pMesh)
+        if (m_pMeshes[i] == pMesh)
         {
             indexToRemove = i;
             break;
@@ -40,15 +51,17 @@ void MeshSubsystem::ReleaseComponent(Mesh* pMesh)
 
     if (indexToRemove != InvalidIndex)
     {
-        m_meshes.erase(std::begin(m_meshes) + indexToRemove);
+        delete m_pMeshes[indexToRemove];
+        m_pMeshes[indexToRemove] = nullptr;
+        m_meshCount--;
     }
 }
 
 core::ComponentHandle MeshSubsystem::GetComponentHandle(Mesh* pMesh) const
 {
-    for (uint16_t i = 0; i < m_meshes.size(); ++i)
+    for (uint16_t i = 0; i < kMaxMeshes; ++i)
     {
-        if (pMesh == &m_meshes[i])
+        if (pMesh == m_pMeshes[i])
         {
             return core::CreateComponentHandle<Mesh>(i);
         }
@@ -61,13 +74,16 @@ Mesh* MeshSubsystem::GetComponentFromHandle(core::ComponentHandle handle)
 {
     RELEASE_CHECK(handle != core::kInvalidComponentHandle, "Invalid mesh handle");
     const uint16_t Index = core::GetComponentIndexFromHandle(handle);
-    return &m_meshes[Index];
+    return m_pMeshes[Index];
 }
 
 void MeshSubsystem::Draw(const glm::mat4& projMatrix, const glm::mat4& viewMatrix) 
 {
-    for (Mesh& mesh : m_meshes)
+    for (size_t i = 0; i < m_meshCount; i++)
     {
-        mesh.Draw(projMatrix, viewMatrix);
+        if (m_pMeshes[i])
+        {
+            m_pMeshes[i]->Draw(projMatrix, viewMatrix);
+        }
     }
 }

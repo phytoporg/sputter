@@ -61,8 +61,6 @@ GameInstance::GameInstance(
     m_pCollisionSubsystem = pAllocator->Create<sputter::physics::CollisionSubsystem>(collisionSubsystemSettings);
 
     render::MeshSubsystemSettings meshSubsystemSettings;
-    meshSubsystemSettings.MaxVertexCount = 20;
-    meshSubsystemSettings.MaxMeshCount = 10;
     m_pMeshSubsystem = pAllocator->Create<sputter::render::MeshSubsystem>(meshSubsystemSettings);
 
     m_pSubsystemProvider->AddSubsystem(m_pRigidBodySubsystem);

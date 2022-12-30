@@ -34,6 +34,7 @@ namespace sputter { namespace render {
 
             struct InitializationParameters {};
 
+            Mesh();
             Mesh(size_t maxVertexCount, size_t maxIndexCount);
             Mesh(const Mesh& other);
             Mesh& operator=(const Mesh& other);
