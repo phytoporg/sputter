@@ -4,6 +4,7 @@
 
 using namespace sputter;
 using namespace sputter::render;
+using namespace sputter::render::meshconstants;
 
 MeshSubsystem::MeshSubsystem(const MeshSubsystemSettings& /*settings*/)
 {}

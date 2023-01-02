@@ -63,20 +63,20 @@ Mesh::Mesh(size_t maxVertexCount, size_t maxIndexCount)
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
 
-    m_VertexPositions.reserve(maxVertexCount);
-    m_VertexPositionAttribute.Set(m_VertexPositions.data(), maxVertexCount);
+    RELEASE_CHECK(maxVertexCount <= m_VertexPositions.Capacity(), "Insufficient vertex storage");
+    m_VertexPositionAttribute.Set(m_VertexPositions.Data(), maxVertexCount);
     m_VertexPositionAttribute.BindTo(0);
 
-    m_VertexNormals.reserve(maxVertexCount);
-    m_VertexNormalAttribute.Set(m_VertexNormals.data(), maxVertexCount);
+    RELEASE_CHECK(maxVertexCount <= m_VertexNormals.Capacity(), "Insufficient normals storage");
+    m_VertexNormalAttribute.Set(m_VertexNormals.Data(), maxVertexCount);
     m_VertexNormalAttribute.BindTo(1);
 
-    m_VertexTextureCoordinates.reserve(maxVertexCount);
-    m_VertexTextureCoordinateAttribute.Set(m_VertexTextureCoordinates.data(), maxVertexCount);
+    RELEASE_CHECK(maxVertexCount <= m_VertexTextureCoordinates.Capacity(), "Insufficient uv storage");
+    m_VertexTextureCoordinateAttribute.Set(m_VertexTextureCoordinates.Data(), maxVertexCount);
     m_VertexTextureCoordinateAttribute.BindTo(2);
 
-    m_VertexIndices.reserve(maxIndexCount);
-    m_Indices.Set(m_VertexIndices.data(), maxIndexCount);
+    RELEASE_CHECK(maxIndexCount <= m_VertexIndices.Capacity(), "Insufficient index storage");
+    m_Indices.Set(m_VertexIndices.Data(), maxIndexCount);
 
     m_VAO = vao;
 
@@ -106,10 +106,10 @@ bool Mesh::SetPositions(const FPVector3D* positionsArray, uint32_t arrayLen)
     // Convert to floating-point representation for GPU
     for (uint32_t i = 0; i < arrayLen; ++i)
     {
-        m_VertexPositions.emplace_back(positionsArray[i].ToVec3());
+        m_VertexPositions.Emplace(positionsArray[i].ToVec3());
     }
 
-    m_VertexPositionAttribute.Set(m_VertexPositions);
+    m_VertexPositionAttribute.Set(m_VertexPositions.Data(), m_VertexPositions.Size());
     m_isDirty = true;
     return true;
 }
@@ -121,15 +121,19 @@ bool Mesh::SetNormals(const FixedMemoryVector<FPVector3D>& vertexNormals)
 
 bool Mesh::SetNormals(const FPVector3D* normalsArray, uint32_t arrayLen)
 {
-    // Convert to floating-point representation for GPU
-    m_VertexNormals.clear();
-    m_VertexNormals.reserve(arrayLen);
-    for (size_t i = 0; i < arrayLen; ++i)
+    if (arrayLen > m_VertexNormals.Capacity())
     {
-        m_VertexNormals.emplace_back(normalsArray[i].ToVec3());
+        return false;
     }
 
-    m_VertexNormalAttribute.Set(m_VertexNormals);
+    // Convert to floating-point representation for GPU
+    m_VertexNormals.Clear();
+    for (size_t i = 0; i < arrayLen; ++i)
+    {
+        m_VertexNormals.Emplace(normalsArray[i].ToVec3());
+    }
+
+    m_VertexNormalAttribute.Set(m_VertexNormals.Data(), m_VertexNormals.Size());
     m_isDirty = true;
     return true;
 }
@@ -141,15 +145,19 @@ bool Mesh::SetTextureCoordinates(const FixedMemoryVector<FPVector2D>& vertexUVs)
 
 bool Mesh::SetTextureCoordinates(const FPVector2D* uvsArray, uint32_t arrayLen)
 {
-    // Convert to floating-point representation for GPU
-    m_VertexTextureCoordinates.clear();
-    m_VertexTextureCoordinates.reserve(arrayLen);
-    for (size_t i = 0; i < arrayLen; ++i)
+    if (arrayLen > m_VertexTextureCoordinates.Capacity())
     {
-        m_VertexTextureCoordinates.emplace_back(uvsArray[i].ToVec2());
+        return false;
     }
 
-    m_VertexTextureCoordinateAttribute.Set(m_VertexTextureCoordinates);
+    // Convert to floating-point representation for GPU
+    m_VertexTextureCoordinates.Clear();
+    for (size_t i = 0; i < arrayLen; ++i)
+    {
+        m_VertexTextureCoordinates.Emplace(uvsArray[i].ToVec2());
+    }
+
+    m_VertexTextureCoordinateAttribute.Set(m_VertexTextureCoordinates.Data(), m_VertexTextureCoordinates.Size());
     m_isDirty = true;
     return true;
 }
@@ -161,12 +169,16 @@ bool Mesh::SetIndices(const FixedMemoryVector<int>& indices)
 
 bool Mesh::SetIndices(const int* indexArray, uint32_t arrayLen)
 {    
-    // No *real* need for conversion here, but for the sake of consistency...
-    m_VertexIndices.clear();
-    m_VertexIndices.resize(arrayLen);
+    if (arrayLen > m_VertexIndices.Capacity())
+    {
+        return false;
+    }
 
-    memcpy(m_VertexIndices.data(), indexArray, arrayLen * sizeof(int));
-    m_Indices.Set(m_VertexIndices);
+    // No *real* need for conversion here, but for the sake of consistency...
+    m_VertexIndices.Clear();
+    m_VertexIndices.Resize(arrayLen);
+    memcpy(m_VertexIndices.Data(), indexArray, arrayLen * sizeof(int));
+    m_Indices.Set(m_VertexIndices.Data(), m_VertexIndices.Size());
     m_isDirty = true;
     return true;
 }
@@ -224,7 +236,6 @@ void Mesh::Draw(const glm::mat4& projMatrix, const glm::mat4& viewMatrix)
         return;
     }
     
-
     if (!m_spShader || 
          m_ModelUniformHandle == Shader::kInvalidHandleValue ||
          m_ViewUniformHandle  == Shader::kInvalidHandleValue ||
@@ -266,10 +277,10 @@ void Mesh::Draw(const glm::mat4& projMatrix, const glm::mat4& viewMatrix)
     if (m_isDirty)
     {
         // Update buffer objects
-        m_VertexPositionAttribute.Set(m_VertexPositions);
-        m_VertexNormalAttribute.Set(m_VertexNormals);
-        m_VertexTextureCoordinateAttribute.Set(m_VertexTextureCoordinates);
-        m_Indices.Set(m_VertexIndices);
+        m_VertexPositionAttribute.Set(m_VertexPositions.Data(), m_VertexPositions.Size());
+        m_VertexNormalAttribute.Set(m_VertexNormals.Data(), m_VertexNormals.Size());
+        m_VertexTextureCoordinateAttribute.Set(m_VertexTextureCoordinates.Data(), m_VertexTextureCoordinates.Size());
+        m_Indices.Set(m_VertexIndices.Data(), m_VertexIndices.Size());
         m_isDirty = false;
     }
 

@@ -2,12 +2,13 @@
 
 #include "shader.h"
 #include "uniform.h"
+#include "meshconstants.h"
 #include <memory>
-#include <vector>
 #include <string>
 #include <sputter/math/fpvector2d.h>
 #include <sputter/math/fpvector3d.h>
 #include <sputter/containers/fixedmemoryvector.h>
+#include <sputter/containers/arrayvector.h>
 #include <sputter/game/subsystemtype.h>
 #include <sputter/render/attribute.h>
 #include <sputter/render/indexbuffer.h>
@@ -88,17 +89,17 @@ namespace sputter { namespace render {
             void BindAttributes();
             void UnbindAttributes();
 
-            // Inlining all of the pimpl stuff !
+            // Attributes
             Attribute<glm::vec3>           m_VertexPositionAttribute;
             Attribute<glm::vec3>           m_VertexNormalAttribute;
             Attribute<glm::vec2>           m_VertexTextureCoordinateAttribute;
             IndexBuffer                    m_Indices;
 
             // Data
-            std::vector<glm::vec3>         m_VertexPositions;
-            std::vector<glm::vec3>         m_VertexNormals;
-            std::vector<glm::vec2>         m_VertexTextureCoordinates;
-            std::vector<uint32_t>          m_VertexIndices;
+            containers::ArrayVector<glm::vec3, meshconstants::kMaxVertices> m_VertexPositions;
+            containers::ArrayVector<glm::vec3, meshconstants::kMaxVertices> m_VertexNormals;
+            containers::ArrayVector<glm::vec2, meshconstants::kMaxVertices> m_VertexTextureCoordinates;
+            containers::ArrayVector<uint32_t, meshconstants::kMaxIndices>   m_VertexIndices;
 
             std::vector<MeshUniformValue>  m_MeshUniformValues;
 

@@ -27,15 +27,11 @@ namespace sputter { namespace render {
         Mesh* GetComponentFromHandle(core::ComponentHandle handle);
 
         void Draw(const glm::mat4& projMatrix, const glm::mat4& viewMatrix);
-
     private:
         MeshSubsystem() = delete;
         MeshSubsystem(const MeshSubsystem& other) = delete;
 
-        static const size_t kMaxVertices = 32;
-        static const size_t kMaxIndices = 16;
-        static const size_t kMaxMeshes = 8;
-        Mesh*               m_pMeshes[kMaxMeshes] = {};
+        Mesh*               m_pMeshes[meshconstants::kMaxMeshes] = {};
         size_t              m_meshCount = 0;
     };
 }}
