@@ -5,6 +5,7 @@
 #include "meshconstants.h"
 #include <memory>
 #include <string>
+#include <initializer_list>
 #include <sputter/math/fpvector2d.h>
 #include <sputter/math/fpvector3d.h>
 #include <sputter/containers/fixedmemoryvector.h>
@@ -18,10 +19,12 @@ namespace sputter { namespace render {
 
     struct MeshUniformValue
     {
+        MeshUniformValue() {}
+
         MeshUniformValue(const std::string& uniformName, UniformType type, void const* pValue)
         : Name(uniformName), Type(type), pValue(pValue) {}
 
-        std::string Name;
+        std::string Name = "";
         UniformType Type = UniformType::Invalid;
         void const* pValue = nullptr;
 
@@ -74,7 +77,7 @@ namespace sputter { namespace render {
             void SetModelMatrix(const glm::mat4& modelMatrix);
 
             // TO be set for each draw call
-            void SetMeshUniforms(const std::vector<MeshUniformValue>& uniformValues);
+            void SetMeshUniforms(const std::initializer_list<MeshUniformValue>& uniformValues);
 
             void Draw(const glm::mat4& projMatrix, const glm::mat4& viewMatrix);
 
@@ -101,7 +104,8 @@ namespace sputter { namespace render {
             containers::ArrayVector<glm::vec2, meshconstants::kMaxVertices> m_VertexTextureCoordinates;
             containers::ArrayVector<uint32_t, meshconstants::kMaxIndices>   m_VertexIndices;
 
-            std::vector<MeshUniformValue>  m_MeshUniformValues;
+            static const size_t kMaxMeshUniforms = 8;
+            containers::ArrayVector<MeshUniformValue, kMaxMeshUniforms> m_MeshUniformValues;
 
             glm::mat4              m_ModelMatrix;
 

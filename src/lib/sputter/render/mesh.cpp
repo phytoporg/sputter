@@ -5,7 +5,6 @@
 #include "indexbuffer.h"
 #include "draw.h"
 
-#include <vector>
 #include <glm/glm.hpp>
 
 #include <sputter/render/uniform.h>
@@ -223,9 +222,14 @@ void Mesh::SetModelMatrix(const glm::mat4& modelMatrix)
     m_ModelMatrix = modelMatrix;
 }
 
-void Mesh::SetMeshUniforms(const std::vector<MeshUniformValue>& uniformValues)
+void Mesh::SetMeshUniforms(const std::initializer_list<MeshUniformValue>& uniformValues)
 {
-    m_MeshUniformValues = uniformValues;
+    RELEASE_CHECK(uniformValues.size() <= m_MeshUniformValues.Capacity(), "Too many mesh uniform values");
+    m_MeshUniformValues.Clear();
+    for (const MeshUniformValue& meshUniformValue : uniformValues)
+    {
+        m_MeshUniformValues.Emplace(meshUniformValue);
+    }
 }
 
 void Mesh::Draw(const glm::mat4& projMatrix, const glm::mat4& viewMatrix) 
@@ -247,8 +251,9 @@ void Mesh::Draw(const glm::mat4& projMatrix, const glm::mat4& viewMatrix)
 
     m_spShader->Bind();
 
-    for (MeshUniformValue& uniformValue : m_MeshUniformValues)
+    for (size_t i = 0; i < m_MeshUniformValues.Size(); ++i)
     {
+        MeshUniformValue& uniformValue = m_MeshUniformValues[i];
         if (uniformValue.Location == Shader::kInvalidHandleValue)
         {
             uniformValue.Location = m_spShader->GetUniform(uniformValue.Name);
