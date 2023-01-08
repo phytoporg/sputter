@@ -2,10 +2,9 @@ Next high-level goal: Gameplay vertical slice
 
 IMMEDIATE TODO:
 - Either use the same screen for all scenes, or hook/unhook window callbacks for screen instances on scene transitions
-- Move timer system into the game instance?
--- One last audit for rollback state (everything stored in the FixedMemoryAllocator)
---- MeshSubsystem still uses vector
-
+- One last audit for rollback state (everything stored in the FixedMemoryAllocator)
+-- Timer system should use functor handles to store and invoke callbacks
+--- No user param pointers in functor payload for timer system (can use lambda?)
 
 BUGBUG: Fix space being rendered as !
 Missing an edge case in processing font tables, see: https://stackoverflow.com/questions/12591439/how-to-render-zero-width-glyphs-in-ttf
