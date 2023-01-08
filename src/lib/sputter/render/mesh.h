@@ -3,8 +3,7 @@
 #include "shader.h"
 #include "uniform.h"
 #include "meshconstants.h"
-#include <memory>
-#include <string>
+#include <cstring>
 #include <initializer_list>
 #include <sputter/math/fpvector2d.h>
 #include <sputter/math/fpvector3d.h>
@@ -21,15 +20,29 @@ namespace sputter { namespace render {
     {
         MeshUniformValue() {}
 
-        MeshUniformValue(const std::string& uniformName, UniformType type, void const* pValue)
-        : Name(uniformName), Type(type), pValue(pValue) {}
+        MeshUniformValue(const char* pUniformName, UniformType type, void const* pValue)
+        : Type(type), pValue(pValue) 
+        {
+            strncpy(Name, pUniformName, sizeof(Name));
+        }
 
-        std::string Name = "";
+        MeshUniformValue(const MeshUniformValue& other)
+        {
+            memcpy(this, &other, sizeof(MeshUniformValue));
+        }
+
+        MeshUniformValue operator=(const MeshUniformValue& other)
+        {
+            memcpy(this, &other, sizeof(MeshUniformValue));
+            return *this;
+        }
+
+        char Name[256] = {};
         UniformType Type = UniformType::Invalid;
         void const* pValue = nullptr;
 
         // TO cache the name -> slot lookups
-        uint32_t    Location = Shader::kInvalidHandleValue;
+        uint32_t Location = Shader::kInvalidHandleValue;
     };
 
     class Mesh 
