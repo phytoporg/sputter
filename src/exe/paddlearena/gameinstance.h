@@ -77,12 +77,11 @@ public:
 private:
     void SetGameState(GameState::State newState);
     bool CheckPauseInput() const;
-    static void OnCountdownTimerExpired(
-        sputter::game::TimerSystem* pTimerSystem,
-        sputter::game::TimerSystem::TimerHandle handle,
-        void* pUserData);
+
+    static void OnCountdownTimerExpired(void *pUserData);
 
     GameStateChangedCallback                 m_fnOngameStateChanged = nullptr;
+    sputter::game::TimerSystem::TimerHandle  m_countdownTimerHandle = sputter::game::TimerSystem::kInvalidTimerHandle;
 
     sputter::game::TimerSystem*              m_pTimerSystem  = nullptr;
     sputter::render::Camera*                 m_pCamera       = nullptr;

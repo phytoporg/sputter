@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <sputter/core/functor.h>
 
 namespace sputter { namespace game {
     // Booo, I don't like this name but "TimerManager" is worse
@@ -8,12 +9,13 @@ namespace sputter { namespace game {
     {
     public:
         using TimerHandle = uint32_t;
-        using TimerExpiryFunctor = void(*)(TimerSystem*, TimerHandle, void*);
         static const TimerHandle kInvalidTimerHandle = 0xFFFFFFFF;
 
-        // TODO: How are functors supposed to be serialized?
-        TimerHandle CreateFrameTimer(uint32_t numFrames, TimerExpiryFunctor pfnOnExpiry = nullptr, void* pUserData = nullptr);
-        TimerHandle CreateLoopingFrameTimer(uint32_t numFrames, int8_t loopCount, TimerExpiryFunctor pfnOnExpiry = nullptr, void* pUserData = nullptr);
+        TimerHandle CreateFrameTimer(uint32_t numFrames, void (*pfnCallback)(void*) = nullptr, void* pUserData = nullptr);
+        TimerHandle CreateLoopingFrameTimer(uint32_t numFrames, int8_t loopCount, void (*pfnCallback)(void*) = nullptr, void* pUserData = nullptr);
+
+        TimerHandle CreateFrameTimer(uint32_t numFrames, const core::Functor& onTimerExpired = core::Functor());
+        TimerHandle CreateLoopingFrameTimer(uint32_t numFrames, int8_t loopCount, const core::Functor& onTimerExpired = core::Functor());
         bool ClearTimer(TimerHandle timerHandle);
 
         void Tick();
@@ -22,8 +24,7 @@ namespace sputter { namespace game {
         struct TimerEntry
         {
             TimerHandle Handle = kInvalidTimerHandle;
-            TimerExpiryFunctor pfnExpiryCallback = nullptr;
-            void* pUserData = nullptr;
+            core::Functor OnTimerExpired;
             uint64_t InitialFrames = 0;
             uint64_t FramesRemaining = 0;
             int8_t LoopCount = -1; 

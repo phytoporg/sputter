@@ -5,12 +5,24 @@
 using namespace sputter::game;
 using TimerHandle = TimerSystem::TimerHandle;
 
-TimerHandle TimerSystem::CreateFrameTimer(uint32_t numFrames, TimerExpiryFunctor pfnOnExpiry, void* pUserData)
+TimerHandle TimerSystem::CreateFrameTimer(uint32_t numFrames, void (*pfnCallback)(void*), void* pUserData)
 {
-    return CreateLoopingFrameTimer(numFrames, 1, pfnOnExpiry, pUserData);
+    sputter::core::Functor onTimerExpired(reinterpret_cast<uintptr_t>(pfnCallback), pUserData);
+    return CreateLoopingFrameTimer(numFrames, 1, onTimerExpired);
 }
 
-TimerHandle TimerSystem::CreateLoopingFrameTimer(uint32_t numFrames, int8_t loopCount, TimerExpiryFunctor pfnOnExpiry, void* pUserData)
+TimerHandle TimerSystem::CreateLoopingFrameTimer(uint32_t numFrames, int8_t loopCount, void (*pfnCallback)(void*), void* pUserData)
+{
+    sputter::core::Functor onTimerExpired(reinterpret_cast<uintptr_t>(pfnCallback), pUserData);
+    return CreateLoopingFrameTimer(numFrames, loopCount, onTimerExpired);
+}
+
+TimerHandle TimerSystem::CreateFrameTimer(uint32_t numFrames, const core::Functor& onTimerExpired)
+{
+    return CreateLoopingFrameTimer(numFrames, 1, onTimerExpired);
+}
+
+TimerHandle TimerSystem::CreateLoopingFrameTimer(uint32_t numFrames, int8_t loopCount, const core::Functor& onTimerExpired)
 {
     if (m_nextEntry >= kMaxTimerEntries || numFrames == 0)
     {
@@ -19,8 +31,7 @@ TimerHandle TimerSystem::CreateLoopingFrameTimer(uint32_t numFrames, int8_t loop
 
     TimerEntry& entry = m_entries[m_nextEntry];
     entry.Handle = m_nextTimerHandle;
-    entry.pfnExpiryCallback = pfnOnExpiry;
-    entry.pUserData = pUserData;
+    entry.OnTimerExpired = onTimerExpired;
     entry.InitialFrames = numFrames;
     entry.FramesRemaining = numFrames;
     entry.LoopCount = loopCount;
@@ -66,9 +77,9 @@ void TimerSystem::Tick()
             entry.FramesRemaining--;
             if (entry.FramesRemaining == 0 && entry.Handle != kInvalidTimerHandle)
             {
-                if (entry.pfnExpiryCallback)
+                if (entry.OnTimerExpired)
                 {
-                    entry.pfnExpiryCallback(this, entry.Handle, entry.pUserData);
+                    entry.OnTimerExpired();
                 }
 
                 // The callback may have cleared the timer. Check before proceeding!

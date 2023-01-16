@@ -4,6 +4,8 @@
 
 #include <sputter/game/timersystem.h>
 
+#include <sputter/core/functorstorage.h>
+
 #include <sputter/assets/assetstorageprovider.h>
 
 #include <sputter/input/inputsource.h>
@@ -74,6 +76,9 @@ GameInstance::GameInstance(
 
 void GameInstance::Initialize()
 {
+    // Register timer callback functor during initialization
+    sputter::core::functorstorage::RegisterFunctor(reinterpret_cast<intptr_t>(&GameInstance::OnCountdownTimerExpired));
+
     m_pGameState->CountdownTimerHandle = game::TimerSystem::kInvalidTimerHandle;
     m_pGameState->Arena.Initialize(gameconstants::ArenaDimensions);        
     m_pGameState->Camera.SetTranslation(gameconstants::InitialCameraPosition);
@@ -270,17 +275,14 @@ bool GameInstance::CheckPauseInput() const
             (m_pInputSources[1] && m_pInputSources[1]->IsInputReleased(PauseCode)));
 }
 
-void GameInstance::OnCountdownTimerExpired(
-    sputter::game::TimerSystem* pTimerSystem,
-    sputter::game::TimerSystem::TimerHandle handle,
-    void* pUserData)
+void GameInstance::OnCountdownTimerExpired(void* pUserData)
 {
-    auto pGameInstance = reinterpret_cast<GameInstance*>(pUserData);
+    GameInstance* pGameInstance = static_cast<GameInstance*>(pUserData);
 
     pGameInstance->m_pGameState->CountdownTimeRemaining--;
     if (pGameInstance->m_pGameState->CountdownTimeRemaining == 0)
     {
-        if (!pTimerSystem->ClearTimer(handle))
+        if (!pGameInstance->m_pTimerSystem->ClearTimer(pGameInstance->m_countdownTimerHandle))
         {
             LOG(WARNING) << "Could not clear countdown timer handle\n";
         }
