@@ -19,7 +19,6 @@ static FunctorHandle IndexToHandle(uint32_t index)
 
 FunctorHandle sputter::core::functorstorage::RegisterFunctor(intptr_t functionAddress)
 {
-    RELEASE_CHECK(!s_isRegistrationLocked, "Attempting to register functor, but functor registration is locked");
     RELEASE_CHECK(s_functorCount < kMaxFunctorCount, "Cannot register any more functors");
 
     // If it's already registered, just return the existing handle
@@ -30,6 +29,8 @@ FunctorHandle sputter::core::functorstorage::RegisterFunctor(intptr_t functionAd
             return IndexToHandle(i);
         }
     }
+
+    RELEASE_CHECK(!s_isRegistrationLocked, "Attempting to register functor, but functor registration is locked");
 
     s_functorTable[s_functorCount] = functionAddress;
     ++s_functorCount;
@@ -47,4 +48,9 @@ void* sputter::core::functorstorage::GetFunctorFromHandle(FunctorHandle handle)
 void sputter::core::functorstorage::LockFunctorRegistration()
 {
     s_isRegistrationLocked = true;
+}
+
+bool sputter::core::functorstorage::IsFunctorRegistrationLocked()
+{
+    return s_isRegistrationLocked;
 }

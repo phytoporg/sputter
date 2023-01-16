@@ -37,6 +37,7 @@ namespace {
 }
 
 using namespace sputter;
+using namespace sputter::core;
 
 GameInstance::GameInstance(
     memory::FixedMemoryAllocator* pAllocator,
@@ -77,7 +78,7 @@ GameInstance::GameInstance(
 void GameInstance::Initialize()
 {
     // Register timer callback functor during initialization
-    sputter::core::functorstorage::RegisterFunctor(reinterpret_cast<intptr_t>(&GameInstance::OnCountdownTimerExpired));
+    functorstorage::RegisterFunctor(reinterpret_cast<intptr_t>(&GameInstance::OnCountdownTimerExpired));
 
     m_pGameState->CountdownTimerHandle = game::TimerSystem::kInvalidTimerHandle;
     m_pGameState->Arena.Initialize(gameconstants::ArenaDimensions);        
@@ -85,6 +86,11 @@ void GameInstance::Initialize()
     m_pGameState->Player1Score = 0;
     m_pGameState->Player2Score = 0;
     m_pGameState->WinningPlayer = 0;
+
+    if (!functorstorage::IsFunctorRegistrationLocked())
+    {
+        functorstorage::LockFunctorRegistration();
+    }
 
     SetGameState(GameState::State::Starting);
 }

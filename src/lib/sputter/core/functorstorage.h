@@ -10,4 +10,5 @@ namespace sputter { namespace core { namespace functorstorage {
     void* GetFunctorFromHandle(FunctorHandle handle); 
 
     void LockFunctorRegistration();
+    bool IsFunctorRegistrationLocked();
 }}}
