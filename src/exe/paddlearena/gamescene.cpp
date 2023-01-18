@@ -6,6 +6,8 @@
 
 #include <sputter/assets/assetstorageprovider.h>
 
+#include <sputter/core/serializer.h>
+
 #include <sputter/render/window.h>
 #include <sputter/render/fontstorage.h>
 #include <sputter/render/volumetrictext.h>
@@ -95,6 +97,9 @@ GameScene::GameScene(
     m_uiTheme.ButtonDownAndDisabledBorderColor = render::Color::RED;
     m_uiTheme.ModalBorderSize = 4;
     m_uiTheme.ModalBackgroundColor = render::Color::BLACK;
+
+    m_pSerializer = m_fixedAllocator.Create<core::Serializer>();
+    m_pSerializer->RegisterSerializableObject(m_pGameInstance);
 }
 
 GameScene::~GameScene()

@@ -55,6 +55,11 @@ namespace sputter
     {
         class FixedMemoryAllocator;
     }
+
+    namespace core
+    {
+        class Serializer;
+    }
 }
 
 struct GameState;
@@ -111,4 +116,6 @@ private:
     PaddleArena*                              m_pPaddleArena = nullptr;
 
     GameInstance*                             m_pGameInstance = nullptr;
+
+    sputter::core::Serializer*                m_pSerializer = nullptr;
 };

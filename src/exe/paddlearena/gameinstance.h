@@ -2,6 +2,7 @@
 
 #include "gamestate.h"
 
+#include <sputter/core/serializable.h>
 #include <sputter/math/fixedpoint.h>
 #include <glm/glm.hpp>
 
@@ -45,7 +46,7 @@ namespace sputter
     }
 }
 
-class GameInstance {
+class GameInstance : public sputter::core::ISerializable {
 public:
     GameInstance(
         sputter::memory::FixedMemoryAllocator* pAllocator,
@@ -58,6 +59,11 @@ public:
         const sputter::input::InputSource* pP1InputSource,
         const sputter::input::InputSource* pP2InputSource
     );
+
+    // ++ISerializable
+    virtual bool Serialize(void* pBuffer, size_t* pBytesWrittenOut, size_t maxBytes) override;
+    virtual bool Deserialize(void* pBuffer, size_t* pBytesReadOut, size_t maxBytes) override;
+    // --ISerializable
 
     void Initialize();
 

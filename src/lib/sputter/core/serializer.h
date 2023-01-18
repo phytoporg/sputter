@@ -5,6 +5,7 @@
 // buffer, respectively.
 
 #include <cstdint>
+#include <cstddef>
 
 namespace sputter { namespace core {
     class ISerializable;

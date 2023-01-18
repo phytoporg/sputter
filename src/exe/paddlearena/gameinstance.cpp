@@ -78,6 +78,16 @@ GameInstance::GameInstance(
     GameState::SetGameStateAddress(m_pGameState);
 }
 
+bool GameInstance::Serialize(void* pBuffer, size_t* pBytesWrittenOut, size_t maxBytes)
+{
+    return false;
+}
+
+bool GameInstance::Deserialize(void* pBuffer, size_t* pBytesReadOut, size_t maxBytes)
+{
+    return false;
+}
+
 void GameInstance::Initialize()
 {
     // Register timer callback functor during initialization
