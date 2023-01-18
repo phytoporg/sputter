@@ -3,17 +3,23 @@
 #include <sputter/physics/rigidbodysubsystem.h>
 #include <sputter/render/camera.h>
 #include <sputter/game/timersystem.h>
+#include <sputter/core/serializable.h>
 #include "paddle.h"
 #include "stage.h"
 #include "ball.h"
 
-struct GameState
+struct GameState : public sputter::core::ISerializable
 {
     // Static accessor/mutator pair to grab the address all singleton-like
     static GameState* GetGameStateAddress();
     static void SetGameStateAddress(GameState* pGameState);
 
     GameState();
+
+    // Begin ISerializable
+    virtual bool Serialize(void* pBuffer, size_t* pBytesWrittenOut, size_t maxBytes) override;
+    virtual bool Deserialize(void* pBuffer, size_t* pBytesReadOut, size_t maxBytes) override;
+    // End ISerializable
     
     enum class State 
     {

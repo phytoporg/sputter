@@ -2,14 +2,20 @@
 
 #include <cstdint>
 #include <sputter/core/functor.h>
+#include <sputter/core/serializable.h>
 
 namespace sputter { namespace game {
     // Booo, I don't like this name but "TimerManager" is worse
-    class TimerSystem
+    class TimerSystem : public core::ISerializable
     {
     public:
         using TimerHandle = uint32_t;
         static const TimerHandle kInvalidTimerHandle = 0xFFFFFFFF;
+
+        // ++ISerializable
+        virtual bool Serialize(void* pBuffer, size_t* pBytesWrittenOut, size_t maxBytes) override;
+        virtual bool Deserialize(void* pBuffer, size_t* pBytesReadOut, size_t maxBytes) override;
+        // --ISerializable
 
         TimerHandle CreateFrameTimer(uint32_t numFrames, void (*pfnCallback)(void*) = nullptr, void* pUserData = nullptr);
         TimerHandle CreateLoopingFrameTimer(uint32_t numFrames, int8_t loopCount, void (*pfnCallback)(void*) = nullptr, void* pUserData = nullptr);
@@ -30,7 +36,7 @@ namespace sputter { namespace game {
             int8_t LoopCount = -1; 
         };
 
-        static const uint8_t kMaxTimerEntries = 255;
+        static const uint8_t kMaxTimerEntries = 8;
 
         TimerEntry  m_entries[kMaxTimerEntries];
         TimerHandle m_nextTimerHandle = 0;

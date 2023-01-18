@@ -87,7 +87,6 @@ private:
     static void OnCountdownTimerExpired(void *pUserData);
 
     GameStateChangedCallback                 m_fnOngameStateChanged = nullptr;
-    sputter::game::TimerSystem::TimerHandle  m_countdownTimerHandle = sputter::game::TimerSystem::kInvalidTimerHandle;
 
     sputter::game::TimerSystem*              m_pTimerSystem  = nullptr;
     sputter::render::Camera*                 m_pCamera       = nullptr;

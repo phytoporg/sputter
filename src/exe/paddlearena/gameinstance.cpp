@@ -80,11 +80,28 @@ GameInstance::GameInstance(
 
 bool GameInstance::Serialize(void* pBuffer, size_t* pBytesWrittenOut, size_t maxBytes)
 {
+    if (!m_pTimerSystem->Serialize(pBuffer, pBytesWrittenOut, maxBytes)) { return false; }
+    if (!m_pRigidBodySubsystem->Serialize(pBuffer, pBytesWrittenOut, maxBytes)) { return false; }
+    if (!m_pCollisionSubsystem->Serialize(pBuffer, pBytesWrittenOut, maxBytes)) { return false; }
+    if (!m_pGameState->Serialize(pBuffer, pBytesWrittenOut, maxBytes)) { return false; }
+
+    // TODO: may be the same camera as in the game state? Double check.
+    // if (!m_pCamera->Serialize(pBuffer, pBytesWrittenOut, maxBytes)) { return false; }
+    //return true;
+
     return false;
 }
 
 bool GameInstance::Deserialize(void* pBuffer, size_t* pBytesReadOut, size_t maxBytes)
 {
+    if (!m_pTimerSystem->Deserialize(pBuffer, pBytesReadOut, maxBytes)) { return false; }
+    if (!m_pRigidBodySubsystem->Deserialize(pBuffer, pBytesReadOut, maxBytes)) { return false; }
+    if (!m_pCollisionSubsystem->Deserialize(pBuffer, pBytesReadOut, maxBytes)) { return false; }
+    if (!m_pGameState->Deserialize(pBuffer, pBytesReadOut, maxBytes)) { return false; }
+
+    // TODO: may be the same camera as in the game state? Double check.
+    // if (!m_pCamera->Deserialize(pBuffer, pBytesWrittenOut, maxBytes)) { return false; }
+    //return true;
     return false;
 }
 
@@ -301,7 +318,7 @@ void GameInstance::OnCountdownTimerExpired(void* pUserData)
     pGameInstance->m_pGameState->CountdownTimeRemaining--;
     if (pGameInstance->m_pGameState->CountdownTimeRemaining == 0)
     {
-        if (!pGameInstance->m_pTimerSystem->ClearTimer(pGameInstance->m_countdownTimerHandle))
+        if (!pGameInstance->m_pTimerSystem->ClearTimer(pGameInstance->m_pGameState->CountdownTimerHandle))
         {
             LOG(WARNING) << "Could not clear countdown timer handle\n";
         }

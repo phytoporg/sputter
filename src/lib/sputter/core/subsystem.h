@@ -1,6 +1,7 @@
 #pragma once
 
 #include <sputter/math/fixedpoint.h>
+#include "serializable.h"
 
 // A Subsystem object in Sputter manages the lifetime of a particular kind of
 // component related to the subsystem and is responsible for updating those
@@ -8,7 +9,7 @@
 
 namespace sputter { namespace core {
     template<typename ComponentType>
-    class ISubsystem
+    class ISubsystem 
     {
     public:
         using Component = ComponentType;

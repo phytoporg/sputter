@@ -151,3 +151,15 @@ void Stage::Initialize(FPVector2D stageDimensions)
     pCollision->CollisionShapes[pCollision->NumCollisionShapes++] = AABB(TopLowerLeft, TopAndBottomCollisionExtents);
     pCollision->CollisionShapes[pCollision->NumCollisionShapes++] = AABB(BottomLowerLeft, TopAndBottomCollisionExtents);
 }
+
+bool Stage::Serialize(void* pBuffer, size_t* pBytesWrittenOut, size_t maxBytes)
+{
+    // Nothing for rollback state just yet
+    return true;
+}
+
+bool Stage::Deserialize(void* pBuffer, size_t* pBytesReadOut, size_t maxBytes)
+{
+    // Nothing for rollback state just yet
+    return true;
+}

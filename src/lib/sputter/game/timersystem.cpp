@@ -5,6 +5,42 @@
 using namespace sputter::game;
 using TimerHandle = TimerSystem::TimerHandle;
 
+bool TimerSystem::Serialize(void* pBuffer, size_t* pBytesWrittenOut, size_t maxBytes)
+{
+    size_t bytesWritten = 0;
+
+    WRITE(m_entries, pBuffer, bytesWritten, maxBytes);
+    bytesWritten += sizeof(m_entries);
+
+    WRITE(m_nextTimerHandle, pBuffer, bytesWritten, maxBytes);
+    bytesWritten += sizeof(m_nextTimerHandle);
+
+    WRITE(m_nextEntry, pBuffer, bytesWritten, maxBytes);
+    bytesWritten += sizeof(m_nextEntry);
+
+    *pBytesWrittenOut += bytesWritten;
+
+    return true;
+}
+
+bool TimerSystem::Deserialize(void* pBuffer, size_t* pBytesReadOut, size_t maxBytes)
+{
+    size_t bytesRead = 0;
+
+    READ(m_entries, pBuffer, bytesRead, maxBytes);
+    bytesRead += sizeof(m_entries);
+
+    READ(m_nextTimerHandle, pBuffer, bytesRead, maxBytes);
+    bytesRead += sizeof(m_nextTimerHandle);
+
+    READ(m_nextEntry, pBuffer, bytesRead, maxBytes);
+    bytesRead += sizeof(m_nextEntry);
+
+    *pBytesReadOut += bytesRead;
+
+    return true;
+}
+
 TimerHandle TimerSystem::CreateFrameTimer(uint32_t numFrames, void (*pfnCallback)(void*), void* pUserData)
 {
     sputter::core::Functor onTimerExpired(reinterpret_cast<uintptr_t>(pfnCallback), pUserData);

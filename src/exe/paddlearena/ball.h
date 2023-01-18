@@ -5,6 +5,7 @@
 
 #include <sputter/assets/resourcestorage.h>
 #include <sputter/core/component.h>
+#include <sputter/core/serializable.h>
 #include <sputter/game/object.h>
 #include <sputter/math/fixedpoint.h>
 #include <sputter/math/fptransform3d.h>
@@ -27,13 +28,18 @@ namespace sputter
 }
 
 class Paddle;
-class Ball : sputter::game::Object
+class Ball : public sputter::game::Object, public sputter::core::ISerializable
 {
 public:
     Ball();
 
     virtual void Tick(sputter::math::FixedPoint deltaTime) override;
     virtual void PostTick(sputter::math::FixedPoint deltaTime) override;
+
+    // Begin ISerializable
+    virtual bool Serialize(void* pBuffer, size_t* pBytesWrittenOut, size_t maxBytes) override;
+    virtual bool Deserialize(void* pBuffer, size_t* pBytesReadOut, size_t maxBytes) override;
+    // End ISerializable
 
     bool IsInitialized() const;
     void Initialize(

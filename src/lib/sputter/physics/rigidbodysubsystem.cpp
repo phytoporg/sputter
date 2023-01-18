@@ -101,4 +101,48 @@ namespace sputter { namespace physics {
         m_validRigidBodyVector[Index] = false;
         m_rigidBodyCount--;
     }
+
+    bool RigidBodySubsystem::Serialize(void* pBuffer, size_t* pBytesWrittenOut, size_t maxBytes)
+    {
+        size_t bytesWritten = 0;
+        WRITE(m_rigidBodies, pBuffer, bytesWritten, maxBytes);
+        bytesWritten += sizeof(m_rigidBodies);
+
+        WRITE(m_validRigidBodyVector, pBuffer, bytesWritten, maxBytes);
+        bytesWritten += sizeof(m_validRigidBodyVector);
+
+        WRITE(m_isGravityEnabled, pBuffer, bytesWritten, maxBytes);
+        bytesWritten += sizeof(m_isGravityEnabled);
+
+        WRITE(m_gravity, pBuffer, bytesWritten, maxBytes);
+        bytesWritten += sizeof(m_gravity);
+
+        WRITE(m_rigidBodyCount, pBuffer, bytesWritten, maxBytes);
+        bytesWritten += sizeof(m_rigidBodyCount);
+
+        *pBytesWrittenOut += bytesWritten;
+        return true;
+    }
+
+    bool RigidBodySubsystem::Deserialize(void* pBuffer, size_t* pBytesReadOut, size_t maxBytes)
+    {
+        size_t bytesRead = 0;
+        WRITE(m_rigidBodies, pBuffer, bytesRead, maxBytes);
+        bytesRead += sizeof(m_rigidBodies);
+
+        WRITE(m_validRigidBodyVector, pBuffer, bytesRead, maxBytes);
+        bytesRead += sizeof(m_validRigidBodyVector);
+
+        WRITE(m_isGravityEnabled, pBuffer, bytesRead, maxBytes);
+        bytesRead += sizeof(m_isGravityEnabled);
+
+        WRITE(m_gravity, pBuffer, bytesRead, maxBytes);
+        bytesRead += sizeof(m_gravity);
+
+        WRITE(m_rigidBodyCount, pBuffer, bytesRead, maxBytes);
+        bytesRead += sizeof(m_rigidBodyCount);
+
+        *pBytesReadOut += bytesRead;
+        return true;
+    }
 }}
