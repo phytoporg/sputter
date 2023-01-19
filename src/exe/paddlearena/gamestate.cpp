@@ -23,26 +23,24 @@ bool GameState::Serialize(void* pBuffer, size_t* pBytesWrittenOut, size_t maxByt
     if (!Player2Paddle.Serialize(pBuffer, pBytesWrittenOut, maxBytes)) { return false; }
     if (!Arena.Serialize(pBuffer, pBytesWrittenOut, maxBytes)) { return false; }
 
-    size_t bytesWritten = 0;
-    WRITE(Player1Score, pBuffer, bytesWritten, maxBytes);
-    bytesWritten += sizeof(Player1Score);
+    WRITE(Player1Score, pBuffer, *pBytesWrittenOut, maxBytes);
+    *pBytesWrittenOut += sizeof(Player1Score);
 
-    WRITE(Player2Score, pBuffer, bytesWritten, maxBytes);
-    bytesWritten += sizeof(Player2Score);
+    WRITE(Player2Score, pBuffer, *pBytesWrittenOut, maxBytes);
+    *pBytesWrittenOut += sizeof(Player2Score);
 
-    WRITE(WinningPlayer, pBuffer, bytesWritten, maxBytes);
-    bytesWritten += sizeof(WinningPlayer);
+    WRITE(WinningPlayer, pBuffer, *pBytesWrittenOut, maxBytes);
+    *pBytesWrittenOut += sizeof(WinningPlayer);
 
-    WRITE(CurrentState, pBuffer, bytesWritten, maxBytes);
-    bytesWritten += sizeof(CurrentState);
+    WRITE(CurrentState, pBuffer, *pBytesWrittenOut, maxBytes);
+    *pBytesWrittenOut += sizeof(CurrentState);
 
-    WRITE(CountdownTimerHandle, pBuffer, bytesWritten, maxBytes);
-    bytesWritten += sizeof(CountdownTimerHandle);
+    WRITE(CountdownTimerHandle, pBuffer, *pBytesWrittenOut, maxBytes);
+    *pBytesWrittenOut += sizeof(CountdownTimerHandle);
 
-    WRITE(CountdownTimeRemaining, pBuffer, bytesWritten, maxBytes);
-    bytesWritten += sizeof(CountdownTimeRemaining);
+    WRITE(CountdownTimeRemaining, pBuffer, *pBytesWrittenOut, maxBytes);
+    *pBytesWrittenOut += sizeof(CountdownTimeRemaining);
 
-    *pBytesWrittenOut += bytesWritten;
     return true;
 }
 
@@ -54,25 +52,23 @@ bool GameState::Deserialize(void* pBuffer, size_t* pBytesReadOut, size_t maxByte
     if (!Player2Paddle.Deserialize(pBuffer, pBytesReadOut, maxBytes)) { return false; }
     if (!Arena.Deserialize(pBuffer, pBytesReadOut, maxBytes)) { return false; }
 
-    size_t bytesRead = 0;
-    READ(Player1Score, pBuffer, bytesRead, maxBytes);
-    bytesRead += sizeof(Player1Score);
+    READ(Player1Score, pBuffer, *pBytesReadOut, maxBytes);
+    *pBytesReadOut += sizeof(Player1Score);
 
-    READ(Player2Score, pBuffer, bytesRead, maxBytes);
-    bytesRead += sizeof(Player2Score);
+    READ(Player2Score, pBuffer, *pBytesReadOut, maxBytes);
+    *pBytesReadOut += sizeof(Player2Score);
 
-    READ(WinningPlayer, pBuffer, bytesRead, maxBytes);
-    bytesRead += sizeof(WinningPlayer);
+    READ(WinningPlayer, pBuffer, *pBytesReadOut, maxBytes);
+    *pBytesReadOut += sizeof(WinningPlayer);
 
-    READ(CurrentState, pBuffer, bytesRead, maxBytes);
-    bytesRead += sizeof(CurrentState);
+    READ(CurrentState, pBuffer, *pBytesReadOut, maxBytes);
+    *pBytesReadOut += sizeof(CurrentState);
 
-    READ(CountdownTimerHandle, pBuffer, bytesRead, maxBytes);
-    bytesRead += sizeof(CountdownTimerHandle);
+    READ(CountdownTimerHandle, pBuffer, *pBytesReadOut, maxBytes);
+    *pBytesReadOut += sizeof(CountdownTimerHandle);
 
-    READ(CountdownTimeRemaining, pBuffer, bytesRead, maxBytes);
-    bytesRead += sizeof(CountdownTimeRemaining);
+    READ(CountdownTimeRemaining, pBuffer, *pBytesReadOut, maxBytes);
+    *pBytesReadOut += sizeof(CountdownTimeRemaining);
 
-    *pBytesReadOut += bytesRead;
     return true;
 }

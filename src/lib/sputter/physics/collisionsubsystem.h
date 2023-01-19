@@ -40,7 +40,7 @@ namespace sputter { namespace physics {
         CollisionSubsystem() = delete;
         CollisionSubsystem(const CollisionSubsystem& other) = delete;
 
-        static const size_t kMaxCollisions = 64;
+        static const size_t kMaxCollisions = 16;
         Collision m_collisions[kMaxCollisions] = {};
         size_t    m_collisionCount = 0;
     };

@@ -47,7 +47,8 @@ GameScene::GameScene(
       m_pOrthoMatrix(pOrthoMatrix),
       m_pTextRenderer(pTextRenderer),
       m_pWindow(pWindow),
-      m_pPaddleArena(pPaddleArena)
+      m_pPaddleArena(pPaddleArena),
+      m_serializedFrameStorage(m_fixedAllocator, 0x5000)
 {
     sputter::input::InputSubsystemSettings inputSubsystemSettings;
     inputSubsystemSettings.pWindow = pWindow;
@@ -206,6 +207,21 @@ void GameScene::DestroyEndOfGameModalPopup()
 
 void GameScene::Tick(sputter::math::FixedPoint dt) 
 {
+    const uint32_t FrameSize =  m_serializedFrameStorage.GetFrameSize();
+
+    // Just trying out the serializer
+    void* pFrameData = m_serializedFrameStorage.CreateNextFrame();
+    size_t bytesWritten = 0;
+    const bool WriteSuccess = m_pSerializer->WriteAllObjects(pFrameData, &bytesWritten, FrameSize);
+
+    const uint32_t CurrentFrame = m_serializedFrameStorage.GetLastFrame();
+
+    TickFrame(dt);
+    PostTickFrame(dt);
+
+    size_t bytesRead = 0;
+    const bool ReadSuccess = m_pSerializer->ReadAllObjects(pFrameData, &bytesRead, FrameSize);
+
     TickFrame(dt);
     PostTickFrame(dt);
 }

@@ -212,39 +212,35 @@ void Paddle::PostTick(FixedPoint deltaTime)
 
 bool Paddle::Serialize(void* pBuffer, size_t* pBytesWrittenOut, size_t maxBytes)
 {
-    size_t bytesWritten = 0;
-    WRITE(m_localTransform, pBuffer, bytesWritten, maxBytes);
-    bytesWritten += sizeof(m_localTransform);
+    WRITE(m_localTransform, pBuffer, *pBytesWrittenOut, maxBytes);
+    *pBytesWrittenOut += sizeof(m_localTransform);
 
-    WRITE(m_initialLocation, pBuffer, bytesWritten, maxBytes);
-    bytesWritten += sizeof(m_initialLocation);
+    WRITE(m_initialLocation, pBuffer, *pBytesWrittenOut, maxBytes);
+    *pBytesWrittenOut += sizeof(m_initialLocation);
 
-    WRITE(m_dashVelocityY, pBuffer, bytesWritten, maxBytes);
-    bytesWritten += sizeof(m_dashVelocityY);
+    WRITE(m_dashVelocityY, pBuffer, *pBytesWrittenOut, maxBytes);
+    *pBytesWrittenOut += sizeof(m_dashVelocityY);
 
-    WRITE(m_ballAttached, pBuffer, bytesWritten, maxBytes);
-    bytesWritten += sizeof(m_ballAttached);
+    WRITE(m_ballAttached, pBuffer, *pBytesWrittenOut, maxBytes);
+    *pBytesWrittenOut += sizeof(m_ballAttached);
 
-    *pBytesWrittenOut += bytesWritten;
     return true;
 }
 
 bool Paddle::Deserialize(void* pBuffer, size_t* pBytesReadOut, size_t maxBytes)
 {    
-    size_t bytesRead = 0;
-    READ(m_localTransform, pBuffer, bytesRead, maxBytes);
-    bytesRead += sizeof(m_localTransform);
+    READ(m_localTransform, pBuffer, *pBytesReadOut, maxBytes);
+    *pBytesReadOut += sizeof(m_localTransform);
 
-    READ(m_initialLocation, pBuffer, bytesRead, maxBytes);
-    bytesRead += sizeof(m_initialLocation);
+    READ(m_initialLocation, pBuffer, *pBytesReadOut, maxBytes);
+    *pBytesReadOut += sizeof(m_initialLocation);
 
-    READ(m_dashVelocityY, pBuffer, bytesRead, maxBytes);
-    bytesRead += sizeof(m_dashVelocityY);
+    READ(m_dashVelocityY, pBuffer, *pBytesReadOut, maxBytes);
+    *pBytesReadOut += sizeof(m_dashVelocityY);
 
-    READ(m_ballAttached, pBuffer, bytesRead, maxBytes);
-    bytesRead += sizeof(m_ballAttached);
+    READ(m_ballAttached, pBuffer, *pBytesReadOut, maxBytes);
+    *pBytesReadOut += sizeof(m_ballAttached);
 
-    *pBytesReadOut += bytesRead;
     return true;
 }
 

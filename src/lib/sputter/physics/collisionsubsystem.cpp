@@ -66,27 +66,23 @@ void CollisionSubsystem::ReleaseComponent(Collision* pComponent)
 
 bool CollisionSubsystem::Serialize(void* pBuffer, size_t* pBytesWrittenOut, size_t maxBytes)
 {
-    size_t bytesWritten = 0;
-    WRITE(m_collisions, pBuffer, bytesWritten, maxBytes);
-    bytesWritten += sizeof(m_collisions);
+    WRITE_ARRAY(m_collisions, pBuffer, *pBytesWrittenOut, maxBytes);
+    *pBytesWrittenOut += sizeof(m_collisions);
 
-    WRITE(m_collisionCount, pBuffer, bytesWritten, maxBytes);
-    bytesWritten += sizeof(m_collisionCount);
+    WRITE(m_collisionCount, pBuffer, *pBytesWrittenOut, maxBytes);
+    *pBytesWrittenOut += sizeof(m_collisionCount);
 
-    *pBytesWrittenOut += bytesWritten;
     return true;
 }
 
 bool CollisionSubsystem::Deserialize(void* pBuffer, size_t* pBytesReadOut, size_t maxBytes)
 {
-    size_t bytesRead = 0;
-    READ(m_collisions, pBuffer, bytesRead, maxBytes);
-    bytesRead += sizeof(m_collisions);
+    READ_ARRAY(m_collisions, pBuffer, *pBytesReadOut, maxBytes);
+    *pBytesReadOut += sizeof(m_collisions);
 
-    READ(m_collisionCount, pBuffer, bytesRead, maxBytes);
-    bytesRead += sizeof(m_collisionCount);
+    READ(m_collisionCount, pBuffer, *pBytesReadOut, maxBytes);
+    *pBytesReadOut += sizeof(m_collisionCount);
 
-    *pBytesReadOut += bytesRead;
     return true;
 }
 

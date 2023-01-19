@@ -172,45 +172,41 @@ void Ball::PostTick(sputter::math::FixedPoint deltaTime)
 
 bool Ball::Serialize(void* pBuffer, size_t* pBytesWrittenOut, size_t maxBytes)
 {
-    size_t bytesWritten = 0;
-    WRITE(m_localTransform, pBuffer, bytesWritten, maxBytes);
-    bytesWritten += sizeof(m_localTransform);
+    WRITE(m_localTransform, pBuffer, *pBytesWrittenOut, maxBytes);
+    *pBytesWrittenOut += sizeof(m_localTransform);
 
-    WRITE(m_initialLocation, pBuffer, bytesWritten, maxBytes);
-    bytesWritten += sizeof(m_initialLocation);
+    WRITE(m_initialLocation, pBuffer, *pBytesWrittenOut, maxBytes);
+    *pBytesWrittenOut += sizeof(m_initialLocation);
 
-    WRITE(m_travelVector, pBuffer, bytesWritten, maxBytes);
-    bytesWritten += sizeof(m_travelVector);
+    WRITE(m_travelVector, pBuffer, *pBytesWrittenOut, maxBytes);
+    *pBytesWrittenOut += sizeof(m_travelVector);
 
-    WRITE(m_isAlive, pBuffer, bytesWritten, maxBytes);
-    bytesWritten += sizeof(m_isAlive);
+    WRITE(m_isAlive, pBuffer, *pBytesWrittenOut, maxBytes);
+    *pBytesWrittenOut += sizeof(m_isAlive);
 
-    WRITE(m_isInitialized, pBuffer, bytesWritten, maxBytes);
-    bytesWritten += sizeof(m_isInitialized);
+    WRITE(m_isInitialized, pBuffer, *pBytesWrittenOut, maxBytes);
+    *pBytesWrittenOut += sizeof(m_isInitialized);
 
-    *pBytesWrittenOut += bytesWritten;
     return true;
 }
 
 bool Ball::Deserialize(void* pBuffer, size_t* pBytesReadOut, size_t maxBytes)
 {
-    size_t bytesRead = 0;
-    READ(m_localTransform, pBuffer, bytesRead, maxBytes);
-    bytesRead += sizeof(m_localTransform);
+    READ(m_localTransform, pBuffer, *pBytesReadOut, maxBytes);
+    *pBytesReadOut += sizeof(m_localTransform);
 
-    READ(m_initialLocation, pBuffer, bytesRead, maxBytes);
-    bytesRead += sizeof(m_initialLocation);
+    READ(m_initialLocation, pBuffer, *pBytesReadOut, maxBytes);
+    *pBytesReadOut += sizeof(m_initialLocation);
 
-    READ(m_travelVector, pBuffer, bytesRead, maxBytes);
-    bytesRead += sizeof(m_travelVector);
+    READ(m_travelVector, pBuffer, *pBytesReadOut, maxBytes);
+    *pBytesReadOut += sizeof(m_travelVector);
 
-    READ(m_isAlive, pBuffer, bytesRead, maxBytes);
-    bytesRead += sizeof(m_isAlive);
+    READ(m_isAlive, pBuffer, *pBytesReadOut, maxBytes);
+    *pBytesReadOut += sizeof(m_isAlive);
 
-    READ(m_isInitialized, pBuffer, bytesRead, maxBytes);
-    bytesRead += sizeof(m_isInitialized);
+    READ(m_isInitialized, pBuffer, *pBytesReadOut, maxBytes);
+    *pBytesReadOut += sizeof(m_isInitialized);
 
-    *pBytesReadOut += bytesRead;
     return true;
 }
 

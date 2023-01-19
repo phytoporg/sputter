@@ -42,7 +42,17 @@ void* SerializedFrameStorage::GetOrCreateFrame(uint32_t frameIndex)
     }
 }
 
+void* SerializedFrameStorage::CreateNextFrame()
+{
+    return GetOrCreateFrame(m_lastFrame + 1);
+}
+
 uint32_t SerializedFrameStorage::GetLastFrame() const
 {
     return m_lastFrame;
+}
+
+uint32_t SerializedFrameStorage::GetFrameSize() const
+{
+    return m_FrameSize;
 }

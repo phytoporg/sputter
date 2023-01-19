@@ -88,11 +88,10 @@ bool Serializer::ReadAllObjects(void* pBuffer, size_t* pBytesReadOut, size_t num
             break;
         }
     }
-
     RELEASE_CHECK(numObjectsRead == m_serializableObjectCount, "Serializer did not read expected number of objects")
 
-    // Leave this here to appease the compiler
-    return false;
+    *pBytesReadOut = totalBytesRead;
+    return true;
 }
 
 bool Serializer::WriteAllObjects(void* pBuffer, size_t* pBytesWrittenOut, size_t numBytes)
@@ -131,8 +130,8 @@ bool Serializer::WriteAllObjects(void* pBuffer, size_t* pBytesWrittenOut, size_t
     }
     RELEASE_CHECK(numObjectsWritten == m_serializableObjectCount, "Serializer did not write expected number of objects")
 
-    // Leave this here to appease the compiler
-    return false;
+    *pBytesWrittenOut = totalBytesWritten;
+    return true;
 }
 
 uint32_t Serializer::FindSerializableObject(ISerializable* pSerializableObject)

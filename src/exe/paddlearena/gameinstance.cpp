@@ -85,11 +85,7 @@ bool GameInstance::Serialize(void* pBuffer, size_t* pBytesWrittenOut, size_t max
     if (!m_pCollisionSubsystem->Serialize(pBuffer, pBytesWrittenOut, maxBytes)) { return false; }
     if (!m_pGameState->Serialize(pBuffer, pBytesWrittenOut, maxBytes)) { return false; }
 
-    // TODO: may be the same camera as in the game state? Double check.
-    // if (!m_pCamera->Serialize(pBuffer, pBytesWrittenOut, maxBytes)) { return false; }
-    //return true;
-
-    return false;
+    return true;
 }
 
 bool GameInstance::Deserialize(void* pBuffer, size_t* pBytesReadOut, size_t maxBytes)
@@ -99,10 +95,7 @@ bool GameInstance::Deserialize(void* pBuffer, size_t* pBytesReadOut, size_t maxB
     if (!m_pCollisionSubsystem->Deserialize(pBuffer, pBytesReadOut, maxBytes)) { return false; }
     if (!m_pGameState->Deserialize(pBuffer, pBytesReadOut, maxBytes)) { return false; }
 
-    // TODO: may be the same camera as in the game state? Double check.
-    // if (!m_pCamera->Deserialize(pBuffer, pBytesWrittenOut, maxBytes)) { return false; }
-    //return true;
-    return false;
+    return true;
 }
 
 void GameInstance::Initialize()

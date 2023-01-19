@@ -4,6 +4,8 @@
 #include <sputter/game/subsystemprovider.h>
 #include <sputter/game/timersystem.h>
 
+#include <sputter/core/serializedframestorage.h>
+
 #include <sputter/memory/reservedregion.h>
 #include <sputter/memory/fixedmemoryallocator.h>
 
@@ -118,4 +120,5 @@ private:
     GameInstance*                             m_pGameInstance = nullptr;
 
     sputter::core::Serializer*                m_pSerializer = nullptr;
+    sputter::core::SerializedFrameStorage     m_serializedFrameStorage;
 };

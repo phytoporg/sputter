@@ -104,45 +104,41 @@ namespace sputter { namespace physics {
 
     bool RigidBodySubsystem::Serialize(void* pBuffer, size_t* pBytesWrittenOut, size_t maxBytes)
     {
-        size_t bytesWritten = 0;
-        WRITE(m_rigidBodies, pBuffer, bytesWritten, maxBytes);
-        bytesWritten += sizeof(m_rigidBodies);
+        WRITE_ARRAY(m_rigidBodies, pBuffer, *pBytesWrittenOut, maxBytes);
+        *pBytesWrittenOut += sizeof(m_rigidBodies);
 
-        WRITE(m_validRigidBodyVector, pBuffer, bytesWritten, maxBytes);
-        bytesWritten += sizeof(m_validRigidBodyVector);
+        WRITE(m_validRigidBodyVector, pBuffer, *pBytesWrittenOut, maxBytes);
+        *pBytesWrittenOut += sizeof(m_validRigidBodyVector);
 
-        WRITE(m_isGravityEnabled, pBuffer, bytesWritten, maxBytes);
-        bytesWritten += sizeof(m_isGravityEnabled);
+        WRITE(m_isGravityEnabled, pBuffer, *pBytesWrittenOut, maxBytes);
+        *pBytesWrittenOut += sizeof(m_isGravityEnabled);
 
-        WRITE(m_gravity, pBuffer, bytesWritten, maxBytes);
-        bytesWritten += sizeof(m_gravity);
+        WRITE(m_gravity, pBuffer, *pBytesWrittenOut, maxBytes);
+        *pBytesWrittenOut += sizeof(m_gravity);
 
-        WRITE(m_rigidBodyCount, pBuffer, bytesWritten, maxBytes);
-        bytesWritten += sizeof(m_rigidBodyCount);
+        WRITE(m_rigidBodyCount, pBuffer, *pBytesWrittenOut, maxBytes);
+        *pBytesWrittenOut += sizeof(m_rigidBodyCount);
 
-        *pBytesWrittenOut += bytesWritten;
         return true;
     }
 
     bool RigidBodySubsystem::Deserialize(void* pBuffer, size_t* pBytesReadOut, size_t maxBytes)
     {
-        size_t bytesRead = 0;
-        WRITE(m_rigidBodies, pBuffer, bytesRead, maxBytes);
-        bytesRead += sizeof(m_rigidBodies);
+        WRITE_ARRAY(m_rigidBodies, pBuffer, *pBytesReadOut, maxBytes);
+        *pBytesReadOut += sizeof(m_rigidBodies);
 
-        WRITE(m_validRigidBodyVector, pBuffer, bytesRead, maxBytes);
-        bytesRead += sizeof(m_validRigidBodyVector);
+        WRITE(m_validRigidBodyVector, pBuffer, *pBytesReadOut, maxBytes);
+        *pBytesReadOut += sizeof(m_validRigidBodyVector);
 
-        WRITE(m_isGravityEnabled, pBuffer, bytesRead, maxBytes);
-        bytesRead += sizeof(m_isGravityEnabled);
+        WRITE(m_isGravityEnabled, pBuffer, *pBytesReadOut, maxBytes);
+        *pBytesReadOut += sizeof(m_isGravityEnabled);
 
-        WRITE(m_gravity, pBuffer, bytesRead, maxBytes);
-        bytesRead += sizeof(m_gravity);
+        WRITE(m_gravity, pBuffer, *pBytesReadOut, maxBytes);
+        *pBytesReadOut += sizeof(m_gravity);
 
-        WRITE(m_rigidBodyCount, pBuffer, bytesRead, maxBytes);
-        bytesRead += sizeof(m_rigidBodyCount);
+        WRITE(m_rigidBodyCount, pBuffer, *pBytesReadOut, maxBytes);
+        *pBytesReadOut += sizeof(m_rigidBodyCount);
 
-        *pBytesReadOut += bytesRead;
         return true;
     }
 }}

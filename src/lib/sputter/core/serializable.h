@@ -19,8 +19,14 @@ namespace sputter { namespace core {
     };
 }}
 
+#define WRITE_ARRAY(toWrite, pDestination, offset, maxBytes) \
+    if (!Write(toWrite, (char*)pDestination + offset, sizeof(toWrite), maxBytes - offset)) { return false; }
+
 #define WRITE(toWrite, pDestination, offset, maxBytes) \
     if (!Write(&(toWrite), (char*)pDestination + offset, sizeof(toWrite), maxBytes - offset)) { return false; }
 
 #define READ(toRead, pSource, offset, maxBytes) \
     if (!Read(&(toRead), (char*)pSource + offset, sizeof(toRead), maxBytes - offset)) { return false; }
+
+#define READ_ARRAY(toRead, pSource, offset, maxBytes) \
+    if (!Read(toRead, (char*)pSource + offset, sizeof(toRead), maxBytes - offset)) { return false; }
