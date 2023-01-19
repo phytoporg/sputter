@@ -36,6 +36,20 @@ namespace sputter { namespace memory {
         return true;
     }
 
+    void* FixedMemoryAllocator::ReserveNext(size_t size)
+    {
+        if ((m_pNext + size) > (m_pBase + m_regionSize))
+        {
+            LOG(WARNING) << "ReserveNext FMA - Out of memory";
+            return nullptr;
+        }
+
+        uint8_t* pReserved = m_pNext;
+        m_pNext += size;
+        return static_cast<void*>(pReserved);
+
+    }
+
     uint8_t* FixedMemoryAllocator::GetBase()
     {
         return m_pBase;

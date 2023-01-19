@@ -57,6 +57,8 @@ namespace sputter { namespace memory {
             size_t size,
             FixedMemoryAllocator* pOut);
 
+        void* ReserveNext(size_t size);
+
         uint8_t* GetBase();
 
     private:
