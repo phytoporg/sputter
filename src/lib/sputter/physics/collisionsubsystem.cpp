@@ -85,6 +85,8 @@ bool CollisionSubsystem::Deserialize(void* pBuffer, size_t* pBytesReadOut, size_
     READ(m_collisionCount, pBuffer, *pBytesReadOut, maxBytes);
     *pBytesReadOut += sizeof(m_collisionCount);
 
+    RELEASE_CHECK(m_collisionCount < kMaxCollisions, "Invalid collision count read while deserializing");
+
     for (uint32_t i = 0; i < m_collisionCount; ++i)
     {
         if (!m_collisions[i].Deserialize(pBuffer, pBytesReadOut, maxBytes))
