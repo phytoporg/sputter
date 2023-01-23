@@ -34,3 +34,37 @@ bool Collision::TestIntersection(const Collision& other, CollisionResult* pColli
 
     return false;
 }
+
+bool Collision::Serialize(void* pBuffer, size_t* pBytesWrittenOut, size_t maxBytes)
+{
+    WRITE(ObjectHandle, pBuffer, *pBytesWrittenOut, maxBytes);
+    *pBytesWrittenOut += sizeof(ObjectHandle);
+
+    WRITE_ARRAY(CollisionShapes, pBuffer, *pBytesWrittenOut, maxBytes);
+    *pBytesWrittenOut += sizeof(CollisionShapes);
+
+    WRITE(NumCollisionShapes, pBuffer, *pBytesWrittenOut, maxBytes);
+    *pBytesWrittenOut += sizeof(NumCollisionShapes);
+
+    WRITE(CollisionFlags, pBuffer, *pBytesWrittenOut, maxBytes);
+    *pBytesWrittenOut += sizeof(CollisionFlags);
+
+    return true;
+}
+
+bool Collision::Deserialize(void* pBuffer, size_t* pBytesReadOut, size_t maxBytes)
+{
+    READ(ObjectHandle, pBuffer, *pBytesReadOut, maxBytes);
+    *pBytesReadOut += sizeof(ObjectHandle);
+
+    READ_ARRAY(CollisionShapes, pBuffer, *pBytesReadOut, maxBytes);
+    *pBytesReadOut += sizeof(CollisionShapes);
+
+    READ(NumCollisionShapes, pBuffer, *pBytesReadOut, maxBytes);
+    *pBytesReadOut += sizeof(NumCollisionShapes);
+
+    READ(CollisionFlags, pBuffer, *pBytesReadOut, maxBytes);
+    *pBytesReadOut += sizeof(CollisionFlags);
+
+    return true;
+}

@@ -2,6 +2,8 @@
 
 #include "subsystemtype.h"
 
+#include "objectstorage.h"
+
 #include <sputter/core/component.h>
 #include <sputter/game/subsystemprovider.h>
 #include <sputter/math/fixedpoint.h>
@@ -73,10 +75,13 @@ namespace sputter { namespace game {
         }
 
         uint32_t GetType() const;
+        objectstorage::ObjectHandle GetHandle() const;
 
     private:
         Object() = delete;
         Object(const Object& other) = delete;
+
+        objectstorage::ObjectHandle m_handle = objectstorage::kInvalidHandle;
 
         uint32_t m_objectType;
         void* m_components[SubsystemType::TYPE_MAX];

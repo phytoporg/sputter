@@ -195,7 +195,10 @@ void Paddle::PostTick(FixedPoint deltaTime)
         const CollisionResult& collisionResult = pCollisionComponent->CollisionsThisFrame[i];
         const Collision& OtherCollision = collisionResult.pCollisionA == pCollisionComponent ?
             *collisionResult.pCollisionB : *collisionResult.pCollisionA;
-        if (OtherCollision.pObject->GetType() == kPaddleArenaObjectTypeStage)
+
+        Object* pOtherObject = objectstorage::FindObject(OtherCollision.ObjectHandle);
+        RELEASE_CHECK(pOtherObject, "Could not find other collision object");
+        if (pOtherObject->GetType() == kPaddleArenaObjectTypeStage)
         {
             const ICollisionShape* pOtherShape = collisionResult.pCollisionA == pCollisionComponent ?
                 collisionResult.pCollisionShapeB : collisionResult.pCollisionShapeA;
@@ -288,7 +291,7 @@ void Paddle::Initialize(
     Collision* pCollisionComponent = GetComponentByType<Collision>();
     RELEASE_CHECK(pCollisionComponent, "Could not find collision component on paddle")
     pCollisionComponent->CollisionFlags = 0b111;
-    pCollisionComponent->pObject = this;
+    pCollisionComponent->ObjectHandle = GetHandle();
     pCollisionComponent->NumCollisionShapes = 0;
     
     const FPVector3D PaddleLowerLeft = FPVector3D(-dimensions.GetX() / FPTwo, -dimensions.GetY() / FPTwo, FPOne / FPTwo);

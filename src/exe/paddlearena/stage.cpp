@@ -114,7 +114,7 @@ void Stage::Initialize(FPVector2D stageDimensions)
     Collision* pCollision = GetComponentByType<Collision>();
     RELEASE_CHECK(pCollision, "Could not find collision component for stage");
     pCollision->CollisionFlags = 0b111;
-    pCollision->pObject = this;
+    pCollision->ObjectHandle = GetHandle();
     pCollision->NumCollisionShapes = 0;
 
     // Left and right AABBs

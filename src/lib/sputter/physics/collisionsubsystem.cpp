@@ -33,7 +33,7 @@ void CollisionSubsystem::PostTick(math::FixedPoint dt)
             Collision& B = m_collisions[j];
 
             // No self-collisions for now
-            if (A.pObject == B.pObject)
+            if (A.ObjectHandle == B.ObjectHandle)
             {
                 continue;
             }
@@ -66,22 +66,32 @@ void CollisionSubsystem::ReleaseComponent(Collision* pComponent)
 
 bool CollisionSubsystem::Serialize(void* pBuffer, size_t* pBytesWrittenOut, size_t maxBytes)
 {
-    WRITE_ARRAY(m_collisions, pBuffer, *pBytesWrittenOut, maxBytes);
-    *pBytesWrittenOut += sizeof(m_collisions);
-
     WRITE(m_collisionCount, pBuffer, *pBytesWrittenOut, maxBytes);
     *pBytesWrittenOut += sizeof(m_collisionCount);
+
+    for (uint32_t i = 0; i < m_collisionCount; ++i)
+    {
+        if (!m_collisions[i].Serialize(pBuffer, pBytesWrittenOut, maxBytes))
+        { 
+            return false;
+        }
+    }
 
     return true;
 }
 
 bool CollisionSubsystem::Deserialize(void* pBuffer, size_t* pBytesReadOut, size_t maxBytes)
 {
-    READ_ARRAY(m_collisions, pBuffer, *pBytesReadOut, maxBytes);
-    *pBytesReadOut += sizeof(m_collisions);
-
     READ(m_collisionCount, pBuffer, *pBytesReadOut, maxBytes);
     *pBytesReadOut += sizeof(m_collisionCount);
+
+    for (uint32_t i = 0; i < m_collisionCount; ++i)
+    {
+        if (!m_collisions[i].Deserialize(pBuffer, pBytesReadOut, maxBytes))
+        {
+            return false;
+        }
+    }
 
     return true;
 }

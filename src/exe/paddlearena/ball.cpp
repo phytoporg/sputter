@@ -20,6 +20,8 @@
 #include <sputter/physics/collision.h>
 #include <sputter/physics/collisionsubsystem.h>
 
+#include <sputter/game/objectstorage.h>
+
 #include <sputter/core/check.h>
 #include <sputter/core/debugsettings.h>
 
@@ -110,7 +112,10 @@ void Ball::PostTick(sputter::math::FixedPoint deltaTime)
 
         const Collision& OtherCollision = collisionResult.pCollisionA == pCollision ?
             *collisionResult.pCollisionB : *collisionResult.pCollisionA;
-        if (OtherCollision.pObject->GetType() == kPaddleArenaObjectTypeStage)
+
+        Object* pOtherObject = objectstorage::FindObject(OtherCollision.ObjectHandle);
+        RELEASE_CHECK(pOtherObject, "Could not find other collision object");
+        if (pOtherObject->GetType() == kPaddleArenaObjectTypeStage)
         {
             const ICollisionShape* pOtherShape = collisionResult.pCollisionA == pCollision ?
                 collisionResult.pCollisionShapeB : collisionResult.pCollisionShapeA;
@@ -136,7 +141,7 @@ void Ball::PostTick(sputter::math::FixedPoint deltaTime)
                 pMeshComponent->SetVisibility(false);
             }
         }
-        else if (OtherCollision.pObject->GetType() == kPaddleArenaObjectTypePaddle)
+        else if (pOtherObject->GetType() == kPaddleArenaObjectTypePaddle)
         {
             const ICollisionShape* pOtherShape = collisionResult.pCollisionA == pCollision ?
                 collisionResult.pCollisionShapeB : collisionResult.pCollisionShapeA;
@@ -150,7 +155,10 @@ void Ball::PostTick(sputter::math::FixedPoint deltaTime)
             {
                 // We only care about colliding with the *front* face when colliding with
                 // the side of a paddle.
-                Paddle* pPaddle = reinterpret_cast<Paddle*>(OtherCollision.pObject);
+                Paddle* pPaddle = reinterpret_cast<Paddle*>(
+                        objectstorage::FindObject(OtherCollision.ObjectHandle)
+                    );
+                RELEASE_CHECK(pPaddle, "Invalid paddle object pointer");
                 const int8_t SeparationXSign = Separation.GetX() > FPZero ? 1 : -1;
                 const int8_t PaddleDirectionXSign = pPaddle->GetFacingDirection().GetX() > FPZero ? 1 : -1;
                 if (SeparationXSign != PaddleDirectionXSign)
@@ -262,7 +270,7 @@ void Ball::Initialize(
     RELEASE_CHECK(pCollision, "Could not get collision component on Ball");
 
     pCollision->CollisionFlags = 0b111;
-    pCollision->pObject = this;
+    pCollision->ObjectHandle = GetHandle();
     pCollision->NumCollisionShapes = 0;
 
     // Collides with everything
