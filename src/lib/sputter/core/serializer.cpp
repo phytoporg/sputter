@@ -6,6 +6,11 @@ using namespace sputter;
 using namespace sputter::core;
 
 static const uint32_t kInvalidIndex = 0xFFFFFFFF;
+static const uint32_t kDefaultFrameSize = 0x1000;
+
+Serializer::Serializer(memory::FixedMemoryAllocator& allocator)
+    : m_frameStorage(allocator, kDefaultFrameSize)
+{}
 
 bool Serializer::RegisterSerializableObject(ISerializable* pSerializableObject)
 {
@@ -52,6 +57,36 @@ bool Serializer::UnregisterSerializableObject(ISerializable* pSerializableObject
     m_serializableObjects[ObjectIndex] = nullptr;
     m_serializableObjectCount--;
     return true;
+}
+
+bool Serializer::SaveFrame(uint32_t frame)
+{
+    size_t bytesWritten = 0; // TODO: For logging
+    SerializedFrameInfo* pFrameInfo = m_frameStorage.GetOrCreateFrame(frame);
+    if (!pFrameInfo)
+    {
+        return false;
+    }
+
+    if (!WriteAllObjects(pFrameInfo->pBuffer, &pFrameInfo->Size, m_frameStorage.GetFrameSize()))
+    {
+        return false;
+    }
+
+    pFrameInfo->ComputeChecksum();
+    return true;
+}
+
+bool Serializer::LoadFrame(uint32_t frame)
+{
+    size_t bytesRead = 0; // TODO: For logging
+    SerializedFrameInfo* pFrameInfo = m_frameStorage.GetOrCreateFrame(frame);
+    if (!pFrameInfo)
+    {
+        return false;
+    }
+
+    return ReadAllObjects(pFrameInfo->pBuffer, &pFrameInfo->Size, m_frameStorage.GetFrameSize());
 }
 
 bool Serializer::ReadAllObjects(void* pBuffer, size_t* pBytesReadOut, size_t numBytes)

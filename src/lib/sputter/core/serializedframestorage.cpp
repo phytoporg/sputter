@@ -7,6 +7,28 @@ using namespace sputter;
 using namespace sputter::core;
 using namespace sputter::memory;
 
+void SerializedFrameInfo::Reset(void* pBufferIn, uint32_t frameId)
+{
+    pBuffer = pBufferIn;
+    FrameID = frameId;
+    Size = 0;
+    Checksum = 0;
+}
+
+void SerializedFrameInfo::ComputeChecksum()
+{
+    // Lazy checksum for now
+    uint32_t sum = 0;
+    const uint8_t* pByte = static_cast<const uint8_t*>(pBuffer);
+
+    for (size_t i = 0; i < Size; ++i)
+    {
+        sum += pByte[i];
+    }
+
+    Checksum = ~sum;
+}
+
 SerializedFrameStorage::SerializedFrameStorage(FixedMemoryAllocator &allocator, size_t frameSize)
     : m_FrameSize(frameSize)
 {
@@ -15,18 +37,22 @@ SerializedFrameStorage::SerializedFrameStorage(FixedMemoryAllocator &allocator, 
         m_pFramePointers[i] = allocator.ReserveNext(m_FrameSize);
         RELEASE_CHECK(m_pFramePointers[i], "Could not allocate space for serializable frame");
 
-        m_frameIds[i] = kInvalidFrameIndex;
+        m_frameInfos[i].FrameID = kInvalidFrameIndex;
     }
 }
 
-void* SerializedFrameStorage::GetOrCreateFrame(uint32_t frameIndex)
+SerializedFrameInfo* SerializedFrameStorage::GetOrCreateFrame(uint32_t frameIndex)
 {
-    if (frameIndex == (m_lastFrame + 1))
+    if (frameIndex > m_lastFrame || m_lastFrame == kInvalidFrameIndex)
     {
-        ++m_lastFrame;
+        m_lastFrame = frameIndex;
         const uint32_t FrameArrayIndex = m_lastFrame % kMaxSerializedFrames;
         RELEASE_CHECK(m_pFramePointers[FrameArrayIndex], "Frame pointer is unexpectedly null");
-        return m_pFramePointers[FrameArrayIndex];
+
+        SerializedFrameInfo& frameInfo = m_frameInfos[FrameArrayIndex];
+        frameInfo.Reset(m_pFramePointers[FrameArrayIndex], frameIndex);
+
+        return &frameInfo;
     }
     else if (frameIndex <= m_lastFrame && 
              ((frameIndex < kMaxSerializedFrames) || 
@@ -34,7 +60,11 @@ void* SerializedFrameStorage::GetOrCreateFrame(uint32_t frameIndex)
     {
         const uint32_t FrameArrayIndex = frameIndex % kMaxSerializedFrames;
         RELEASE_CHECK(m_pFramePointers[FrameArrayIndex], "Frame pointer is unexpectedly null");
-        return m_pFramePointers[FrameArrayIndex];
+
+        SerializedFrameInfo& frameInfo = m_frameInfos[FrameArrayIndex];
+        frameInfo.Reset(m_pFramePointers[FrameArrayIndex], frameIndex);
+
+        return &frameInfo;
     }
     else
     {
@@ -42,7 +72,7 @@ void* SerializedFrameStorage::GetOrCreateFrame(uint32_t frameIndex)
     }
 }
 
-void* SerializedFrameStorage::CreateNextFrame()
+SerializedFrameInfo* SerializedFrameStorage::CreateNextFrame()
 {
     return GetOrCreateFrame(m_lastFrame + 1);
 }

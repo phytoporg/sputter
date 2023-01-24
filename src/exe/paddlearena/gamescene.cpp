@@ -47,8 +47,7 @@ GameScene::GameScene(
       m_pOrthoMatrix(pOrthoMatrix),
       m_pTextRenderer(pTextRenderer),
       m_pWindow(pWindow),
-      m_pPaddleArena(pPaddleArena),
-      m_serializedFrameStorage(m_fixedAllocator, 0x5000)
+      m_pPaddleArena(pPaddleArena)
 {
     sputter::input::InputSubsystemSettings inputSubsystemSettings;
     inputSubsystemSettings.pWindow = pWindow;
@@ -99,7 +98,7 @@ GameScene::GameScene(
     m_uiTheme.ModalBorderSize = 4;
     m_uiTheme.ModalBackgroundColor = render::Color::BLACK;
 
-    m_pSerializer = m_fixedAllocator.Create<core::Serializer>();
+    m_pSerializer = m_fixedAllocator.Create<core::Serializer>(m_fixedAllocator);
     m_pSerializer->RegisterSerializableObject(m_pGameInstance);
 }
 

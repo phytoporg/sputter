@@ -120,5 +120,4 @@ private:
     GameInstance*                             m_pGameInstance = nullptr;
 
     sputter::core::Serializer*                m_pSerializer = nullptr;
-    sputter::core::SerializedFrameStorage     m_serializedFrameStorage;
 };
