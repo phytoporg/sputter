@@ -244,6 +244,9 @@ bool Paddle::Deserialize(void* pBuffer, size_t* pBytesReadOut, size_t maxBytes)
     READ(m_ballAttached, pBuffer, *pBytesReadOut, maxBytes);
     *pBytesReadOut += sizeof(m_ballAttached);
 
+    // Force a redraw
+    TranslatePaddle(FPVector3D::ZERO);
+
     return true;
 }
 

@@ -215,6 +215,9 @@ bool Ball::Deserialize(void* pBuffer, size_t* pBytesReadOut, size_t maxBytes)
     READ(m_isInitialized, pBuffer, *pBytesReadOut, maxBytes);
     *pBytesReadOut += sizeof(m_isInitialized);
 
+    // Force a re-render
+    TranslateBall(FPVector3D::ZERO);
+
     return true;
 }
 
