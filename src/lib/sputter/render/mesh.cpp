@@ -103,6 +103,7 @@ bool Mesh::SetPositions(const FixedMemoryVector<FPVector3D>& vertexPositions)
 bool Mesh::SetPositions(const FPVector3D* positionsArray, uint32_t arrayLen)
 {
     // Convert to floating-point representation for GPU
+    m_VertexPositions.Clear();
     for (uint32_t i = 0; i < arrayLen; ++i)
     {
         m_VertexPositions.Emplace(positionsArray[i].ToVec3());
