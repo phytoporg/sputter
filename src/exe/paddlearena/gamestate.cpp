@@ -41,6 +41,9 @@ bool GameState::Serialize(void* pBuffer, size_t* pBytesWrittenOut, size_t maxByt
     WRITE(CountdownTimeRemaining, pBuffer, *pBytesWrittenOut, maxBytes);
     *pBytesWrittenOut += sizeof(CountdownTimeRemaining);
 
+    WRITE(Frame, pBuffer, *pBytesWrittenOut, maxBytes);
+    *pBytesWrittenOut += sizeof(Frame);
+
     return true;
 }
 
@@ -69,6 +72,9 @@ bool GameState::Deserialize(void* pBuffer, size_t* pBytesReadOut, size_t maxByte
 
     READ(CountdownTimeRemaining, pBuffer, *pBytesReadOut, maxBytes);
     *pBytesReadOut += sizeof(CountdownTimeRemaining);
+
+    READ(Frame, pBuffer, *pBytesReadOut, maxBytes);
+    *pBytesReadOut += sizeof(Frame);
 
     return true;
 }

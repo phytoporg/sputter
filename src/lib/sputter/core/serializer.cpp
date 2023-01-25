@@ -73,20 +73,38 @@ bool Serializer::SaveFrame(uint32_t frame)
         return false;
     }
 
+    pFrameInfo->FrameID = frame;
     pFrameInfo->ComputeChecksum();
     return true;
 }
 
 bool Serializer::LoadFrame(uint32_t frame)
 {
-    size_t bytesRead = 0; // TODO: For logging
+    size_t bytesRead = 0;
     SerializedFrameInfo* pFrameInfo = m_frameStorage.GetOrCreateFrame(frame);
-    if (!pFrameInfo)
+    if (!pFrameInfo || pFrameInfo->FrameID != frame)
     {
         return false;
     }
 
-    return ReadAllObjects(pFrameInfo->pBuffer, &pFrameInfo->Size, m_frameStorage.GetFrameSize());
+    const bool Success = ReadAllObjects(pFrameInfo->pBuffer, &bytesRead, m_frameStorage.GetFrameSize());
+    if (Success)
+    {
+        RELEASE_CHECK(bytesRead == pFrameInfo->Size, "Size mismatch when loading serialized frame");
+    }
+
+    return Success;
+}
+
+uint32_t Serializer::GetChecksum(uint32_t frame)
+{
+    SerializedFrameInfo* pFrameInfo = m_frameStorage.GetOrCreateFrame(frame);
+    if (!pFrameInfo || pFrameInfo->FrameID != frame)
+    {
+        return static_cast<uint32_t>(-1);
+    }
+
+    return pFrameInfo->Checksum;
 }
 
 bool Serializer::ReadAllObjects(void* pBuffer, size_t* pBytesReadOut, size_t numBytes)

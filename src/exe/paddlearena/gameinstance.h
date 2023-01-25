@@ -73,6 +73,8 @@ public:
     void Tick(sputter::math::FixedPoint dt);
     void PostTick(sputter::math::FixedPoint dt);
 
+    uint32_t GetFrame() const;
+
     void Draw();
 
     void GetCurrentScore(int16_t* pP1ScoreOut, int16_t* pP2ScoreOut);

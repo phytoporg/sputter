@@ -27,6 +27,7 @@ namespace sputter { namespace core {
 
         bool SaveFrame(uint32_t frame);
         bool LoadFrame(uint32_t frame);
+        uint32_t GetChecksum(uint32_t frame);
 
     private:
         uint32_t FindSerializableObject(ISerializable* pSerializableObject);

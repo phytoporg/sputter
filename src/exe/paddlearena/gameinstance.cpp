@@ -109,6 +109,7 @@ void GameInstance::Initialize()
     m_pGameState->Player1Score = 0;
     m_pGameState->Player2Score = 0;
     m_pGameState->WinningPlayer = 0;
+    m_pGameState->Frame = 0;
 
     if (!functorstorage::IsFunctorRegistrationLocked())
     {
@@ -251,6 +252,13 @@ void GameInstance::PostTick(sputter::math::FixedPoint dt)
             pServingPaddle->AttachBall(&m_pGameState->TheBall);
         }
     }
+
+    m_pGameState->Frame++;
+}
+
+uint32_t GameInstance::GetFrame() const
+{
+    return m_pGameState->Frame;
 }
 
 void GameInstance::Draw()

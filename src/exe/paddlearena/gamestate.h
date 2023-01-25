@@ -41,6 +41,7 @@ struct GameState : public sputter::core::ISerializable
     int16_t          Player1Score = 0;          
     int16_t          Player2Score = 0;          
     uint8_t          WinningPlayer = 0;
+    uint32_t         Frame = 0;
     State            CurrentState = State::Invalid;
 
     using TimerSystem = sputter::game::TimerSystem;
