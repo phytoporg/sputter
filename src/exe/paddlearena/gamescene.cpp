@@ -209,10 +209,7 @@ void GameScene::Tick(sputter::math::FixedPoint dt)
     TickFrame(dt);
     PostTickFrame(dt);
 
-    // TODO: Placing this here causes restarting the match from the
-    // UI to crash. Fix it, yo.
-    //
-    // m_pScreen->Tick((float)dt);
+    m_pScreen->Tick((float)dt);
 }
 
 void GameScene::Draw()
@@ -225,9 +222,6 @@ void GameScene::TickFrame(math::FixedPoint dt)
 {
     m_pInputSubsystem->Tick(dt);
     m_pGameInstance->Tick(dt);
-
-    // Game tick should be independent of UI tick
-    m_pScreen->Tick((float)dt);
 }
 
 void GameScene::PostTickFrame(math::FixedPoint dt)
