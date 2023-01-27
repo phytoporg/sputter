@@ -1,5 +1,4 @@
 #include "collisionsubsystem.h"
-#include "collisionshape.h"
 
 #include <sputter/system/system.h>
 #include <sputter/core/check.h>

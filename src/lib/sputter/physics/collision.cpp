@@ -1,5 +1,4 @@
 #include "collision.h"
-#include "collisionshape.h"
 
 using namespace sputter::physics;
 

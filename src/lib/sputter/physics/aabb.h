@@ -1,6 +1,5 @@
 #pragma once
 
-#include "collisionshape.h"
 #include <sputter/math/fpvector3d.h>
 
 namespace sputter { namespace physics {
