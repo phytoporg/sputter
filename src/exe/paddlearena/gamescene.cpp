@@ -98,8 +98,9 @@ GameScene::GameScene(
     m_uiTheme.ModalBorderSize = 4;
     m_uiTheme.ModalBackgroundColor = render::Color::BLACK;
 
-    m_pSerializer = m_fixedAllocator.Create<core::Serializer>(m_fixedAllocator);
-    m_pSerializer->RegisterSerializableObject(m_pGameInstance);
+    m_pGameTickDriver = 
+        m_fixedAllocator.Create<LocalGameTickDriver>(
+            m_fixedAllocator, m_pInputSubsystem, m_pGameInstance);
 }
 
 GameScene::~GameScene()
@@ -206,9 +207,7 @@ void GameScene::DestroyEndOfGameModalPopup()
 
 void GameScene::Tick(sputter::math::FixedPoint dt) 
 {
-    TickFrame(dt);
-    PostTickFrame(dt);
-
+    m_pGameTickDriver->Tick(dt);
     m_pScreen->Tick((float)dt);
 }
 
@@ -216,15 +215,4 @@ void GameScene::Draw()
 {
     m_pGameInstance->Draw();
     m_pScreen->Draw();
-}
-
-void GameScene::TickFrame(math::FixedPoint dt)
-{
-    m_pInputSubsystem->Tick(dt);
-    m_pGameInstance->Tick(dt);
-}
-
-void GameScene::PostTickFrame(math::FixedPoint dt)
-{ 
-    m_pGameInstance->PostTick(dt);
 }

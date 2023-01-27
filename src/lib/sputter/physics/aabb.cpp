@@ -19,71 +19,36 @@ AABB::AABB(const FPVector3D& lowerLeft, const FPVector3D& extents)
     : m_lowerLeft(lowerLeft), m_extents(extents)
 {}
 
-CollisionShapeType AABB::GetShapeType() const 
+bool AABB::Intersects(const AABB& other) const
 {
-    return CollisionShapeType::AABB;
+    const FixedPoint minX = m_lowerLeft.GetX();
+    const FixedPoint minY = m_lowerLeft.GetY();
+    const FixedPoint minZ = m_lowerLeft.GetZ();
+
+    const FixedPoint maxX = (m_lowerLeft.GetX() + m_extents.GetX());
+    const FixedPoint maxY = (m_lowerLeft.GetY() + m_extents.GetY());
+    const FixedPoint maxZ = (m_lowerLeft.GetZ() + m_extents.GetZ());
+
+    const FixedPoint oMinX = (other.m_lowerLeft.GetX());
+    const FixedPoint oMinY = (other.m_lowerLeft.GetY());
+    const FixedPoint oMinZ = (other.m_lowerLeft.GetZ());
+
+    const FixedPoint oMaxX = (other.m_lowerLeft.GetX() + other.m_extents.GetX());
+    const FixedPoint oMaxY = (other.m_lowerLeft.GetY() + other.m_extents.GetY());
+    const FixedPoint oMaxZ = (other.m_lowerLeft.GetZ() + other.m_extents.GetZ());
+
+    return (minX <= oMaxX && maxX >= oMinX) &&
+           (minY <= oMaxY && maxY >= oMinY) &&
+           (minZ <= oMaxZ && maxZ >= oMinZ);
 }
 
-bool AABB::Intersects(const ICollisionShape* pOtherShape) const
+FPVector3D AABB::GetSeparation2D(const AABB& other) const
 {
-    switch (pOtherShape->GetShapeType())
-    {
-    case CollisionShapeType::AABB:
-        {
-            const AABB* pOtherAABB = static_cast<const AABB*>(pOtherShape);
-            const FixedPoint minX = m_lowerLeft.GetX();
-            const FixedPoint minY = m_lowerLeft.GetY();
-            const FixedPoint minZ = m_lowerLeft.GetZ();
+    const AABB MinkowskiDistance = GetMinkowskiDistance(other);
 
-            const FixedPoint maxX = (m_lowerLeft.GetX() + m_extents.GetX());
-            const FixedPoint maxY = (m_lowerLeft.GetY() + m_extents.GetY());
-            const FixedPoint maxZ = (m_lowerLeft.GetZ() + m_extents.GetZ());
-
-            const FixedPoint oMinX = (pOtherAABB->m_lowerLeft.GetX());
-            const FixedPoint oMinY = (pOtherAABB->m_lowerLeft.GetY());
-            const FixedPoint oMinZ = (pOtherAABB->m_lowerLeft.GetZ());
-
-            const FixedPoint oMaxX = (pOtherAABB->m_lowerLeft.GetX() + pOtherAABB->m_extents.GetX());
-            const FixedPoint oMaxY = (pOtherAABB->m_lowerLeft.GetY() + pOtherAABB->m_extents.GetY());
-            const FixedPoint oMaxZ = (pOtherAABB->m_lowerLeft.GetZ() + pOtherAABB->m_extents.GetZ());
-
-            return (minX <= oMaxX && maxX >= oMinX) &&
-                   (minY <= oMaxY && maxY >= oMinY) &&
-                   (minZ <= oMaxZ && maxZ >= oMinZ);
-        }
-        break;
-    
-    default:
-        sputter::system::LogAndFail("Unsupported intersection test!");
-        return false;
-    }
-}
-
-FPVector3D AABB::GetSeparation2D(const ICollisionShape* pOtherShape) const
-{
-#if DEBUG
-    if (!Intersects(pOtherShape))
-    {
-        sputter::system::LogAndFail("Retrieiving seapration vector for non-intersecting shapes.");
-    }
-#endif
-
-    if (pOtherShape->GetShapeType() == CollisionShapeType::AABB)
-    {
-        const AABB* pOtherAABB = static_cast<const AABB*>(pOtherShape);
-        const AABB MinkowskiDistance = GetMinkowskiDistance(*pOtherAABB);
-
-        // See https://blog.hamaluik.ca/posts/simple-aabb-collision-using-minkowski-difference/
-        // for an explanation! Pretty elegant.
-        return MinkowskiDistance.GetClosesetPointOnBounds(FPVector3D::ZERO);
-    }
-    else
-    {
-        sputter::system::LogAndFail("Unsupported collision shape type with AABB!");
-    }
-
-    // Satisfy the compiler
-    return FPVector3D::ZERO;
+    // See https://blog.hamaluik.ca/posts/simple-aabb-collision-using-minkowski-difference/
+    // for an explanation! Pretty elegant.
+    return MinkowskiDistance.GetClosesetPointOnBounds(FPVector3D::ZERO);
 }
 
 FPVector3D AABB::GetLowerLeft() const

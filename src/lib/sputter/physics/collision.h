@@ -17,7 +17,6 @@ namespace sputter { namespace game {
 }}
 
 namespace sputter { namespace physics {
-    class ICollisionShape;
     struct CollisionResult;
 
     struct Collision : public core::ISerializable

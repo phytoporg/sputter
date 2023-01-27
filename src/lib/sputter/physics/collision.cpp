@@ -15,16 +15,15 @@ bool Collision::TestIntersection(const Collision& other, CollisionResult* pColli
     {
         for (size_t bi = 0; bi < other.NumCollisionShapes; bi++)
         {
-            const ICollisionShape* pOtherShape = static_cast<const ICollisionShape*>(&other.CollisionShapes[bi]);
-            if (CollisionShapes[ai].Intersects(pOtherShape))
+            if (CollisionShapes[ai].Intersects(other.CollisionShapes[bi]))
             {
                 if (pCollisionResultOut)
                 {
                     *pCollisionResultOut = CollisionResult(
                         this,
                         &other,
-                        static_cast<const ICollisionShape*>(&CollisionShapes[ai]),
-                        static_cast<const ICollisionShape*>(&other.CollisionShapes[bi]));
+                        &CollisionShapes[ai],
+                        &other.CollisionShapes[bi]);
                 }
 
                 return true;

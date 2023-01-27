@@ -117,13 +117,12 @@ void Ball::PostTick(sputter::math::FixedPoint deltaTime)
         RELEASE_CHECK(pOtherObject, "Could not find other collision object");
         if (pOtherObject->GetType() == kPaddleArenaObjectTypeStage)
         {
-            const ICollisionShape* pOtherShape = collisionResult.pCollisionA == pCollision ?
+            const AABB* pOtherAABB = collisionResult.pCollisionA == pCollision ?
                 collisionResult.pCollisionShapeB : collisionResult.pCollisionShapeA;
 
             // lol this is hideous
             AABB* pMyAABB = &pCollision->CollisionShapes[pCollision->NumCollisionShapes - 1];
-            const AABB* pOtherAABB = static_cast<const AABB*>(pOtherShape);
-            const FPVector3D Separation = pMyAABB->GetSeparation2D(pOtherAABB);
+            const FPVector3D Separation = pMyAABB->GetSeparation2D(*pOtherAABB);
 
             if (fpm::abs(Separation.GetY()) > FPZero)
             {
@@ -143,13 +142,12 @@ void Ball::PostTick(sputter::math::FixedPoint deltaTime)
         }
         else if (pOtherObject->GetType() == kPaddleArenaObjectTypePaddle)
         {
-            const ICollisionShape* pOtherShape = collisionResult.pCollisionA == pCollision ?
+            const AABB* pOtherAABB = collisionResult.pCollisionA == pCollision ?
                 collisionResult.pCollisionShapeB : collisionResult.pCollisionShapeA;
 
             // lol this is also hideous
             AABB* pMyAABB = &pCollision->CollisionShapes[pCollision->NumCollisionShapes - 1];
-            const AABB* pOtherAABB = static_cast<const AABB*>(pOtherShape);
-            const FPVector3D Separation = pMyAABB->GetSeparation2D(pOtherAABB);
+            const FPVector3D Separation = pMyAABB->GetSeparation2D(*pOtherAABB);
 
             if (fpm::abs(Separation.GetX()) > FPZero)
             {

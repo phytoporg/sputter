@@ -4,15 +4,14 @@
 #include <sputter/math/fpvector3d.h>
 
 namespace sputter { namespace physics {
-    class AABB : public ICollisionShape
+    class AABB
     {
     public:
         AABB();
         AABB(const sputter::math::FPVector3D& lowerLeft, const sputter::math::FPVector3D& extents);
 
-        virtual CollisionShapeType GetShapeType() const override;
-        virtual bool Intersects(const ICollisionShape* pOtherShape) const override;
-        virtual sputter::math::FPVector3D GetSeparation2D(const ICollisionShape* pOtherShape) const override;
+        bool Intersects(const AABB& other) const;
+        sputter::math::FPVector3D GetSeparation2D(const AABB& other) const;
 
         sputter::math::FPVector3D GetLowerLeft() const;
         sputter::math::FPVector3D GetExtents() const;

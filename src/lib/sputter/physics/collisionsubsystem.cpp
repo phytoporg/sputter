@@ -10,8 +10,8 @@ using namespace sputter::physics;
 CollisionResult::CollisionResult(
     const Collision* pA,
     const Collision* pB,
-    const ICollisionShape* pShapeA,
-    const ICollisionShape* pShapeB)
+    const AABB* pShapeA,
+    const AABB* pShapeB)
     : pCollisionA(pA), pCollisionB(pB), pCollisionShapeA(pShapeA), pCollisionShapeB(pShapeB)
 {}
 
@@ -46,8 +46,6 @@ void CollisionSubsystem::PostTick(math::FixedPoint dt)
                 // in response to this collision, but B does.
                 A.CollisionsThisFrame[A.NumCollisionsThisFrame++] = result;
                 B.CollisionsThisFrame[B.NumCollisionsThisFrame++] = result;
-
-               result.pCollisionShapeA->GetSeparation2D(result.pCollisionShapeB);
             }
         }
     }

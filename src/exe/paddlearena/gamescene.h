@@ -14,6 +14,8 @@
 
 #include <glm/glm.hpp>
 
+#include "localgametickdriver.h"
+
 // Forward declarations
 namespace sputter 
 { 
@@ -57,11 +59,6 @@ namespace sputter
     {
         class FixedMemoryAllocator;
     }
-
-    namespace core
-    {
-        class Serializer;
-    }
 }
 
 struct GameState;
@@ -92,9 +89,6 @@ public:
     virtual void Draw() override;
 
 private:
-    void TickFrame(sputter::math::FixedPoint dt);
-    void PostTickFrame(sputter::math::FixedPoint dt);
-
     sputter::memory::ReservedRegion           m_reservedRegion;
     sputter::memory::FixedMemoryAllocator     m_fixedAllocator;
 
@@ -119,5 +113,5 @@ private:
 
     GameInstance*                             m_pGameInstance = nullptr;
 
-    sputter::core::Serializer*                m_pSerializer = nullptr;
+    LocalGameTickDriver*                      m_pGameTickDriver = nullptr;
 };

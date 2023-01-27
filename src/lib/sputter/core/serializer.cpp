@@ -61,18 +61,19 @@ bool Serializer::UnregisterSerializableObject(ISerializable* pSerializableObject
 
 bool Serializer::SaveFrame(uint32_t frame)
 {
-    size_t bytesWritten = 0; // TODO: For logging
     SerializedFrameInfo* pFrameInfo = m_frameStorage.GetOrCreateFrame(frame);
     if (!pFrameInfo)
     {
         return false;
     }
 
-    if (!WriteAllObjects(pFrameInfo->pBuffer, &pFrameInfo->Size, m_frameStorage.GetFrameSize()))
+    size_t bytesWritten = 0;
+    if (!WriteAllObjects(pFrameInfo->pBuffer, &bytesWritten, m_frameStorage.GetFrameSize()))
     {
         return false;
     }
 
+    pFrameInfo->Size = bytesWritten;
     pFrameInfo->FrameID = frame;
     pFrameInfo->ComputeChecksum();
     return true;
@@ -80,13 +81,13 @@ bool Serializer::SaveFrame(uint32_t frame)
 
 bool Serializer::LoadFrame(uint32_t frame)
 {
-    size_t bytesRead = 0;
     SerializedFrameInfo* pFrameInfo = m_frameStorage.GetOrCreateFrame(frame);
     if (!pFrameInfo || pFrameInfo->FrameID != frame)
     {
         return false;
     }
 
+    size_t bytesRead = 0;
     const bool Success = ReadAllObjects(pFrameInfo->pBuffer, &bytesRead, m_frameStorage.GetFrameSize());
     if (Success)
     {

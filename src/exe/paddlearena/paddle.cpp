@@ -200,13 +200,12 @@ void Paddle::PostTick(FixedPoint deltaTime)
         RELEASE_CHECK(pOtherObject, "Could not find other collision object");
         if (pOtherObject->GetType() == kPaddleArenaObjectTypeStage)
         {
-            const ICollisionShape* pOtherShape = collisionResult.pCollisionA == pCollisionComponent ?
+            const AABB* pOtherAABB = collisionResult.pCollisionA == pCollisionComponent ?
                 collisionResult.pCollisionShapeB : collisionResult.pCollisionShapeA;
 
             // lol this is hideous
             AABB* pMyAABB = &pCollisionComponent->CollisionShapes[pCollisionComponent->NumCollisionShapes - 1];
-            const AABB* pOtherAABB = static_cast<const AABB*>(pOtherShape);
-            const FPVector3D Separation = pMyAABB->GetSeparation2D(pOtherAABB);
+            const FPVector3D Separation = pMyAABB->GetSeparation2D(*pOtherAABB);
 
             TranslatePaddle(-Separation * (FPOne + FPEpsilon));
         }

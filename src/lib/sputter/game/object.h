@@ -30,13 +30,6 @@ namespace sputter { namespace game {
         }
 
         template<typename ComponentType>
-        core::ComponentHandle* GetComponentHandleByType()
-        {
-            ComponentType* pComponent = GetComponentByType<ComponentType>();
-            return pComponent->GetComponentHandle(pComponent);
-        }
-
-        template<typename ComponentType>
         void SetComponentByType(ComponentType* pComponent)
         {
             m_components[ComponentType::ComponentId] = pComponent;
