@@ -20,13 +20,11 @@ using namespace sputter;
 MainMenuScene::MainMenuScene(
     sputter::render::Window* pWindow,
     PaddleArena* pPaddleArena,
-    sputter::game::TimerSystem* pTimerSystem,
     sputter::render::VolumetricTextRenderer* pVolumeTextRenderer,
     sputter::render::Camera* pCamera,
     glm::mat4* pOrthoMatrix)
     : m_pWindow(pWindow),
       m_pVolumeTextRenderer(pVolumeTextRenderer),
-      m_pTimerSystem(pTimerSystem),
       m_pPaddleArena(pPaddleArena),
       m_pCamera(pCamera),
       m_pOrthoMatrix(pOrthoMatrix)

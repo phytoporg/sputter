@@ -71,7 +71,6 @@ public:
     GameScene(
         sputter::render::Window* pWindow,
         PaddleArena* pPaddleArena,
-        sputter::game::TimerSystem* pTimerSystem,
         sputter::render::Camera* pCamera,
         glm::mat4* pOrthoMatrix,
         sputter::render::VolumetricTextRenderer* pTextRenderer,
@@ -93,6 +92,7 @@ private:
     sputter::memory::FixedMemoryAllocator     m_fixedAllocator;
 
     sputter::game::SubsystemProvider          m_subsystemProvider;
+    sputter::game::TimerSystem                m_timerSystem;
 
     sputter::input::InputSubsystem*           m_pInputSubsystem = nullptr;
     const sputter::input::InputSource*        m_pInputSources[2] = {};

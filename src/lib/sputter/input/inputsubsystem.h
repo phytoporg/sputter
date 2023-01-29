@@ -55,6 +55,8 @@ namespace sputter { namespace input {
 
         const InputSource* GetInputSource(uint8_t playerIndex) const;
 
+        void SetFrame(uint32_t frame);
+
     private:
         std::vector<InputSource> m_inputSources;
     };

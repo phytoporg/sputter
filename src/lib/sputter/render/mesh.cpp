@@ -308,3 +308,8 @@ bool Mesh::GetVisibility() const
     return m_isVisible;
 }
 
+void Mesh::MarkDirty()
+{
+    m_isDirty = true;
+}
+

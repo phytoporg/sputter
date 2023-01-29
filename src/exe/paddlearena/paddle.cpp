@@ -23,6 +23,10 @@
 #include <sputter/core/check.h>
 #include <sputter/system/system.h>
 
+#include <sputter/containers/arrayvector.h>
+
+#include <sputter/system/system.h>
+
 #include <fpm/math.hpp>
 
 using namespace sputter::core;
@@ -32,6 +36,7 @@ using namespace sputter::assets;
 using namespace sputter::math;
 using namespace sputter::input;
 using namespace sputter::physics;
+using namespace sputter::containers;
 
 const std::string Paddle::kPaddleVertexShaderAssetName = "cube_vert";
 const std::string Paddle::kPaddleFragmentShaderAssetName = "cube_frag";
@@ -188,11 +193,21 @@ void Paddle::Tick(FixedPoint deltaTime)
 
 void Paddle::PostTick(FixedPoint deltaTime)
 {
+    SubsystemProvider* pSubsystemProvider = SubsystemProvider::GetSubsystemProviderAddress();
+    CollisionSubsystem* pCollisionSubsystem = pSubsystemProvider->GetSubsystemByType<CollisionSubsystem>();
+
     Collision* pCollisionComponent = GetComponentByType<Collision>();
     RELEASE_CHECK(pCollisionComponent, "Could not find collision component on paddle")
-    for (size_t i = 0; i < pCollisionComponent->NumCollisionsThisFrame; ++i)
+
+    ArrayVector<CollisionResult, CollisionSubsystem::kMaxCollisionResults> collisionsThisFrame;
+    if (!pCollisionSubsystem->GetCollisionResultsForThisFrame(pCollisionComponent, &collisionsThisFrame))
     {
-        const CollisionResult& collisionResult = pCollisionComponent->CollisionsThisFrame[i];
+        sputter::system::LogAndFail("Failed to query for collisions this frame");
+    }
+
+    for (size_t i = 0; i < collisionsThisFrame.Size(); ++i)
+    {
+        const CollisionResult& collisionResult = collisionsThisFrame[i];
         const Collision& OtherCollision = collisionResult.pCollisionA == pCollisionComponent ?
             *collisionResult.pCollisionB : *collisionResult.pCollisionA;
 
@@ -244,7 +259,8 @@ bool Paddle::Deserialize(void* pBuffer, size_t* pBytesReadOut, size_t maxBytes)
     *pBytesReadOut += sizeof(m_ballAttached);
 
     // Force a redraw
-    TranslatePaddle(FPVector3D::ZERO);
+    Mesh* pMesh = GetComponentByType<Mesh>();
+    pMesh->MarkDirty();
 
     return true;
 }

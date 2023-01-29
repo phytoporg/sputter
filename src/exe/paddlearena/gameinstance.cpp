@@ -131,6 +131,8 @@ void GameInstance::Exit()
 
 void GameInstance::Tick(math::FixedPoint dt)
 {
+    m_pTimerSystem->Tick();
+
     const GameState::State CurrentState = m_pGameState->CurrentState;
     if (CurrentState == GameState::State::Starting)
     {

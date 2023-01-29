@@ -1,10 +1,7 @@
 #pragma once
 
 #include <sputter/render/camera.h>
-
 #include <sputter/game/scene.h>
-#include <sputter/game/timersystem.h>
-
 #include <sputter/ui/theme.h>
 
 #include <glm/glm.hpp>
@@ -34,7 +31,6 @@ public:
     MainMenuScene(
        sputter::render::Window* pWindow,
        PaddleArena* pPaddleArena,
-       sputter::game::TimerSystem* pTimerSystem,
        sputter::render::VolumetricTextRenderer* pVolumeTextRenderer,
        sputter::render::Camera* pCamera,
        glm::mat4* pOrthoMatrix);
@@ -50,7 +46,6 @@ public:
 private:
     sputter::render::Window*                    m_pWindow = nullptr;
     sputter::render::VolumetricTextRenderer*    m_pVolumeTextRenderer = nullptr;
-    sputter::game::TimerSystem*                 m_pTimerSystem = nullptr;
 
     sputter::render::Camera*                    m_pCamera = nullptr;
     glm::mat4*                                  m_pOrthoMatrix = nullptr;

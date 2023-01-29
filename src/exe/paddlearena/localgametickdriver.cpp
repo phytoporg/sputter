@@ -27,20 +27,22 @@ void LocalGameTickDriver::SetEnableSyncTest(bool enableSyncTest)
 
 void LocalGameTickDriver::Tick(math::FixedPoint dt)
 {
+    const uint32_t InitialFrame = m_pGameInstance->GetFrame();
+    m_pInputSubsystem->SetFrame(InitialFrame);
+    m_pInputSubsystem->Tick(dt);
+
     uint32_t synctestChecksum = 0;
     if (m_syncTestEnabled)
     {
-        // TODO: This currently crashes in the collision subsystem. Investigate!
-        m_serializer.SaveFrame(0);
-        m_serializer.LoadFrame(0);
-        m_serializer.SaveFrame(0);
+        m_serializer.SaveFrame(InitialFrame);
 
         TickOneFrame(dt);
 
         const uint32_t CurrentFrame = m_pGameInstance->GetFrame();
+
         m_serializer.SaveFrame(CurrentFrame);
         synctestChecksum = m_serializer.GetChecksum(CurrentFrame);
-        m_serializer.LoadFrame(CurrentFrame - 1);
+        m_serializer.LoadFrame(InitialFrame);
     }
 
     TickOneFrame(dt);
@@ -56,15 +58,8 @@ void LocalGameTickDriver::Tick(math::FixedPoint dt)
     }
 }
 
-void LocalGameTickDriver::TickFrames(uint32_t start, uint32_t end, math::FixedPoint dt)
-{
-    // TODO: Was this necessary?
-}
-
 void LocalGameTickDriver::TickOneFrame(math::FixedPoint dt)
 {
-    m_pInputSubsystem->Tick(dt);
-
     m_pGameInstance->Tick(dt);
     m_pGameInstance->PostTick(dt);
 }

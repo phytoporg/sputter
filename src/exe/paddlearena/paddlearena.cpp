@@ -114,8 +114,8 @@ bool PaddleArena::StartGame()
     render::shapes::InitializeLineRenderer(&m_assetStorage, &m_shaderStorage, m_camera.ViewMatrix4d(), m_orthoMatrix);
 
     // Set up the scene stack
-    m_pMainMenuScene = new MainMenuScene(m_pWindow, this, &m_timerSystem, m_pTextRenderer, &m_camera, &m_orthoMatrix);
-    m_pGameScene = new GameScene(m_pWindow, this, &m_timerSystem, &m_camera, &m_orthoMatrix, m_pTextRenderer, &m_storageProvider);
+    m_pMainMenuScene = new MainMenuScene(m_pWindow, this, m_pTextRenderer, &m_camera, &m_orthoMatrix);
+    m_pGameScene = new GameScene(m_pWindow, this, &m_camera, &m_orthoMatrix, m_pTextRenderer, &m_storageProvider);
     game::IScene* ppScenes[] = { m_pMainMenuScene, m_pGameScene };
     m_pSceneStack = new game::SceneStack(ppScenes, sizeof(ppScenes) / sizeof(ppScenes[0]));
     m_pSceneStack->Initialize();

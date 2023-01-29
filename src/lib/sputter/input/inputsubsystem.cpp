@@ -88,3 +88,12 @@ const InputSource* InputSubsystem::GetInputSource(uint8_t playerIndex) const
     system::LogAndFail("Player index out of bounds.");
     return nullptr; // Appease the compiler
 }
+
+
+void InputSubsystem::SetFrame(uint32_t frame)
+{
+    for (auto& inputSource : m_inputSources)
+    {
+        inputSource.SetFrame(frame);
+    }
+}

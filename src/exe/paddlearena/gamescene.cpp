@@ -35,7 +35,6 @@ namespace {
 GameScene::GameScene(
     render::Window* pWindow,
     PaddleArena* pPaddleArena,
-    sputter::game::TimerSystem* pTimerSystem,
     sputter::render::Camera* pCamera,
     glm::mat4* pOrthoMatrix,
     sputter::render::VolumetricTextRenderer* pTextRenderer,
@@ -84,7 +83,7 @@ GameScene::GameScene(
             &m_fixedAllocator,
             m_pAssetStorageProvider,
             &m_subsystemProvider,
-            pTimerSystem,
+            &m_timerSystem,
             pCamera,
             pOrthoMatrix,
             pTextRenderer,

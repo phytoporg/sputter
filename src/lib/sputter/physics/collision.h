@@ -19,17 +19,12 @@ namespace sputter { namespace game {
 namespace sputter { namespace physics {
     struct CollisionResult;
 
-    struct Collision : public core::ISerializable
+    struct Collision
     {
         static const game::SubsystemType ComponentId = game::SubsystemType::TYPE_COLLISION;
 
         bool Intersects(const Collision& other) const;
         bool TestIntersection(const Collision& other, CollisionResult* pCollisionResultOut) const;
-
-        // Begin ISerializable
-        virtual bool Serialize(void* pBuffer, size_t* pBytesWrittenOut, size_t maxBytes) override;
-        virtual bool Deserialize(void* pBuffer, size_t* pBytesReadOut, size_t maxBytes) override;
-        // End ISerializable
 
         // Yet unused
         struct InitializationParameters {};
@@ -39,10 +34,6 @@ namespace sputter { namespace physics {
         static const size_t kMaxCollisionShapes = 8;
         AABB            CollisionShapes[kMaxCollisionShapes];
         size_t          NumCollisionShapes = 0;
-
-        const static size_t kMaxCollisionResults = 16;
-        CollisionResult CollisionsThisFrame[kMaxCollisionResults];
-        size_t          NumCollisionsThisFrame = 0;
 
         // Game-specified bitfields. Only objects with the same bits set can collide.
         uint32_t CollisionFlags = 0;

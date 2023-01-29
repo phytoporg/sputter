@@ -27,13 +27,12 @@ public:
     virtual void Tick(sputter::math::FixedPoint dt) override;
 
 private:
-    virtual void TickFrames(uint32_t start, uint32_t end, sputter::math::FixedPoint dt) override;
     virtual void TickOneFrame(sputter::math::FixedPoint dt) override;
 
     sputter::input::InputSubsystem* m_pInputSubsystem = nullptr;
     GameInstance*                   m_pGameInstance = nullptr;
 
-    bool                            m_syncTestEnabled = false;
+    bool                            m_syncTestEnabled = true;
 
     sputter::core::Serializer       m_serializer;
 };

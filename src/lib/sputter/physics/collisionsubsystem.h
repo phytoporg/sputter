@@ -7,6 +7,10 @@
 
 #include <sputter/physics/collision.h>
 
+#include <sputter/containers/arrayvector.h>
+
+#include "collisionresult.h"
+
 namespace sputter { namespace physics {
     class ICollisionShape;
     struct CollisionSubsystemSettings
@@ -35,6 +39,14 @@ namespace sputter { namespace physics {
         core::ComponentHandle GetComponentHandle(Collision* pCollision) const;
         Collision* GetComponentFromHandle(core::ComponentHandle handle);
 
+        const static size_t kMaxCollisionResults = 16;
+        bool GetCollisionResultsForThisFrame(
+            Collision* pCollision,
+            containers::ArrayVector<CollisionResult, kMaxCollisionResults>* pResultsOut);
+        bool GetCollisionResultsForThisFrame(
+            core::ComponentHandle collisionHandle,
+            containers::ArrayVector<CollisionResult, kMaxCollisionResults>* pResultsOut);
+
     private:
         // No default or copy construction allowed here
         CollisionSubsystem() = delete;
@@ -43,5 +55,8 @@ namespace sputter { namespace physics {
         static const size_t kMaxCollisions = 16;
         Collision m_collisions[kMaxCollisions] = {};
         size_t    m_collisionCount = 0;
+
+        CollisionResult CollisionsThisFrame[kMaxCollisionResults];
+        size_t          NumCollisionsThisFrame = 0;
     };
 }}

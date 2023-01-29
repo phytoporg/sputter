@@ -15,15 +15,21 @@
 #include <sputter/render/uniform.h>
 #include <sputter/render/geometry.h>
 #include <sputter/render/drawshapes.h>
+#include <sputter/render/mesh.h>
 
 #include <sputter/physics/aabb.h>
 #include <sputter/physics/collision.h>
 #include <sputter/physics/collisionsubsystem.h>
 
 #include <sputter/game/objectstorage.h>
+#include <sputter/game/subsystemprovider.h>
 
 #include <sputter/core/check.h>
 #include <sputter/core/debugsettings.h>
+
+#include <sputter/containers/arrayvector.h>
+
+#include <sputter/system/system.h>
 
 #include <fpm/math.hpp>
 
@@ -33,6 +39,7 @@ using namespace sputter::assets;
 using namespace sputter::math;
 using namespace sputter::physics;
 using namespace sputter::core;
+using namespace sputter::containers;
 
 // Same ol' same ol' for now
 const std::string Ball::kBallVertexShaderAssetName = "cube_vert";
@@ -103,11 +110,21 @@ void Ball::PostTick(sputter::math::FixedPoint deltaTime)
         return;
     }
 
+    SubsystemProvider* pSubsystemProvider = SubsystemProvider::GetSubsystemProviderAddress();
+    CollisionSubsystem* pCollisionSubsystem = pSubsystemProvider->GetSubsystemByType<CollisionSubsystem>();
+
     Collision* pCollision = GetComponentByType<Collision>();
     RELEASE_CHECK(pCollision, "Could not get collision component on Ball");
-    for (size_t i = 0; i < pCollision->NumCollisionsThisFrame; ++i)
+
+    ArrayVector<CollisionResult, CollisionSubsystem::kMaxCollisionResults> collisionsThisFrame;
+    if (!pCollisionSubsystem->GetCollisionResultsForThisFrame(pCollision, &collisionsThisFrame))
     {
-        const CollisionResult& collisionResult = pCollision->CollisionsThisFrame[i];
+        sputter::system::LogAndFail("Failed to query for collisions this frame");
+    }
+    
+    for (size_t i = 0; i < collisionsThisFrame.Size(); ++i)
+    {
+        const CollisionResult& collisionResult = collisionsThisFrame[i];
         RELEASE_CHECK(collisionResult.pCollisionA && collisionResult.pCollisionB, "Invalid collision result!");
 
         const Collision& OtherCollision = collisionResult.pCollisionA == pCollision ?
@@ -214,7 +231,8 @@ bool Ball::Deserialize(void* pBuffer, size_t* pBytesReadOut, size_t maxBytes)
     *pBytesReadOut += sizeof(m_isInitialized);
 
     // Force a re-render
-    TranslateBall(FPVector3D::ZERO);
+    Mesh* pMesh = GetComponentByType<Mesh>();
+    pMesh->MarkDirty();
 
     return true;
 }

@@ -6,7 +6,7 @@ using namespace sputter;
 using namespace sputter::core;
 
 static const uint32_t kInvalidIndex = 0xFFFFFFFF;
-static const uint32_t kDefaultFrameSize = 0x1000;
+static const uint32_t kDefaultFrameSize = 0x2000;
 
 Serializer::Serializer(memory::FixedMemoryAllocator& allocator)
     : m_frameStorage(allocator, kDefaultFrameSize)

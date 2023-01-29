@@ -97,6 +97,9 @@ namespace sputter { namespace render {
             void SetVisibility(bool newVisibility);
             bool GetVisibility() const;
 
+            // Force a render state update
+            void MarkDirty();
+
             // TODO: Some kind of local fixed-point transform
             // TODO: texture(s)?
 

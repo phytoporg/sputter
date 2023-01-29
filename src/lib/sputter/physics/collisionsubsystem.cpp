@@ -19,11 +19,7 @@ CollisionSubsystem::CollisionSubsystem(const CollisionSubsystemSettings& setting
 
 void CollisionSubsystem::PostTick(math::FixedPoint dt) 
 {
-    for (size_t i = 0; i < m_collisionCount; i++)
-    {
-        m_collisions[i].NumCollisionsThisFrame = 0;
-    }
-
+    NumCollisionsThisFrame = 0;
     for (size_t i = 0; i < m_collisionCount; i++)
     {
         for (size_t j = i + 1; j < m_collisionCount; ++j)
@@ -40,11 +36,8 @@ void CollisionSubsystem::PostTick(math::FixedPoint dt)
             CollisionResult result;
             if ((A.CollisionFlags & B.CollisionFlags) && A.TestIntersection(B, &result))
             {
-                // TODO: collisions shouldn't necessarily be bidirectional. This is
-                // wasteful in cases for instances where A has to take no action
-                // in response to this collision, but B does.
-                A.CollisionsThisFrame[A.NumCollisionsThisFrame++] = result;
-                B.CollisionsThisFrame[B.NumCollisionsThisFrame++] = result;
+                RELEASE_CHECK(NumCollisionsThisFrame < kMaxCollisionResults, "Exceeded max collision results this frame");
+                CollisionsThisFrame[NumCollisionsThisFrame++] = result;
             }
         }
     }
@@ -52,6 +45,8 @@ void CollisionSubsystem::PostTick(math::FixedPoint dt)
 
 Collision* CollisionSubsystem::CreateComponent(const Collision::InitializationParameters& params) 
 {
+    RELEASE_CHECK(m_collisionCount < kMaxCollisions, "Exceeded maximum collisions count");
+
     m_collisions[m_collisionCount] = Collision();
     return &m_collisions[m_collisionCount++];
 }
@@ -66,13 +61,8 @@ bool CollisionSubsystem::Serialize(void* pBuffer, size_t* pBytesWrittenOut, size
     WRITE(m_collisionCount, pBuffer, *pBytesWrittenOut, maxBytes);
     *pBytesWrittenOut += sizeof(m_collisionCount);
 
-    for (uint32_t i = 0; i < m_collisionCount; ++i)
-    {
-        if (!m_collisions[i].Serialize(pBuffer, pBytesWrittenOut, maxBytes))
-        { 
-            return false;
-        }
-    }
+    WRITE_ARRAY(m_collisions, pBuffer, *pBytesWrittenOut, maxBytes);
+    *pBytesWrittenOut += sizeof(m_collisions);
 
     return true;
 }
@@ -84,20 +74,15 @@ bool CollisionSubsystem::Deserialize(void* pBuffer, size_t* pBytesReadOut, size_
 
     RELEASE_CHECK(m_collisionCount < kMaxCollisions, "Invalid collision count read while deserializing");
 
-    for (uint32_t i = 0; i < m_collisionCount; ++i)
-    {
-        if (!m_collisions[i].Deserialize(pBuffer, pBytesReadOut, maxBytes))
-        {
-            return false;
-        }
-    }
+    READ_ARRAY(m_collisions, pBuffer, *pBytesReadOut, maxBytes);
+    *pBytesReadOut += sizeof(m_collisions);
 
     return true;
 }
 
 ComponentHandle CollisionSubsystem::GetComponentHandle(Collision* pCollision) const
 {
-    for (uint16_t i = 0; i < m_collisionCount; ++i)
+    for (size_t i = 0; i < m_collisionCount; ++i)
     {
         if (pCollision == &m_collisions[i])
         {
@@ -113,4 +98,36 @@ Collision* CollisionSubsystem::GetComponentFromHandle(ComponentHandle handle)
     RELEASE_CHECK(handle != kInvalidComponentHandle, "Invalid collision handle");
     const uint16_t Index = GetComponentIndexFromHandle(handle);
     return &m_collisions[Index];
+}
+
+bool CollisionSubsystem::GetCollisionResultsForThisFrame(
+    Collision* pCollision,
+    containers::ArrayVector<CollisionResult, kMaxCollisionResults>* pResultsOut)
+{
+    RELEASE_CHECK(pResultsOut, "pResultsOut is unexpectedly null");
+
+    pResultsOut->Clear();
+    for (size_t i = 0; i < NumCollisionsThisFrame; ++i)
+    {
+        const CollisionResult& CollisionResult = CollisionsThisFrame[i];
+        if (CollisionResult.pCollisionA == pCollision || CollisionResult.pCollisionB == pCollision)
+        {
+            pResultsOut->Add(CollisionResult);
+        }
+    }
+
+    return true;
+}
+
+bool CollisionSubsystem::GetCollisionResultsForThisFrame(
+    core::ComponentHandle collisionHandle,
+    containers::ArrayVector<CollisionResult, kMaxCollisionResults>* pResultsOut)
+{
+    Collision* pCollision = GetComponentFromHandle(collisionHandle);
+    if (!pCollision)
+    {
+        return false;
+    }
+
+    return GetCollisionResultsForThisFrame(pCollision, pResultsOut);
 }
