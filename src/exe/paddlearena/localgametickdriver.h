@@ -32,7 +32,7 @@ private:
     sputter::input::InputSubsystem* m_pInputSubsystem = nullptr;
     GameInstance*                   m_pGameInstance = nullptr;
 
-    bool                            m_syncTestEnabled = true;
+    bool                            m_syncTestEnabled = false;
 
     sputter::core::Serializer       m_serializer;
 };
