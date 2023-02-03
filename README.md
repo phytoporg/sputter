@@ -53,6 +53,7 @@ Point to an `asset` directory. Assets aren't yet checked in, but SoOn !!
   - `game` - ECS goo, game object and scene management, etc.
   - `input` - device discovery, input mappings and such
   - `math` - vectors and matrices of various types, useful constants, helper functions
+  - `net` - p2p network communication
   - `memory` - custom allocators
   - `physics` - fixed-timestep simulation using fixed-point math
   - `core` - commonly-used classes and functionality across sputter
