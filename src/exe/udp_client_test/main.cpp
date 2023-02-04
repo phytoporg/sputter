@@ -5,6 +5,7 @@
 using namespace sputter::net;
 
 // Constants for RX port number, TX port number
+// TODO Have me automatically find a free port
 const int RX_PORT = 50000;
 const int TX_PORT = 50001;
 
