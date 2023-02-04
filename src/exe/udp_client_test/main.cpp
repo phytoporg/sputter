@@ -4,10 +4,9 @@
 
 using namespace sputter::net;
 
-// Constants for RX port number, TX port number, and remote host
+// Constants for RX port number, TX port number
 const int RX_PORT = 50000;
 const int TX_PORT = 50001;
-const char* REMOTE_HOST = "127.0.0.1";
 
 // Example of receiving data:
 // std::string address;
@@ -24,6 +23,7 @@ const char* REMOTE_HOST = "127.0.0.1";
 // Client code
 int main(int argc, char* argv[]) {
   // Parse arguments for remote host
+  char* REMOTE_HOST;
   if (argc > 1) {
     REMOTE_HOST = argv[1];
   } else {
