@@ -91,29 +91,3 @@ int main(int argc, char* argv[]) {
   return 0;
 }
 
-// Server code
-// int main() {
-//   UDPPort server;
-// 
-//   // Open the server port for receiving data
-//   if (!server.open(8080)) {
-//     std::cerr << "Error: Failed to open server port\n";
-//     return 1;
-//   }
-// 
-//   // Receive data from the client
-//   char buffer[256];
-//   std::string address;
-//   uint16_t port;
-//   int received = server.receive(buffer, sizeof(buffer), address, port);
-//   if (received < 0) {
-//     std::cerr << "Error: Failed to receive data\n";
-//     return 1;
-//   }
-// 
-//   // Output the received message
-//   std::cout << "Received message from " << address << ":" << port << ": " << buffer << std::endl;
-// 
-//   return 0;
-// }
-// 
