@@ -8,8 +8,8 @@ defmodule Rooms.Supervisor do
   @impl true
   def init(:ok) do
     children = [
-      {DynamicSupervisor, name: Rooms.BucketSupervisor, strategy: :one_for_one},
-      {Rooms.Registry, name: Rooms.Registry},
+      {Registry, keys: :unique, name: Rooms.Registry},
+      {Rooms.Bucket, name: {:via, Registry, {Rooms.Registry, :bucket}}},
     ]
 
     Supervisor.init(children, strategy: :one_for_all)

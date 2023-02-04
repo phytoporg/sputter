@@ -2,10 +2,12 @@ defmodule Rooms.Bucket do
   use Agent, restart: :temporary
 
   @doc """
-  Starts a new bucket
+  Starts a new bucket.
+
+  `:registry` is a required option.
   """
-  def start_link(_opts) do
-    Agent.start_link(fn -> %{} end)
+  def start_link(opts) do
+    Agent.start_link(fn -> %{} end, opts)
   end
 
   @doc """
