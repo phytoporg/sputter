@@ -54,6 +54,7 @@ namespace sputter { namespace input {
         InputSource* GetComponentFromHandle(core::ComponentHandle handle);
 
         const InputSource* GetInputSource(uint8_t playerIndex) const;
+        InputSource* GetInputSource(uint8_t playerIndex);
 
         void SetFrame(uint32_t frame);
 

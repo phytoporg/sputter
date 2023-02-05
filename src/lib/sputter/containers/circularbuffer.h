@@ -63,6 +63,11 @@ namespace sputter { namespace containers {
             return m_tail - m_head;
         }
 
+        size_t Capacity() const
+        {
+            return TCapacity;
+        }
+
         bool IsFull() const
         {
             return Size() == TCapacity;
@@ -107,7 +112,6 @@ namespace sputter { namespace containers {
             m_size = 0;
             memset(m_data, 0, sizeof(m_data));
         }
-
     private:
         uint32_t TailIndex() const
         {

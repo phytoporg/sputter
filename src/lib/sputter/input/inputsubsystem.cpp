@@ -38,10 +38,6 @@ InputSubsystem::InputSubsystem(const InputSubsystemSettings& settings)
 void InputSubsystem::Tick(math::FixedPoint dt)
 {
     glfwPollEvents();
-    for (size_t i = 0; i < 2; ++i)
-    {
-        m_inputSources[i].Tick();
-    }
 }
 
 InputSource* InputSubsystem::CreateComponent(const InputSource::InitializationParameters& params)
@@ -89,6 +85,16 @@ const InputSource* InputSubsystem::GetInputSource(uint8_t playerIndex) const
     return nullptr; // Appease the compiler
 }
 
+InputSource* InputSubsystem::GetInputSource(uint8_t playerIndex)
+{
+    if (playerIndex < m_inputSources.size())
+    {
+        return &m_inputSources[playerIndex];
+    }
+
+    system::LogAndFail("Player index out of bounds.");
+    return nullptr; // Appease the compiler
+}
 
 void InputSubsystem::SetFrame(uint32_t frame)
 {

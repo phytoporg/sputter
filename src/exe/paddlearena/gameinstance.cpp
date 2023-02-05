@@ -9,6 +9,7 @@
 #include <sputter/assets/assetstorageprovider.h>
 
 #include <sputter/input/inputsource.h>
+#include <sputter/input/inputsubsystem.h>
 
 #include <sputter/physics/rigidbodysubsystem.h>
 #include <sputter/physics/collisionsubsystem.h>
@@ -47,8 +48,8 @@ GameInstance::GameInstance(
     render::Camera* pCamera,
     glm::mat4* pOrthoMatrix,
     render::VolumetricTextRenderer* pTextRenderer, 
-    const sputter::input::InputSource* pP1InputSource,
-    const sputter::input::InputSource* pP2InputSource)
+    sputter::input::InputSource* pP1InputSource,
+    sputter::input::InputSource* pP2InputSource)
     : m_pTimerSystem(pTimerSystem),
       m_pCamera(pCamera),
       m_pOrthoMatrix(pOrthoMatrix),
@@ -111,6 +112,9 @@ void GameInstance::Initialize()
     m_pGameState->WinningPlayer = 0;
     m_pGameState->Frame = 0;
 
+    if (m_pInputSources[0]) { m_pInputSources[0]->Reset(); }
+    if (m_pInputSources[1]) { m_pInputSources[1]->Reset(); }
+
     if (!functorstorage::IsFunctorRegistrationLocked())
     {
         functorstorage::LockFunctorRegistration();
@@ -129,8 +133,11 @@ void GameInstance::Exit()
     SetGameState(GameState::State::Exiting);
 }
 
-void GameInstance::Tick(math::FixedPoint dt)
+void GameInstance::Tick(math::FixedPoint dt, uint32_t p1InputState, uint32_t p2InputState)
 {
+    if (m_pInputSources[0]) { m_pInputSources[0]->SetInputState(p1InputState); }
+    if (m_pInputSources[1]) { m_pInputSources[1]->SetInputState(p2InputState); }
+
     m_pTimerSystem->Tick();
 
     const GameState::State CurrentState = m_pGameState->CurrentState;

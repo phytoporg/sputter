@@ -56,8 +56,8 @@ public:
         sputter::render::Camera* pCamera,
         glm::mat4* pOrthoMatrix,
         sputter::render::VolumetricTextRenderer* pTextRenderer,
-        const sputter::input::InputSource* pP1InputSource,
-        const sputter::input::InputSource* pP2InputSource
+        sputter::input::InputSource* pP1InputSource,
+        sputter::input::InputSource* pP2InputSource
     );
 
     // ++ISerializable
@@ -70,7 +70,7 @@ public:
     void Restart();
     void Exit();
 
-    void Tick(sputter::math::FixedPoint dt);
+    void Tick(sputter::math::FixedPoint dt, uint32_t p1InputState, uint32_t p2InputState);
     void PostTick(sputter::math::FixedPoint dt);
 
     uint32_t GetFrame() const;
@@ -102,7 +102,7 @@ private:
     sputter::physics::CollisionSubsystem*    m_pCollisionSubsystem = nullptr;
     sputter::render::MeshSubsystem*          m_pMeshSubsystem = nullptr;
     sputter::input::InputSubsystem*          m_pInputSubsystem = nullptr;
-    const sputter::input::InputSource*       m_pInputSources[2] = {};
+    sputter::input::InputSource*             m_pInputSources[2] = {};
 
     GameState*                               m_pGameState    = nullptr;
 };

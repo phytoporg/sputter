@@ -108,6 +108,11 @@ uint32_t Serializer::GetChecksum(uint32_t frame)
     return pFrameInfo->Checksum;
 }
 
+void Serializer::Reset()
+{
+    m_frameStorage.Reset();
+}
+
 bool Serializer::ReadAllObjects(void* pBuffer, size_t* pBytesReadOut, size_t numBytes)
 {
     size_t totalBytesRead = 0;

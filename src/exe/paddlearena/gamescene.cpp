@@ -124,6 +124,7 @@ void GameScene::Initialize()
 
     m_pScreen->Initialize();
     m_pGameInstance->Initialize();
+    m_pGameTickDriver->Initialize();
 
     m_pGameInstance->SetGameStateChangedCallback([this](GameState::State newState)
     {

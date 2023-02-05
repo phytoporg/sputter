@@ -30,6 +30,8 @@ namespace sputter { namespace core {
         uint32_t GetLastFrame() const;
         uint32_t GetFrameSize() const;
 
+        void Reset();
+
     private:
         SerializedFrameStorage() = delete;
         SerializedFrameStorage(const SerializedFrameStorage& other) = delete;

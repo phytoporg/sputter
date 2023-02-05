@@ -84,3 +84,9 @@ uint32_t SerializedFrameStorage::GetFrameSize() const
 {
     return m_FrameSize;
 }
+
+void SerializedFrameStorage::Reset()
+{
+    m_lastFrame = kInvalidFrameIndex;
+    memset(m_frameInfos, 0, sizeof(m_frameInfos));
+}

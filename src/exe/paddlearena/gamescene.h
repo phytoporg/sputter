@@ -95,7 +95,7 @@ private:
     sputter::game::TimerSystem                m_timerSystem;
 
     sputter::input::InputSubsystem*           m_pInputSubsystem = nullptr;
-    const sputter::input::InputSource*        m_pInputSources[2] = {};
+    sputter::input::InputSource*              m_pInputSources[2] = {};
 
     sputter::assets::AssetStorageProvider*    m_pAssetStorageProvider = nullptr;
 

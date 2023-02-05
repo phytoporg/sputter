@@ -23,16 +23,15 @@ namespace sputter { namespace input {
         IInputDevice* GetInputDevice();
 
         static const uint32_t kCurrentFrame = 0xFFFFFFFF;
+        void SetInputState(uint32_t inputState, uint32_t frame = kCurrentFrame);
         uint32_t GetInputState(uint32_t frame = kCurrentFrame) const;
-        uint32_t GetPreviousState(uint32_t frame = kCurrentFrame) const;
 
         bool IsInputHeld(uint32_t gameInputCode, uint32_t frame = kCurrentFrame) const;
         bool IsInputReleased(uint32_t gameInputCode, uint32_t frame = kCurrentFrame) const;
         bool IsInputPressed(uint32_t gameInputCode, uint32_t frame = kCurrentFrame) const;
 
-        void Tick();
-
         void SetFrame(uint32_t frame);
+        void Reset();
 
     private:
         IInputDevice* m_pInputDevice;
