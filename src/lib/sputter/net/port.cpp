@@ -26,8 +26,7 @@ bool UDPPort::open(uint16_t port) {
   }
 
   // Store port address
-  sockaddr_in bindAddress;
-  memset(&bindAddress, 0, sizeof(bindAddress));
+  sockaddr_in bindAddress = {};
   bindAddress.sin_family = AF_INET;
   bindAddress.sin_addr.s_addr = htonl(INADDR_ANY);
   bindAddress.sin_port = htons(port);
@@ -49,8 +48,7 @@ void UDPPort::close() {
 bool UDPPort::send(const void *data, int dataSize, const std::string &address, uint16_t port) {
   RELEASE_CHECK(socketHandle >= 0, "Socket is not open");
 
-  sockaddr_in dest;
-  memset(&dest, 0, sizeof(dest));
+  sockaddr_in dest = {};
   dest.sin_family = AF_INET;
   dest.sin_port = htons(port);
   if (inet_pton(AF_INET, address.c_str(), &dest.sin_addr) != 1) {
@@ -83,9 +81,7 @@ bool UDPPort::send(const void *data, int dataSize, const std::string &address, u
 int UDPPort::receive(void *data, int dataSize, std::string &address, uint16_t &port) {
   RELEASE_CHECK(socketHandle >= 0, "Socket is not open");
 
-  sockaddr_in src;
-  socklen_t srcLength = sizeof(src);
-  memset(&src, 0, sizeof(src));
+  sockaddr_in src = {};
 
   int received = recvfrom(socketHandle, data, dataSize, 0, reinterpret_cast<sockaddr *>(&src), &srcLength);
   if (received < 0) {
