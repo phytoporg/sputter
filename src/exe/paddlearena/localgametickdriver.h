@@ -37,6 +37,7 @@ private:
     sputter::core::Serializer       m_serializer;
 
     // Pimpl this to keep templated containers tidy and unexposed
+    // None exist yet, but we'll need it for parameterizable synctest frame count !
     struct InputStorage;
     InputStorage*                   m_pInputStorage = nullptr;
 };
