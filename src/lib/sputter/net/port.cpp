@@ -31,7 +31,7 @@ bool UDPPort::open(uint16_t port) {
   bindAddress.sin_family = AF_INET;
   bindAddress.sin_addr.s_addr = htonl(INADDR_ANY);
   bindAddress.sin_port = htons(port);
-  if (bind(socketHandle, (sockaddr *)&bindAddress, sizeof(bindAddress)) < 0) {
+  if (bind(socketHandle, reinterpret_cast<sockaddr *>(&bindAddress), sizeof(bindAddress)) < 0) {
     LOG(ERROR) << "Error: Failed to create socket\n";
     return false;
   }
