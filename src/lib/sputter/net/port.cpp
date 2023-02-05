@@ -10,17 +10,13 @@
 
 using namespace sputter::net;
 
-UDPPort::UDPPort()
-    : socketHandle(-1) {
-}
-
 UDPPort::~UDPPort() {
   close();
 }
 
 bool UDPPort::open(uint16_t port) {
-  socketHandle = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-  if (socketHandle < 0) {
+  m_socketHandle = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+  if (m_socketHandle < 0) {
     LOG(ERROR) << "Error: Failed to create socket\n";
     return false;
   }
@@ -30,7 +26,7 @@ bool UDPPort::open(uint16_t port) {
   bindAddress.sin_family = AF_INET;
   bindAddress.sin_addr.s_addr = htonl(INADDR_ANY);
   bindAddress.sin_port = htons(port);
-  if (bind(socketHandle, reinterpret_cast<sockaddr *>(&bindAddress), sizeof(bindAddress)) < 0) {
+  if (bind(m_socketHandle, reinterpret_cast<sockaddr *>(&bindAddress), sizeof(bindAddress)) < 0) {
     LOG(ERROR) << "Error: Failed to create socket\n";
     return false;
   }
@@ -39,14 +35,14 @@ bool UDPPort::open(uint16_t port) {
 }
 
 void UDPPort::close() {
-  if (socketHandle >= 0) {
-    ::close(socketHandle);
-    socketHandle = -1;
+  if (m_socketHandle >= 0) {
+    ::close(m_socketHandle);
+    m_socketHandle = -1;
   }
 }
 
 bool UDPPort::send(const void *data, int dataSize, const std::string &address, uint16_t port) {
-  RELEASE_CHECK(socketHandle >= 0, "Socket is not open");
+  RELEASE_CHECK(m_socketHandle >= 0, "Socket is not open");
 
   sockaddr_in dest = {};
   dest.sin_family = AF_INET;
@@ -65,7 +61,7 @@ bool UDPPort::send(const void *data, int dataSize, const std::string &address, u
 
 #endif
 
-  int sent = sendto(socketHandle, data, dataSize, 0, reinterpret_cast<sockaddr *>(&dest), sizeof(dest));
+  int sent = sendto(m_socketHandle, data, dataSize, 0, reinterpret_cast<sockaddr *>(&dest), sizeof(dest));
   if (sent < 0) {
     LOG(WARNING) << "Error: Failed to send data\n";
     return false;
@@ -79,11 +75,11 @@ bool UDPPort::send(const void *data, int dataSize, const std::string &address, u
 }
 
 int UDPPort::receive(void *data, int dataSize, std::string &address, uint16_t &port) {
-  RELEASE_CHECK(socketHandle >= 0, "Socket is not open");
+  RELEASE_CHECK(m_socketHandle >= 0, "Socket is not open");
 
   sockaddr_in src = {};
 
-  int received = recvfrom(socketHandle, data, dataSize, 0, reinterpret_cast<sockaddr *>(&src), &srcLength);
+  int received = recvfrom(m_socketHandle, data, dataSize, 0, reinterpret_cast<sockaddr *>(&src), &srcLength);
   if (received < 0) {
     LOG(WARNING) << "Error: Failed to receive data\n";
     return -1;

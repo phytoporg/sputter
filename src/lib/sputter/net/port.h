@@ -16,7 +16,7 @@ namespace sputter { namespace net { class UDPPort {
         int receive(void *data, int dataSize, std::string &address, uint16_t &port);
     
     private:
-        int socketHandle;
+        int m_socketHandle = -1;
     };
 }}
 
