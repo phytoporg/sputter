@@ -1,6 +1,7 @@
 #include "system.h"
 
 #include <glog/logging.h>
+#include <sputter/log/log.h>
 #include <stdexcept>
 
 namespace sputter { namespace system {
@@ -11,16 +12,13 @@ namespace sputter { namespace system {
     {
         if (pLogFile)
         {
-            LOG(WARNING) << "Logging doesn't support redirection to files "
-                         << "just yet.";
+            sputter::log::SetLogFile(pLogFile);
         }
-
-        ::google::InitGoogleLogging(programName.c_str());
     }
 
     void LogAndFail(const std::string& errorString)
     {
-        LOG(ERROR) << errorString;
+        RELEASE_LOG_ERROR_(LOG_DEFAULT, errorString.c_str());
         throw std::runtime_error(errorString);
     }
 }}

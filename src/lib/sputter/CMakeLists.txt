@@ -21,6 +21,7 @@ file(GLOB SOURCES
     memory/*.cpp
     game/*.cpp
     core/*.cpp
+    log/*.cpp
     input/*.cpp
     containers/*.cpp)
 add_library(sputter ${SOURCES})
