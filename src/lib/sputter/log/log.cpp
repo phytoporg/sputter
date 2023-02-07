@@ -18,7 +18,8 @@ namespace
     {
         const uint8_t Index = static_cast<uint8_t>(zone);
         static const char* LUT[] = { 
-            "Default"
+            "Default",
+            "Game"
         };
 
         return LUT[Index];

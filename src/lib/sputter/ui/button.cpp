@@ -5,6 +5,7 @@
 
 #include <sputter/render/drawshapes.h>
 #include <sputter/system/system.h>
+#include <sputter/log/log.h>
 
 #include <cstring>
 
@@ -47,7 +48,7 @@ void Button::HandleEvent(uint8_t eventCodeParameter, void* pEventData)
         const Key KeyPressed = *static_cast<Key*>(pEventData);
         if (KeyPressed <= Key::Invalid || KeyPressed >= Key::KeyMax)
         {
-            LOG(ERROR) << "Unhandled key press value made it to the button handler";
+            RELEASE_LOG_ERROR_(LOG_UI, "Unhandled key press value made it to the button handler.");
             return;
         }
 
@@ -85,7 +86,7 @@ void Button::HandleEvent(uint8_t eventCodeParameter, void* pEventData)
     {
         if (m_buttonState != ButtonState::Idle)
         {
-            LOG(ERROR) << "Button received activation event while not idle";
+            RELEASE_LOG_ERROR_(LOG_UI, "Button received activation event while not idle");
             return;
         }
 
@@ -107,7 +108,7 @@ void Button::HandleEvent(uint8_t eventCodeParameter, void* pEventData)
     {
         if (m_buttonState != ButtonState::Down)
         {
-            LOG(ERROR) << "Button received deactivation event while not held down";
+            RELEASE_LOG_ERROR_(LOG_UI, "Button received deactivation event while not held down");
             return;
         }
 

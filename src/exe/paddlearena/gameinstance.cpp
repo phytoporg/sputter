@@ -6,6 +6,8 @@
 
 #include <sputter/core/functorstorage.h>
 
+#include <sputter/log/log.h>
+
 #include <sputter/assets/assetstorageprovider.h>
 
 #include <sputter/input/inputsource.h>
@@ -330,7 +332,7 @@ void GameInstance::OnCountdownTimerExpired(void* pUserData)
     {
         if (!pGameInstance->m_pTimerSystem->ClearTimer(pGameInstance->m_pGameState->CountdownTimerHandle))
         {
-            LOG(WARNING) << "Could not clear countdown timer handle\n";
+            RELEASE_LOG_WARNING_(LOG_GAME, "Could not clearn countdown timer handle\n");
         }
     }
 }

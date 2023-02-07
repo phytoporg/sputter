@@ -1,5 +1,7 @@
 #include "fixedmemoryallocator.h"
 
+#include <sputter/log/log.h>
+
 namespace sputter { namespace memory {
     FixedMemoryAllocator::FixedMemoryAllocator(const std::string& allocatorName)
         : m_allocatorName(allocatorName),
@@ -25,8 +27,7 @@ namespace sputter { namespace memory {
     {
         if ((m_pNext + size) > (m_pBase + m_regionSize))
         {
-            LOG(WARNING) << "ReserveNext FMA - Out of memory: "
-                         << allocatorName;
+            RELEASE_LOG_WARNING(LOG_DEFAULT, "ReserveNext FMA - Out of memory %s", allocatorName.c_str());
             return false;
         }
 
@@ -40,7 +41,7 @@ namespace sputter { namespace memory {
     {
         if ((m_pNext + size) > (m_pBase + m_regionSize))
         {
-            LOG(WARNING) << "ReserveNext FMA - Out of memory";
+            RELEASE_LOG_WARNING_(LOG_DEFAULT, "ReserveNext FMA - Out of memory %s");
             return nullptr;
         }
 

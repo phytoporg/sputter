@@ -4,6 +4,7 @@
 #include <sputter/assets/assetstorage.h>
 #include <sputter/assets/textdata.h>
 #include <sputter/system/system.h>
+#include <sputter/log/log.h>
 
 #include <algorithm>
 
@@ -29,28 +30,28 @@ ShaderStorage::AddShaderFromShaderAssetNames(
     auto spVertexShaderAsset = pAssetStorage->FindFirstByName(vertexShaderAssetName);
     if (!spVertexShaderAsset)
     {
-        LOG(WARNING) << "Failed to find vertex shader asset by name: " << vertexShaderAssetName;
+        RELEASE_LOG_WARNING(LOG_ASSETS, "Failed to find vertex shader by name: %s", vertexShaderAssetName.c_str());
         return false;
     }
 
     auto pVertexShaderTextData = dynamic_cast<sputter::assets::TextData*>(spVertexShaderAsset.get());
     if (!pVertexShaderTextData)
     {
-        LOG(ERROR) << "Unexpected asset data type for vertex shader: " << vertexShaderAssetName;
+        RELEASE_LOG_ERROR(LOG_ASSETS, "Unexpected asset data type for vertex shader: %s", vertexShaderAssetName.c_str());
         return false;
     }
     
     auto spFragmentShaderAsset = pAssetStorage->FindFirstByName(fragmentShaderAssetName);
     if (!spFragmentShaderAsset)
     {
-        LOG(WARNING) << "Failed to find fragment shader asset by name: " << fragmentShaderAssetName;
+        RELEASE_LOG_WARNING(LOG_ASSETS, "Failed to find fragment shader asset by name: %s", fragmentShaderAssetName.c_str());
         return false;
     }
 
     auto pFragmentShaderTextData = dynamic_cast<sputter::assets::TextData*>(spFragmentShaderAsset.get());
     if (!pFragmentShaderTextData)
     {
-        LOG(ERROR) << "Unexpected asset data type for fragment shader: " << fragmentShaderAssetName;
+        RELEASE_LOG_ERROR(LOG_ASSETS, "Unexpected asset data type for fragment shader: %s", fragmentShaderAssetName.c_str());
         return false;
     }
 
@@ -67,14 +68,14 @@ ShaderStorage::AddShader(
     const std::string vertexShaderSource = vertexText.TextStream.str();
     if (vertexShaderSource.empty())
     {
-        LOG(ERROR) << "Could not load vertex shader for " << shaderName << std::endl;
+        RELEASE_LOG_ERROR(LOG_ASSETS, "Could not load vertex shader for %s", shaderName.c_str());
         return false;
     }
 
     const std::string fragmentShaderSource = fragmentText.TextStream.str();
     if (fragmentShaderSource.empty())
     {
-        LOG(ERROR) << "Could not load fragment shader for " << shaderName << std::endl;
+        RELEASE_LOG_ERROR(LOG_ASSETS, "Could not load fragment shader for %s", shaderName.c_str());
         return false;
     }
 
@@ -87,7 +88,7 @@ ShaderStorage::AddShader(
     const uint32_t programHandle = glCreateProgram();
     if (!LinkShaders(programHandle, vertexShaderHandle, fragmentShaderHandle))
     {
-        LOG(ERROR) << "Failed to link shader " << shaderName;
+        RELEASE_LOG_ERROR(LOG_ASSETS, "Failed to link shader %s", shaderName.c_str());
         return false;
     }
 
@@ -97,7 +98,7 @@ ShaderStorage::AddShader(
     Shader* pShader = new Shader(programHandle, attributes, uniforms, shaderName);
     if (!pShader)
     {
-        LOG(ERROR) << "Failed to allocate shader. OOM?" << std::endl;
+        RELEASE_LOG_ERROR_(LOG_ASSETS, "Failed to allocate shader. OOM?");
         return false;
     }
 
@@ -156,8 +157,7 @@ uint32_t ShaderStorage::CompileVertexShader(const std::string& source)
     {
         char infoLog[512];
         glGetShaderInfoLog(shaderHandle, sizeof(infoLog), NULL, infoLog);
-        LOG(ERROR) << "Vertex shader compilation failed\n"
-                   << "\t" << infoLog << std::endl;
+        RELEASE_LOG_ERROR(LOG_ASSETS, "Vertex shader compilation failed\n\t%s", infoLog);
         glDeleteProgram(shaderHandle);
         return 0;
     }
@@ -178,8 +178,7 @@ uint32_t ShaderStorage::CompileFragmentShader(const std::string& source)
     {
         char infoLog[512];
         glGetShaderInfoLog(shaderHandle, sizeof(infoLog), NULL, infoLog);
-        LOG(ERROR) << "Fragment shader compilation failed\n"
-                   << "\t" << infoLog << std::endl;
+        RELEASE_LOG_ERROR(LOG_ASSETS, "Vertex shader compilation failed\n\t%s", infoLog);
         glDeleteProgram(shaderHandle);
         return 0;
     }
@@ -191,7 +190,7 @@ bool ShaderStorage::LinkShaders(uint32_t programHandle, uint32_t vertexShaderHan
 {
     if (vertexShaderHandle <= 0 || fragmentShaderHandle <= 0)
     {
-        LOG(ERROR) << "Invalid shader handle passed to LinkShaders()" << std::endl;
+        RELEASE_LOG_ERROR_(LOG_ASSETS, "Invalid shader handle passed to LinkShaders()");
         return false;
     }
 
@@ -205,7 +204,7 @@ bool ShaderStorage::LinkShaders(uint32_t programHandle, uint32_t vertexShaderHan
     {
         char infoLog[512];
         glGetProgramInfoLog(programHandle, sizeof(infoLog), NULL, infoLog);
-        LOG(ERROR) << "Failed to link shader" << "\t" << infoLog << std::endl;
+        RELEASE_LOG_ERROR(LOG_ASSETS, "Failed to link shader \t%s", infoLog);
         glDeleteShader(vertexShaderHandle);
         glDeleteShader(fragmentShaderHandle);
         return false;
@@ -305,7 +304,7 @@ bool ShaderStorage::AddResource(Shader* pShader)
 
     if (FindShaderByName(pShader->GetName()))
     {
-        LOG(WARNING) << "Attempted to add duplicate shader: " << pShader->GetName();
+        RELEASE_LOG_WARNING(LOG_ASSETS, "Attempted to add duplicate shader: %s", pShader->GetName().c_str());
         return false;
     }
      
@@ -325,7 +324,9 @@ bool ShaderStorage::ReleaseResource(Shader* pShader)
         return true;
     }
         
-    LOG(WARNING) << "Failed to remove shader " << pShader->GetName() 
-                 << " from storage: could not locate in storage.";
+    RELEASE_LOG_WARNING(
+        LOG_ASSETS,
+         "Failed to remove shader %s from storage: could not locate in storage",
+         pShader->GetName().c_str());
     return false;
 }

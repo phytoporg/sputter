@@ -17,6 +17,9 @@ namespace sputter { namespace log {
     enum class LogZone 
     {
         Default = 0,
+        Game,
+        Assets,
+        UI,
         Max
     };
 
@@ -80,3 +83,6 @@ namespace sputter { namespace log {
     sputter::log::Log(Zone, sputter::log::LogVerbosity::VeryVerbose, String)
 
 #define LOG_DEFAULT sputter::log::LogZone::Default
+#define LOG_GAME sputter::log::LogZone::Game
+#define LOG_ASSETS sputter::log::LogZone::Assets
+#define LOG_UI sputter::log::LogZone::UI

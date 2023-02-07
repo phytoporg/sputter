@@ -8,6 +8,8 @@
 
 #include <sputter/core/serializer.h>
 
+#include <sputter/log/log.h>
+
 #include <sputter/render/window.h>
 #include <sputter/render/fontstorage.h>
 #include <sputter/render/volumetrictext.h>
@@ -158,7 +160,7 @@ void GameScene::CreateEndOfGameModalPopup()
 {
     if (m_pModalPopup)
     {
-        LOG(WARNING) << "Modal popup already exists";
+        RELEASE_LOG_WARNING_(LOG_GAME, "Modal popup already exists");
         return;
     }
 

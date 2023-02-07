@@ -1,6 +1,7 @@
 #include "pngreader.h"
 #include "imagedata.h"
 #include <sputter/system/system.h>
+#include <sputter/log/log.h>
 
 #include <cstdlib>
 #include <cstdio>
@@ -22,7 +23,7 @@ namespace sputter { namespace assets {
                 STBI_rgb_alpha);
         if (!pData->pBytes)
         {
-            LOG(WARNING) << "Failed to load image: " << imagePath;
+            RELEASE_LOG_WARNING(LOG_ASSETS, "Failed to load image: %s", imagePath.c_str());
             return false;
         }
 
