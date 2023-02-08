@@ -8,8 +8,7 @@ using namespace sputter;
 using namespace sputter::log;
 
 static LogVerbosity s_CurrentVerbosity = kDefaultLogVerbosity;
-static const char* s_pLogFilePath = nullptr;
-static bool ZoneMask[static_cast<uint8_t>(LogZone::Max)] = {true};
+static bool ZoneMask[static_cast<uint8_t>(LogZone::Max)] = {};
 static FILE* s_pFile = stderr;
 
 namespace 
@@ -19,7 +18,12 @@ namespace
         const uint8_t Index = static_cast<uint8_t>(zone);
         static const char* LUT[] = { 
             "Default",
-            "Game"
+            "Game",
+            "Assets",
+            "UI",
+            "Font",
+            "Mesh",
+            "Render",
         };
 
         return LUT[Index];
@@ -33,8 +37,17 @@ void sputter::log::SetLogVerbosity(LogVerbosity newLogVerbosity)
 
 bool sputter::log::SetLogFile(const char* pLogFilePath)
 {
-    s_pLogFilePath = pLogFilePath;
-    return false;
+    if (s_pFile != stderr && s_pFile != stdout)
+    {
+        fclose(s_pFile);
+        s_pFile = nullptr;
+    }
+
+    FILE* pFile = fopen(pLogFilePath, "w");
+    if (!pFile) { return false; }
+
+    s_pFile = pFile;
+    return true;
 }
 
 void sputter::log::DisableZone(LogZone zone)

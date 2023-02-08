@@ -3,6 +3,7 @@
 #include <sputter/log/log.h>
 #include <stdexcept>
 
+
 namespace sputter { namespace system {
     void 
     InitializeLogging(
@@ -12,6 +13,17 @@ namespace sputter { namespace system {
         if (pLogFile)
         {
             sputter::log::SetLogFile(pLogFile);
+        }
+
+        // Enable all zones by default
+        using namespace sputter::log;
+        LogZone logZone = static_cast<LogZone>(0);
+        while (logZone < LogZone::Max)
+        {
+            EnableZone(logZone);
+
+            // Enum classes are gross
+            logZone = static_cast<LogZone>(static_cast<int>(logZone) + 1);
         }
     }
 
