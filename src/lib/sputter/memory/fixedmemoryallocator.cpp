@@ -27,7 +27,7 @@ namespace sputter { namespace memory {
     {
         if ((m_pNext + size) > (m_pBase + m_regionSize))
         {
-            RELEASE_LOG_WARNING(LOG_DEFAULT, "ReserveNext FMA - Out of memory %s", allocatorName.c_str());
+            RELEASE_LOGLINE_WARNING(LOG_DEFAULT, "ReserveNext FMA - Out of memory %s", allocatorName.c_str());
             return false;
         }
 
@@ -41,7 +41,7 @@ namespace sputter { namespace memory {
     {
         if ((m_pNext + size) > (m_pBase + m_regionSize))
         {
-            RELEASE_LOG_WARNING_(LOG_DEFAULT, "ReserveNext FMA - Out of memory %s");
+            RELEASE_LOGLINE_WARNING(LOG_DEFAULT, "ReserveNext FMA - Out of memory %s");
             return nullptr;
         }
 

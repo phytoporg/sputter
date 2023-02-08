@@ -23,7 +23,7 @@ namespace sputter { namespace assets {
                 STBI_rgb_alpha);
         if (!pData->pBytes)
         {
-            RELEASE_LOG_WARNING(LOG_ASSETS, "Failed to load image: %s", imagePath.c_str());
+            RELEASE_LOGLINE_WARNING(LOG_ASSETS, "Failed to load image: %s", imagePath.c_str());
             return false;
         }
 

@@ -37,6 +37,7 @@ namespace sputter { namespace log {
     void EnableZone(LogZone zone);
     bool GetIsZoneEnabled(LogZone zone);
 
+    void LogLine(LogZone zone, LogVerbosity verbosity, const char* pFormatString, ...);
     void Log(LogZone zone, LogVerbosity verbosity, const char* pFormatString, ...);
 }}
 
@@ -54,36 +55,53 @@ namespace sputter { namespace log {
         sputter::log::Log(Zone, sputter::log::LogVerbosity::Verbose, String, __VA_ARGS__);
     #define DEBUG_LOG_VERYVERBOSE(Zone, String, ...) \
         sputter::log::Log(Zone, sputter::log::LogVerbosity::VeryVerbose, String, __VA_ARGS__);
+
+    #define DEBUG_LOGLINE_ERROR(Zone, String, ...) \
+        sputter::log::Log(Zone, sputter::log::LogVerbosity::Error, String, __VA_ARGS__);
+    #define DEBUG_LOGLINE_WARNING(Zone, String, ...) \
+        sputter::log::Log(Zone, sputter::log::LogVerbosity::Warning, String, __VA_ARGS__);
+    #define DEBUG_LOGLINE_INFO(Zone, String, ...) \
+        sputter::log::Log(Zone, sputter::log::LogVerbosity::Info, String, __VA_ARGS__);
+    #define DEBUG_LOGLINE_VERBOSE(Zone, String, ...) \
+        sputter::log::Log(Zone, sputter::log::LogVerbosity::Verbose, String, __VA_ARGS__);
+    #define DEBUG_LOGLINE_VERYVERBOSE(Zone, String, ...) \
+        sputter::log::Log(Zone, sputter::log::LogVerbosity::VeryVerbose, String, __VA_ARGS__);
 #else
     #define DEBUG_LOG_ERROR(Zone, String, ...) 
     #define DEBUG_LOG_WARNING(Zone, String, ...) 
     #define DEBUG_LOG_INFO(Zone, String, ...) 
     #define DEBUG_LOG_VERBOSE(Zone, String, ...) 
     #define DEBUG_LOG_VERYVERBOSE(Zone, String, ...) 
+
+    #define DEBUG_LOGLINE_ERROR(Zone, String, ...) 
+    #define DEBUG_LOGLINE_WARNING(Zone, String, ...) 
+    #define DEBUG_LOGLINE_INFO(Zone, String, ...) 
+    #define DEBUG_LOGLINE_VERBOSE(Zone, String, ...)
+    #define DEBUG_LOGLINE_VERYVERBOSE(Zone, String, ...)
 #endif
 
 // Release
 #define RELEASE_LOG_ERROR(Zone, String, ...) \
-    sputter::log::Log(Zone, sputter::log::LogVerbosity::Error, String, __VA_ARGS__)
+    sputter::log::Log(Zone, sputter::log::LogVerbosity::Error, String __VA_OPT__(,) __VA_ARGS__)
 #define RELEASE_LOG_WARNING(Zone, String, ...) \
-    sputter::log::Log(Zone, sputter::log::LogVerbosity::Warning, String, __VA_ARGS__)
+    sputter::log::Log(Zone, sputter::log::LogVerbosity::Warning, String __VA_OPT__(,) __VA_ARGS__)
 #define RELEASE_LOG_INFO(Zone, String, ...) \
-    sputter::log::Log(Zone, sputter::log::LogVerbosity::Info, String, __VA_ARGS__)
+    sputter::log::Log(Zone, sputter::log::LogVerbosity::Info, String __VA_OPT__(,) __VA_ARGS__)
 #define RELEASE_LOG_VERBOSE(Zone, String, ...) \
-    sputter::log::Log(Zone, sputter::log::LogVerbosity::Verbose, String, __VA_ARGS__)
+    sputter::log::Log(Zone, sputter::log::LogVerbosity::Verbose, String __VA_OPT__(,) __VA_ARGS__)
 #define RELEASE_LOG_VERYVERBOSE(Zone, String, ...) \
-    sputter::log::Log(Zone, sputter::log::LogVerbosity::VeryVerbose, String, __VA_ARGS__)
+    sputter::log::Log(Zone, sputter::log::LogVerbosity::VeryVerbose, String __VA_OPT__(,) __VA_ARGS__)
 
-#define RELEASE_LOG_ERROR_(Zone, String, ...) \
-    sputter::log::Log(Zone, sputter::log::LogVerbosity::Error, String)
-#define RELEASE_LOG_WARNING_(Zone, String, ...) \
-    sputter::log::Log(Zone, sputter::log::LogVerbosity::Warning, String)
-#define RELEASE_LOG_INFO_(Zone, String, ...) \
-    sputter::log::Log(Zone, sputter::log::LogVerbosity::Info, String)
-#define RELEASE_LOG_VERBOSE_(Zone, String, ...) \
-    sputter::log::Log(Zone, sputter::log::LogVerbosity::Verbose, String)
-#define RELEASE_LOG_VERYVERBOSE_(Zone, String, ...) \
-    sputter::log::Log(Zone, sputter::log::LogVerbosity::VeryVerbose, String)
+#define RELEASE_LOGLINE_ERROR(Zone, String, ...) \
+    sputter::log::LogLine(Zone, sputter::log::LogVerbosity::Error, String __VA_OPT__(,) __VA_ARGS__)
+#define RELEASE_LOGLINE_WARNING(Zone, String, ...) \
+    sputter::log::LogLine(Zone, sputter::log::LogVerbosity::Warning, String __VA_OPT__(,) __VA_ARGS__)
+#define RELEASE_LOGLINE_INFO(Zone, String, ...) \
+    sputter::log::LogLine(Zone, sputter::log::LogVerbosity::Info, String __VA_OPT__(,) __VA_ARGS__)
+#define RELEASE_LOGLINE_VERBOSE(Zone, String, ...) \
+    sputter::log::LogLine(Zone, sputter::log::LogVerbosity::Verbose, String __VA_OPT__(,) __VA_ARGS__)
+#define RELEASE_LOGLINE_VERYVERBOSE(Zone, String, ...) \
+    sputter::log::LogLine(Zone, sputter::log::LogVerbosity::VeryVerbose, String __VA_OPT__(,) __VA_ARGS__)
 
 #define LOG_DEFAULT sputter::log::LogZone::Default
 #define LOG_GAME sputter::log::LogZone::Game

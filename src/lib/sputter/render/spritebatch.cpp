@@ -82,7 +82,7 @@ namespace sputter { namespace render {
     {
         if (sprite.GetTexturePtr()->GetName() != m_spTexture->GetName())
         {
-            RELEASE_LOG_WARNING(
+            RELEASE_LOGLINE_WARNING(
                 LOG_RENDER,
                  "Mismatch sprite texture: %s, curren batch is using %s",
                  sprite.GetTexturePtr()->GetName().c_str(),
@@ -93,7 +93,7 @@ namespace sputter { namespace render {
         const size_t CurrentSpriteCount = m_verticesVector.size() / 4;
         if (CurrentSpriteCount > m_maxSpriteCount)
         {
-            RELEASE_LOG_WARNING(
+            RELEASE_LOGLINE_WARNING(
                 LOG_RENDER,
                 "Sprite batch size (%u) has grown beyond capacity (%u)",
                 CurrentSpriteCount,

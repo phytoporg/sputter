@@ -270,7 +270,7 @@ void VolumetricTextRenderer::DrawTextCentered(int32_t xLeft, int32_t xRight, int
 {
     if (xRight <= xLeft)
     {
-        RELEASE_LOG_ERROR_(LOG_FONT, "DrawTextCenteredHorizontal: xRight must be larger than xLeft");
+        RELEASE_LOGLINE_ERROR(LOG_FONT, "DrawTextCenteredHorizontal: xRight must be larger than xLeft");
         return;
     }
 
@@ -298,7 +298,7 @@ void VolumetricTextRenderer::DrawTextCentered(int32_t xLeft, int32_t xRight, int
     const int32_t xSpan = xRight - xLeft;
     if (xSpan < currentGlyphOffsetX * size)
     {
-        RELEASE_LOG_ERROR_(LOG_FONT, "DrawTextCenteredHorizontal: Text is too large to fit between xLeft and xRight");
+        RELEASE_LOGLINE_ERROR(LOG_FONT, "DrawTextCenteredHorizontal: Text is too large to fit between xLeft and xRight");
         return;
     }
 

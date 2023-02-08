@@ -195,21 +195,21 @@ bool Mesh::SetShader(ShaderPtr spShader)
     m_ModelUniformHandle = spShader->GetUniform("model");
     if (m_ModelUniformHandle == Shader::kInvalidHandleValue)
     {
-        RELEASE_LOG_ERROR(LOG_MESH, "Could not retrieve expected uniform 'model' from shader '%s'", spShader->GetName().c_str());
+        RELEASE_LOGLINE_ERROR(LOG_MESH, "Could not retrieve expected uniform 'model' from shader '%s'", spShader->GetName().c_str());
         return false;
     }
 
     m_ViewUniformHandle = spShader->GetUniform("view");
     if (m_ViewUniformHandle == Shader::kInvalidHandleValue)
     {
-        RELEASE_LOG_ERROR(LOG_MESH, "Could not retrieve expected uniform 'view' from shader '%s'", spShader->GetName().c_str());
+        RELEASE_LOGLINE_ERROR(LOG_MESH, "Could not retrieve expected uniform 'view' from shader '%s'", spShader->GetName().c_str());
         return false;
     }
 
     m_ProjUniformHandle = spShader->GetUniform("projection");
     if (m_ProjUniformHandle == Shader::kInvalidHandleValue)
     {
-        RELEASE_LOG_ERROR(LOG_MESH, "Could not retrieve expected uniform 'projection' from shader '%s'", spShader->GetName().c_str());
+        RELEASE_LOGLINE_ERROR(LOG_MESH, "Could not retrieve expected uniform 'projection' from shader '%s'", spShader->GetName().c_str());
         return false;
     }
 
@@ -244,7 +244,7 @@ void Mesh::Draw(const glm::mat4& projMatrix, const glm::mat4& viewMatrix)
          m_ViewUniformHandle  == Shader::kInvalidHandleValue ||
          m_ProjUniformHandle  == Shader::kInvalidHandleValue)
     {
-        RELEASE_LOG_WARNING_(LOG_MESH, "Attempting to render mesh with an improper or invalid shader.");
+        RELEASE_LOGLINE_WARNING(LOG_MESH, "Attempting to render mesh with an improper or invalid shader.");
         return;
     }
 
@@ -264,7 +264,7 @@ void Mesh::Draw(const glm::mat4& projMatrix, const glm::mat4& viewMatrix)
         }
         else
         {
-            RELEASE_LOG_ERROR(
+            RELEASE_LOGLINE_ERROR(
                 LOG_MESH,
                  "Failed to retrieve a location for uniform named '%s' in shader '%s'",
                  uniformValue.Name, m_spShader->GetName().c_str());

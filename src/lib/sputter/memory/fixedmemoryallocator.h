@@ -21,7 +21,7 @@ namespace sputter { namespace memory {
         {
             if ((m_pNext + sizeof(T)) > (m_pBase + m_regionSize))
             {
-                RELEASE_LOG_WARNING(LOG_DEFAULT, "Create() - Out of memory: %s", m_allocatorName.c_str());
+                RELEASE_LOGLINE_WARNING(LOG_DEFAULT, "Create() - Out of memory: %s", m_allocatorName.c_str());
                 return nullptr;
             }
 
@@ -42,7 +42,7 @@ namespace sputter { namespace memory {
         {
             if ((m_pNext + sizeof(T) * count) > (m_pBase + m_regionSize))
             {
-                RELEASE_LOG_WARNING(LOG_DEFAULT, "ReserveNext() - Out of memory: %s", m_allocatorName.c_str());
+                RELEASE_LOGLINE_WARNING(LOG_DEFAULT, "ReserveNext() - Out of memory: %s", m_allocatorName.c_str());
                 return nullptr;
             }
 

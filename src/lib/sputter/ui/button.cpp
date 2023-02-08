@@ -48,7 +48,7 @@ void Button::HandleEvent(uint8_t eventCodeParameter, void* pEventData)
         const Key KeyPressed = *static_cast<Key*>(pEventData);
         if (KeyPressed <= Key::Invalid || KeyPressed >= Key::KeyMax)
         {
-            RELEASE_LOG_ERROR_(LOG_UI, "Unhandled key press value made it to the button handler.");
+            RELEASE_LOGLINE_ERROR(LOG_UI, "Unhandled key press value made it to the button handler.");
             return;
         }
 
@@ -86,7 +86,7 @@ void Button::HandleEvent(uint8_t eventCodeParameter, void* pEventData)
     {
         if (m_buttonState != ButtonState::Idle)
         {
-            RELEASE_LOG_ERROR_(LOG_UI, "Button received activation event while not idle");
+            RELEASE_LOGLINE_ERROR(LOG_UI, "Button received activation event while not idle");
             return;
         }
 
@@ -108,7 +108,7 @@ void Button::HandleEvent(uint8_t eventCodeParameter, void* pEventData)
     {
         if (m_buttonState != ButtonState::Down)
         {
-            RELEASE_LOG_ERROR_(LOG_UI, "Button received deactivation event while not held down");
+            RELEASE_LOGLINE_ERROR(LOG_UI, "Button received deactivation event while not held down");
             return;
         }
 

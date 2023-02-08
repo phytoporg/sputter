@@ -127,7 +127,7 @@ void Screen::HandleKeyEvent(int key, int action)
 
     if (keyEvent == EventCode::Invalid)
     {
-        RELEASE_LOG_ERROR(LOG_FONT, "Unexpected key action: 0x%x", keyEvent);
+        RELEASE_LOGLINE_ERROR(LOG_FONT, "Unexpected key action: 0x%x", keyEvent);
         return;
     }
 

@@ -34,14 +34,14 @@ SpriteSubsystem::SpriteSubsystem(
     auto pSpriteFragmentShader = dynamic_cast<assets::TextData*>(spSpriteFragmentShader.get());
     if (!pShaderStorage->AddShader(*pSpriteVertexShader, *pSpriteFragmentShader, "sprite_shader"))
     {
-        RELEASE_LOG_ERROR_(LOG_RENDER, "Could not add sprite shader to storage.");
+        RELEASE_LOGLINE_ERROR(LOG_RENDER, "Could not add sprite shader to storage.");
         return;
     }
 
     render::ShaderPtr spShader = pShaderStorage->FindShaderByName("sprite_shader");
     if (!spShader)
     {
-        RELEASE_LOG_ERROR_(LOG_RENDER, "Failed to find sprite_shader in shader storage");
+        RELEASE_LOGLINE_ERROR(LOG_RENDER, "Failed to find sprite_shader in shader storage");
         return;
     }
 

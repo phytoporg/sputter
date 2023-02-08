@@ -332,7 +332,7 @@ void GameInstance::OnCountdownTimerExpired(void* pUserData)
     {
         if (!pGameInstance->m_pTimerSystem->ClearTimer(pGameInstance->m_pGameState->CountdownTimerHandle))
         {
-            RELEASE_LOG_WARNING_(LOG_GAME, "Could not clearn countdown timer handle\n");
+            RELEASE_LOGLINE_WARNING(LOG_GAME, "Could not clear countdown timer handle\n");
         }
     }
 }

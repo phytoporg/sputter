@@ -45,20 +45,20 @@ TextureStorage::AddTextureFromImageAssetName(
     auto spImageAsset = pAssetStorage->FindFirstByName(imageAssetName);
     if (!spImageAsset)
     {
-        RELEASE_LOG_ERROR(LOG_ASSETS, "Could not find image asset %s for texture storage %s", imageAssetName.c_str(), textureName.c_str());
+        RELEASE_LOGLINE_ERROR(LOG_ASSETS, "Could not find image asset %s for texture storage %s", imageAssetName.c_str(), textureName.c_str());
         return false;
     }
 
     if (spImageAsset->GetType() != assets::AssetDataType::IMAGE_ASSET)
     {
-        RELEASE_LOG_ERROR(LOG_ASSETS, "Asset %s is not an image asset", imageAssetName.c_str());
+        RELEASE_LOGLINE_ERROR(LOG_ASSETS, "Asset %s is not an image asset", imageAssetName.c_str());
         return false;
     }
 
     auto pImageData = dynamic_cast<assets::ImageData*>(spImageAsset.get());
     if (!pImageData->pBytes)
     {
-        RELEASE_LOG_ERROR(LOG_ASSETS, "Image asset %s was loaded but has zero bytes!", imageAssetName.c_str());
+        RELEASE_LOGLINE_ERROR(LOG_ASSETS, "Image asset %s was loaded but has zero bytes!", imageAssetName.c_str());
         return false;
     }
 
@@ -76,7 +76,7 @@ TextureStorage::AddTexture(
     {
         // Not catastrophic, but may result in unexpected behaviors. Currently there are no use cases
         // where this is valid, but just keep a warning in case that ever changes.
-        RELEASE_LOG_WARNING(LOG_ASSETS, "Texture named '%s' has dimensions which are not a power of two.", textureName.c_str());
+        RELEASE_LOGLINE_WARNING(LOG_ASSETS, "Texture named '%s' has dimensions which are not a power of two.", textureName.c_str());
     }
 
     glActiveTexture(GL_TEXTURE0);
@@ -146,12 +146,12 @@ bool TextureStorage::AddResource(Texture* pTexture)
     if (!FindTextureByName(pTexture->GetName()))
     {
         m_storageVector.emplace_back(pTexture);
-        RELEASE_LOG_INFO(LOG_ASSETS, "Added texture to storage: %s", pTexture->GetName().c_str());
+        RELEASE_LOGLINE_INFO(LOG_ASSETS, "Added texture to storage: %s", pTexture->GetName().c_str());
         return true;
     }
     else
     {
-        RELEASE_LOG_WARNING(LOG_ASSETS, "Failed to add texture %s to storage: already exists.", pTexture->GetName().c_str());
+        RELEASE_LOGLINE_WARNING(LOG_ASSETS, "Failed to add texture %s to storage: already exists.", pTexture->GetName().c_str());
         return false;
     }
 }
@@ -168,6 +168,6 @@ bool TextureStorage::ReleaseResource(Texture* pTexture)
         return true;
     }
     
-    RELEASE_LOG_WARNING(LOG_ASSETS, "Failed to remove texture %s from storage: could not locate in storage.", pTexture->GetName().c_str());
+    RELEASE_LOGLINE_WARNING(LOG_ASSETS, "Failed to remove texture %s from storage: could not locate in storage.", pTexture->GetName().c_str());
     return false;
 }

@@ -80,7 +80,7 @@ namespace
         {
             // Locally crossing this segment from left-to-right
             (*pWindingNumber)--;
-            RELEASE_LOG_VERYVERBOSE(LOG_FONT, "CROSS: dy == 1, winding number = %d\n", int(*pWindingNumber));
+            RELEASE_LOGLINE_VERYVERBOSE(LOG_FONT, "CROSS: dy == 1, winding number = %d", int(*pWindingNumber));
         }
         else if (dY == 0 && dX == 1)
         {
@@ -94,7 +94,7 @@ namespace
         {
             // Locally crossing this segment from right-to-left
             (*pWindingNumber)++;
-            RELEASE_LOG_VERYVERBOSE(LOG_FONT, "CROSS: dy == -1, winding number = %d\n", int(*pWindingNumber));
+            RELEASE_LOGLINE_VERYVERBOSE(LOG_FONT, "CROSS: dy == -1, winding number = %d", int(*pWindingNumber));
         }
         else
         {

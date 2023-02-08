@@ -29,7 +29,7 @@ namespace sputter { namespace system {
 
     void LogAndFail(const std::string& errorString)
     {
-        RELEASE_LOG_ERROR_(LOG_DEFAULT, errorString.c_str());
+        RELEASE_LOG_ERROR(LOG_DEFAULT, errorString.c_str());
         throw std::runtime_error(errorString);
     }
 }}

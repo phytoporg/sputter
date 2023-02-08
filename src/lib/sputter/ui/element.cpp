@@ -133,7 +133,7 @@ bool Element::AddChild(Element* pChildElement)
 {
     if (m_numChildren >= kMaxChildren)
     {
-        RELEASE_LOG_WARNING_(LOG_UI, "Cannot add child element, already at maximum number of children.");
+        RELEASE_LOGLINE_WARNING(LOG_UI, "Cannot add child element, already at maximum number of children.");
         return false;
     }
 
@@ -142,7 +142,7 @@ bool Element::AddChild(Element* pChildElement)
     {
         if (m_children[i] == pChildElement)
         {
-            RELEASE_LOG_WARNING_(LOG_UI, "Attempting to add duplicate child element");
+            RELEASE_LOGLINE_WARNING(LOG_UI, "Attempting to add duplicate child element");
             return false;
         }
     }
@@ -160,7 +160,7 @@ bool Element::RemoveChild(Element* pChildElement)
 {
     if (m_numChildren <= 0)
     {
-        RELEASE_LOG_WARNING_(LOG_UI, "Attempting to remove child from element with no children");
+        RELEASE_LOGLINE_WARNING(LOG_UI, "Attempting to remove child from element with no children");
         return false;
     }
 
@@ -176,7 +176,7 @@ bool Element::RemoveChild(Element* pChildElement)
 
     if (elementIndex < 0)
     {
-        RELEASE_LOG_WARNING_(LOG_UI, "Could not find matching child element");
+        RELEASE_LOGLINE_WARNING(LOG_UI, "Could not find matching child element");
         return false;
     }
 

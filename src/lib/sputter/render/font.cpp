@@ -40,7 +40,7 @@ bool Font::GetGlyph(char character, Glyph* pOut)
         {
             if (characterIndex > m_glyphCache.size())
             {
-                RELEASE_LOG_WARNING_(LOG_FONT, "Character index is out of bounds for the glyph cache.");
+                RELEASE_LOGLINE_WARNING(LOG_FONT, "Character index is out of bounds for the glyph cache.");
                 m_glyphCache.resize(characterIndex);
             }
 

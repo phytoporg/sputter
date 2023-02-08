@@ -139,7 +139,7 @@ namespace {
             if (currentCoordinate < coordinateMin || 
                 currentCoordinate > coordinateMax)
             {
-                RELEASE_LOG_ERROR(LOG_FONT, "Glyph coordinates out of bounds (%hu)", currentCoordinate);
+                RELEASE_LOGLINE_ERROR(LOG_FONT, "Glyph coordinates out of bounds (%hu)", currentCoordinate);
                 return false;
             }
 
@@ -176,11 +176,11 @@ namespace {
             {
                 DEBUG_LOG_VERBOSE(LOG_FONT, "%s", (pPixelGlyph[y * width + x] & 1 ? "1" : "0"));
             }
-            DEBUG_LOG_VERBOSE_(LOG_FONT, "\n");
+            DEBUG_LOG_VERBOSE(LOG_FONT, "\n");
         }
 
         // Flush?
-        DEBUG_LOG_VERBOSE_(LOG_FONT, "\n");
+        DEBUG_LOG_VERBOSE(LOG_FONT, "\n");
 #endif
     }
 }
@@ -202,7 +202,7 @@ TrueTypeParser::TrueTypeParser(const assets::BinaryData& dataToParse)
     const uint32_t ScalerType = SwapEndianness32(pOffsetSubtable->ScalerType);
     if (ScalerType != 0x00010000)
     {
-        RELEASE_LOG_ERROR(LOG_FONT, "TTF: Unsupported scaler type: 0x%x", ScalerType);
+        RELEASE_LOGLINE_ERROR(LOG_FONT, "TTF: Unsupported scaler type: 0x%x", ScalerType);
         return;
     }
 
@@ -225,195 +225,195 @@ TrueTypeParser::TrueTypeParser(const assets::BinaryData& dataToParse)
         {
             case FOURCC("EBDT"):
             {
-                RELEASE_LOG_INFO_(LOG_FONT, "Locating EBDT...");
+                RELEASE_LOG_INFO(LOG_FONT, "Locating EBDT...");
                 m_pEbdtHeader = reinterpret_cast<const EBDT_Header*>(pDataStart + SwapEndianness32(pTableDirectory->Offset));
 
                 // Straight up hardcoded in the spec
                 if (SwapEndianness16(m_pEbdtHeader->MajorVersion) != 2 ||
                     SwapEndianness16(m_pEbdtHeader->MinorVersion) != 0)
                 {
-                    RELEASE_LOG_ERROR_(LOG_FONT, "EBDT or directory entry is malformed");
+                    RELEASE_LOGLINE_ERROR(LOG_FONT, "EBDT or directory entry is malformed");
                     return;
                 }
-                RELEASE_LOG_INFO_(LOG_FONT, "found");
+                RELEASE_LOG_INFO(LOG_FONT, "found");
             }
             break;
             case FOURCC("EBLC"):
             {
-                RELEASE_LOG_INFO_(LOG_FONT, "Locating EBLC...");
+                RELEASE_LOG_INFO(LOG_FONT, "Locating EBLC...");
                 m_pEblcHeader = reinterpret_cast<const EBLC_Header*>(pDataStart + SwapEndianness32(pTableDirectory->Offset));
 
                 // Straight up hardcoded in the spec
                 if (SwapEndianness16(m_pEblcHeader->MajorVersion) != 2 ||
                     SwapEndianness16(m_pEblcHeader->MinorVersion) != 0)
                 {
-                    RELEASE_LOG_ERROR_(LOG_FONT, "EBLC or directory entry is malformed");
+                    RELEASE_LOGLINE_ERROR(LOG_FONT, "EBLC or directory entry is malformed");
                     return;
                 }
-                RELEASE_LOG_INFO_(LOG_FONT, "found");
+                RELEASE_LOG_INFO(LOG_FONT, "found");
             }
             break;
             case FOURCC("EBSC"):
             {
-                RELEASE_LOG_INFO_(LOG_FONT, "Locating EBSC...");
+                RELEASE_LOG_INFO(LOG_FONT, "Locating EBSC...");
                 m_pEbscHeader = reinterpret_cast<const EBSC_Header*>(pDataStart + SwapEndianness32(pTableDirectory->Offset));
 
                 // Straight up hardcoded in the spec
                 if (SwapEndianness16(m_pEbscHeader->MajorVersion) != 2 ||
                     SwapEndianness16(m_pEbscHeader->MinorVersion) != 0)
                 {
-                    RELEASE_LOG_ERROR_(LOG_FONT, "EBSC or directory entry is malformed");
+                    RELEASE_LOGLINE_ERROR(LOG_FONT, "EBSC or directory entry is malformed");
                     return;
                 }
-                RELEASE_LOG_INFO_(LOG_FONT, "found");
+                RELEASE_LOG_INFO(LOG_FONT, "found");
             }
             break;
             case FOURCC("GDEF"):
             {
                 // Don't need attachment points or any such complexity for our purposes.
-                RELEASE_LOG_INFO_(LOG_FONT, "GDEF in table directory. Skipping.");
+                RELEASE_LOGLINE_INFO(LOG_FONT, "GDEF in table directory. Skipping.");
             }
             break;
             case FOURCC("GPOS"):
             {
                 // We support monospace fonts only, no need for this table.
-                RELEASE_LOG_INFO_(LOG_FONT, "GPOS in table directory. Skipping.");
+                RELEASE_LOGLINE_INFO(LOG_FONT, "GPOS in table directory. Skipping.");
             }
             break;
             case FOURCC("GSUB"):
             {
                 // For script-based glyphs. Skip!
-                RELEASE_LOG_INFO_(LOG_FONT, "GSUB in table directory. Skipping.");
+                RELEASE_LOGLINE_INFO(LOG_FONT, "GSUB in table directory. Skipping.");
             }
             break;
             case FOURCC("OS/2"):
             {
                 // No support for weighting characters. Skip.
-                RELEASE_LOG_INFO_(LOG_FONT, "OS/2 in table directory. Skipping.");
+                RELEASE_LOGLINE_INFO(LOG_FONT, "OS/2 in table directory. Skipping.");
             }
             break;
             case FOURCC("VDMX"):
             {
                 // Still no support for weighting characters. Skip.
-                RELEASE_LOG_INFO_(LOG_FONT, "VDMX in table directory. Skipping.");
+                RELEASE_LOGLINE_INFO(LOG_FONT, "VDMX in table directory. Skipping.");
             }
             break;
             case FOURCC("cmap"):
             {
-                RELEASE_LOG_INFO_(LOG_FONT, "Locating cmap...");
+                RELEASE_LOG_INFO(LOG_FONT, "Locating cmap...");
                 m_pCmapHeader = reinterpret_cast<const CMAP_Header*>(pDataStart + SwapEndianness32(pTableDirectory->Offset));
 
                 // Straight up hardcoded in the spec
                 if (SwapEndianness16(m_pCmapHeader->Version) != 0)
                 {
-                    RELEASE_LOG_ERROR_(LOG_FONT, "cmap or directory entry is malformed");
+                    RELEASE_LOGLINE_ERROR(LOG_FONT, "cmap or directory entry is malformed");
                     return;
                 }
 
-                RELEASE_LOG_INFO_(LOG_FONT, "found");
+                RELEASE_LOG_INFO(LOG_FONT, "found");
             }
             break;
             case FOURCC("gasp"):
             {
                 // We're strictly rendering binary glyphs.
-                RELEASE_LOG_INFO_(LOG_FONT, "gasp in table directory. Skipping.");
+                RELEASE_LOGLINE_INFO(LOG_FONT, "gasp in table directory. Skipping.");
             }
             break;
             case FOURCC("glyf"):
             {
-                RELEASE_LOG_INFO_(LOG_FONT, "Locating glyf...");
+                RELEASE_LOG_INFO(LOG_FONT, "Locating glyf...");
                 m_pFirstGlyphHeader = reinterpret_cast<const GLYPH_Header*>(pDataStart + SwapEndianness32(pTableDirectory->Offset));
-                RELEASE_LOG_INFO_(LOG_FONT, "found.");
+                RELEASE_LOG_INFO(LOG_FONT, "found.");
             }
             break;
             case FOURCC("head"):
             {
-                RELEASE_LOG_INFO_(LOG_FONT, "Locating head...");
+                RELEASE_LOG_INFO(LOG_FONT, "Locating head...");
                 m_pHeadHeader = reinterpret_cast<const HEAD_Header*>(pDataStart + SwapEndianness32(pTableDirectory->Offset));
                 if (SwapEndianness16(m_pHeadHeader->MajorVersion) != 1 ||
                     SwapEndianness16(m_pHeadHeader->MinorVersion) != 0 ||
                     SwapEndianness32(m_pHeadHeader->MagicNumber)  != 0x5F0F3CF5)
                 {
-                    RELEASE_LOG_ERROR_(LOG_FONT, "head or directory entry is malformed");
+                    RELEASE_LOGLINE_ERROR(LOG_FONT, "head or directory entry is malformed");
                     return;
                 }
 
-                RELEASE_LOG_INFO_(LOG_FONT, "found");
+                RELEASE_LOG_INFO(LOG_FONT, "found");
             }
             break;
             case FOURCC("hhea"):
             {
-                RELEASE_LOG_INFO_(LOG_FONT, "Locating hhea...");
+                RELEASE_LOG_INFO(LOG_FONT, "Locating hhea...");
                 m_pHheaHeader = reinterpret_cast<const HHEA_Header*>(
                         pDataStart + SwapEndianness32(pTableDirectory->Offset));
                 if (SwapEndianness32(m_pHheaHeader->Version) != 0x00010000)
                 {
-                    RELEASE_LOG_ERROR_(LOG_FONT, "hhea or directory entry is malformed");
+                    RELEASE_LOGLINE_ERROR(LOG_FONT, "hhea or directory entry is malformed");
                     return;
                 }
                 
-                RELEASE_LOG_INFO_(LOG_FONT, "found.");
+                RELEASE_LOG_INFO(LOG_FONT, "found.");
             }
             case FOURCC("vhea"):
             {
-                RELEASE_LOG_INFO_(LOG_FONT, "Locating vhea...");
+                RELEASE_LOG_INFO(LOG_FONT, "Locating vhea...");
                 m_pVheaHeader = reinterpret_cast<const VHEA_Header*>(
                         pDataStart + SwapEndianness32(pTableDirectory->Offset));
                 if (SwapEndianness32(m_pVheaHeader->Version) != 0x00010000)
                 {
-                    RELEASE_LOG_ERROR_(LOG_FONT, "vhea or directory entry is malformed");
+                    RELEASE_LOGLINE_ERROR(LOG_FONT, "vhea or directory entry is malformed");
                     return;
                 }
                 
-                RELEASE_LOG_INFO_(LOG_FONT, "found");
+                RELEASE_LOG_INFO(LOG_FONT, "found");
             }
             break;
             case FOURCC("hmtx"):
             {
-                RELEASE_LOG_INFO_(LOG_FONT, "Locating hmtx...");
+                RELEASE_LOG_INFO(LOG_FONT, "Locating hmtx...");
                 m_pHmtx = reinterpret_cast<const HMTX*>(
                         pDataStart + SwapEndianness32(pTableDirectory->Offset));
-                RELEASE_LOG_INFO_(LOG_FONT, "found.");
+                RELEASE_LOG_INFO(LOG_FONT, "found.");
             }
             case FOURCC("vmtx"):
             {
-                RELEASE_LOG_INFO_(LOG_FONT, "Locating vmtx...");
+                RELEASE_LOG_INFO(LOG_FONT, "Locating vmtx...");
                 m_pVmtx = reinterpret_cast<const VMTX*>(
                         pDataStart + SwapEndianness32(pTableDirectory->Offset));
-                RELEASE_LOG_INFO_(LOG_FONT, "found.");
+                RELEASE_LOG_INFO(LOG_FONT, "found.");
             }
             break;
             case FOURCC("loca"):
             {
-                RELEASE_LOG_INFO_(LOG_FONT, "Locating loca table...");
+                RELEASE_LOG_INFO(LOG_FONT, "Locating loca table...");
                 m_pLocaHeader = reinterpret_cast<const LOCA_Header*>(pDataStart + SwapEndianness32(pTableDirectory->Offset));
-                RELEASE_LOG_INFO_(LOG_FONT, "found.");
+                RELEASE_LOG_INFO(LOG_FONT, "found.");
             }
             break;
             case FOURCC("maxp"):
             {
-                RELEASE_LOG_INFO_(LOG_FONT, "Locating maxp...");
+                RELEASE_LOG_INFO(LOG_FONT, "Locating maxp...");
                 m_pMaxpHeader = reinterpret_cast<const MAXP_Header*>(pDataStart + SwapEndianness32(pTableDirectory->Offset));
 
                 if (SwapEndianness32(m_pMaxpHeader->Version) != 0x00010000)
                 {
-                    RELEASE_LOG_ERROR_(LOG_FONT, "maxp or directory entry is malformed");
+                    RELEASE_LOGLINE_ERROR(LOG_FONT, "maxp or directory entry is malformed");
                     return;
                 }
 
-                RELEASE_LOG_INFO_(LOG_FONT, "found.");
+                RELEASE_LOG_INFO(LOG_FONT, "found.");
             }
             break;
             case FOURCC("name"):
             {
                 // Nah. Skip.
-                RELEASE_LOG_INFO_(LOG_FONT, "name in table directory. Skipping.");
+                RELEASE_LOGLINE_INFO(LOG_FONT, "name in table directory. Skipping.");
             }
             break;
             case FOURCC("post"):
             {
                 // Don't need this either. Skip.
-                RELEASE_LOG_INFO_(LOG_FONT, "post in table directory. Skipping.");
+                RELEASE_LOGLINE_INFO(LOG_FONT, "post in table directory. Skipping.");
             }
             break;
             default:
@@ -441,7 +441,7 @@ TrueTypeParser::TrueTypeParser(const assets::BinaryData& dataToParse)
 
     if (!m_pCmapSegmentMap)
     {
-        RELEASE_LOG_ERROR_(LOG_FONT, "TTF: Unsupported encoding format");
+        RELEASE_LOGLINE_ERROR(LOG_FONT, "TTF: Unsupported encoding format");
         return;
     }
     
@@ -474,7 +474,7 @@ Glyph TrueTypeParser::GetCharacterGlyph(char c)
 
     if (NumberOfContours < 0)
     {
-        RELEASE_LOG_ERROR_(LOG_FONT, "Unsupported glyph description type");
+        RELEASE_LOGLINE_ERROR(LOG_FONT, "Unsupported glyph description type");
         return Glyph::kInvalidGlyph;
     }
     else if (NumberOfContours == 0)
@@ -537,7 +537,7 @@ Glyph TrueTypeParser::GetCharacterGlyph(char c)
             &expandedContourXCoordinates,
             &pointData.pYCoordinates))
     {
-        RELEASE_LOG_ERROR_(LOG_FONT, "TTF: Failed to decode glyph X coordinates");
+        RELEASE_LOGLINE_ERROR(LOG_FONT, "TTF: Failed to decode glyph X coordinates");
         return Glyph::kInvalidGlyph;
     }
 
@@ -551,7 +551,7 @@ Glyph TrueTypeParser::GetCharacterGlyph(char c)
             expandedContourPointFlags,
             &expandedContourYCoordinates))
     {
-        RELEASE_LOG_ERROR_(LOG_FONT, "TTF: Failed to decode glyph y coordinates");
+        RELEASE_LOGLINE_ERROR(LOG_FONT, "TTF: Failed to decode glyph y coordinates");
         return Glyph::kInvalidGlyph;
     }
 
@@ -632,7 +632,7 @@ Glyph TrueTypeParser::GetCharacterGlyph(char c)
     // Call ScanlineFill() for each y-value
     for (int16_t y = yMin; y <= yMax; y++)
     {
-        RELEASE_LOG_VERYVERBOSE_(LOG_FONT, "y = %d\n", y);
+        RELEASE_LOGLINE_VERYVERBOSE(LOG_FONT, "y = %d", y);
         uint8_t* pScanline = &pPixelGlyph[y * GlyphWidth];
 
         const uint8_t FinalFillColor = 1;

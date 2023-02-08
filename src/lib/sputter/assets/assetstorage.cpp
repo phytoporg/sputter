@@ -86,7 +86,7 @@ namespace sputter { namespace assets {
                 auto spData = std::make_shared<ImageData>();
                 if (reader.ReadImage(CurrentPath.string(), spData.get()))
                 {
-                    RELEASE_LOG_INFO(LOG_ASSETS, "Asset loader: loaded %s", relativePathString.c_str());
+                    RELEASE_LOGLINE_INFO(LOG_ASSETS, "Asset loader: loaded %s", relativePathString.c_str());
                     m_assetMap[m_numAssets++] = AssetStorageEntry(
                         relativePathString,
                         CurrentPath.stem().string(),
@@ -95,7 +95,7 @@ namespace sputter { namespace assets {
                 }
                 else
                 {
-                    RELEASE_LOG_WARNING(LOG_ASSETS, "Asset loader: failed to load %s", relativePathString.c_str());
+                    RELEASE_LOGLINE_WARNING(LOG_ASSETS, "Asset loader: failed to load %s", relativePathString.c_str());
                 }
             }
             else if (IsTextFileExtension(CurrentPath.extension()))
@@ -107,7 +107,7 @@ namespace sputter { namespace assets {
                 auto spData = std::make_shared<TextData>();
                 if (reader.ReadTextFile(CurrentPath.string(), spData.get()))
                 {
-                    RELEASE_LOG_INFO(LOG_ASSETS, "Asset loader: loaded %s", relativePathString.c_str());
+                    RELEASE_LOGLINE_INFO(LOG_ASSETS, "Asset loader: loaded %s", relativePathString.c_str());
                     m_assetMap[m_numAssets++] = AssetStorageEntry(
                         relativePathString,
                         CurrentPath.stem().string(),
@@ -116,7 +116,7 @@ namespace sputter { namespace assets {
                 }
                 else
                 {
-                    RELEASE_LOG_WARNING(LOG_ASSETS, "Asset loader: failed to load %s", relativePathString.c_str());
+                    RELEASE_LOGLINE_WARNING(LOG_ASSETS, "Asset loader: failed to load %s", relativePathString.c_str());
                 }
             }
             else if (IsBinaryFileExtension(CurrentPath.extension()))
@@ -128,7 +128,7 @@ namespace sputter { namespace assets {
                 auto spData = std::make_shared<BinaryData>();
                 if (reader.ReadBinaryFile(CurrentPath.string(), spData.get()))
                 {
-                    RELEASE_LOG_INFO(LOG_ASSETS, "Asset loader: loaded %s", relativePathString.c_str());
+                    RELEASE_LOGLINE_INFO(LOG_ASSETS, "Asset loader: loaded %s", relativePathString.c_str());
                     m_assetMap[m_numAssets++] = AssetStorageEntry(
                         relativePathString,
                         CurrentPath.stem().string(),
@@ -137,7 +137,7 @@ namespace sputter { namespace assets {
                 }
                 else
                 {
-                    RELEASE_LOG_WARNING(LOG_ASSETS, "Asset loader: failed to load %s", relativePathString.c_str());
+                    RELEASE_LOGLINE_WARNING(LOG_ASSETS, "Asset loader: failed to load %s", relativePathString.c_str());
                 }
             }
         }

@@ -54,7 +54,7 @@ bool shapes::InitializeLineRenderer(assets::AssetStorage* pAssetStorage, ShaderS
     // Do not allow for reinit. If any parameters need to be updated, address by adding accessors as needed.
     if (IsInitialized)
     {
-        RELEASE_LOG_WARNING_(LOG_RENDER, "InitializeLineRenderer() called more than once");
+        RELEASE_LOGLINE_WARNING(LOG_RENDER, "InitializeLineRenderer() called more than once");
         return false;
     }
 
@@ -64,7 +64,7 @@ bool shapes::InitializeLineRenderer(assets::AssetStorage* pAssetStorage, ShaderS
         kLineFragmentShaderName,
         kLineShaderName))
     {
-        RELEASE_LOG_ERROR_(LOG_RENDER, "Failed to load line shader");
+        RELEASE_LOGLINE_ERROR(LOG_RENDER, "Failed to load line shader");
         return false;
     }
     
@@ -73,14 +73,14 @@ bool shapes::InitializeLineRenderer(assets::AssetStorage* pAssetStorage, ShaderS
     ViewMatrixUniformHandle = pLineShader->GetUniform(pViewUniformName);
     if (ViewMatrixUniformHandle == Shader::kInvalidHandleValue)
     {
-        RELEASE_LOG_WARNING_(LOG_RENDER, "Failed to retrieve view matrix uniform handle for line renderer.");
+        RELEASE_LOGLINE_WARNING(LOG_RENDER, "Failed to retrieve view matrix uniform handle for line renderer.");
         return false;
     }
 
     ProjectionMatrixUniformHandle = pLineShader->GetUniform(pProjectionUniformName);
     if (ProjectionMatrixUniformHandle == Shader::kInvalidHandleValue)
     {
-        RELEASE_LOG_WARNING_(LOG_RENDER, "Failed to retrieve projection matrix uniform handle for line renderer.");
+        RELEASE_LOGLINE_WARNING(LOG_RENDER, "Failed to retrieve projection matrix uniform handle for line renderer.");
         return false;
     }
 
@@ -116,7 +116,7 @@ void shapes::UninitializeLineRenderer()
 {
     if (!IsInitialized)
     {
-        RELEASE_LOG_WARNING_(LOG_RENDER, "Attempting to uninitialize uninitialized line renderer");
+        RELEASE_LOGLINE_WARNING(LOG_RENDER, "Attempting to uninitialize uninitialized line renderer");
         return;
     }
     

@@ -160,7 +160,7 @@ void GameScene::CreateEndOfGameModalPopup()
 {
     if (m_pModalPopup)
     {
-        RELEASE_LOG_WARNING_(LOG_GAME, "Modal popup already exists");
+        RELEASE_LOGLINE_WARNING(LOG_GAME, "Modal popup already exists");
         return;
     }
 
