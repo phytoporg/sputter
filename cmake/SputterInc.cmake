@@ -27,5 +27,5 @@ if (WIN32)
     add_custom_command(TARGET ${TARGETNAME} POST_BUILD # Adds a post-build event to MyTest
         COMMAND ${CMAKE_COMMAND} -E copy_if_different   # which executes "cmake - E copy_if_different..."
         "${GLEW_ROOT}/bin/Release/x64/glew32.dll"   $<TARGET_FILE_DIR:${TARGETNAME}>
-        "${GLFW_ROOT}/lib-vc2019/glfw3.dll"         $<TARGET_FILE_DIR:${TARGETNAME}>
+        "${GLFW_ROOT}/lib-vc2019/glfw3.dll"         $<TARGET_FILE_DIR:${TARGETNAME}>)
 endif()
