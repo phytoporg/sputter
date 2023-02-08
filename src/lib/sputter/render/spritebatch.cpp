@@ -4,6 +4,7 @@
 #include "uniform.h"
 
 #include <sputter/system/system.h>
+#include <sputter/log/log.h>
 
 namespace sputter { namespace render {
     SpriteBatch::SpriteBatch(uint32_t maxSpriteCount)
@@ -81,21 +82,22 @@ namespace sputter { namespace render {
     {
         if (sprite.GetTexturePtr()->GetName() != m_spTexture->GetName())
         {
-            LOG(WARNING) << "Mismatched sprite texture: " 
-                         << sprite.GetTexturePtr()->GetName()
-                         << ", current batch is using "
-                         << m_spTexture->GetName();
+            RELEASE_LOG_WARNING(
+                LOG_RENDER,
+                 "Mismatch sprite texture: %s, curren batch is using %s",
+                 sprite.GetTexturePtr()->GetName().c_str(),
+                 m_spTexture->GetName().c_str());
             return false;
         }
 
         const size_t CurrentSpriteCount = m_verticesVector.size() / 4;
         if (CurrentSpriteCount > m_maxSpriteCount)
         {
-            LOG(WARNING) << "Sprite batch size (" 
-                         << CurrentSpriteCount
-                         << ") has grown beyond capacity ("
-                         << m_maxSpriteCount
-                         << ")";
+            RELEASE_LOG_WARNING(
+                LOG_RENDER,
+                "Sprite batch size (%u) has grown beyond capacity (%u)",
+                CurrentSpriteCount,
+                m_maxSpriteCount);
             return false;
         }
 

@@ -20,6 +20,9 @@ namespace sputter { namespace log {
         Game,
         Assets,
         UI,
+        Font,
+        Mesh,
+        Render,
         Max
     };
 
@@ -86,3 +89,6 @@ namespace sputter { namespace log {
 #define LOG_GAME sputter::log::LogZone::Game
 #define LOG_ASSETS sputter::log::LogZone::Assets
 #define LOG_UI sputter::log::LogZone::UI
+#define LOG_FONT sputter::log::LogZone::Font
+#define LOG_MESH sputter::log::LogZone::Mesh
+#define LOG_RENDER sputter::log::LogZone::Render

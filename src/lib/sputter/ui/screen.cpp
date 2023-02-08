@@ -2,6 +2,7 @@
 
 #include <sputter/render/window.h>
 #include <sputter/system/system.h>
+#include <sputter/log/log.h>
 
 #include <GLFW/glfw3.h>
 
@@ -126,7 +127,7 @@ void Screen::HandleKeyEvent(int key, int action)
 
     if (keyEvent == EventCode::Invalid)
     {
-        LOG(ERROR) << "Unexpected key action";
+        RELEASE_LOG_ERROR(LOG_FONT, "Unexpected key action: 0x%x", keyEvent);
         return;
     }
 

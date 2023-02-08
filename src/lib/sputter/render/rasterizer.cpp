@@ -2,6 +2,7 @@
 
 #include <math.h>
 #include <sputter/system/system.h>
+#include <sputter/log/log.h>
 
 namespace 
 {
@@ -79,7 +80,7 @@ namespace
         {
             // Locally crossing this segment from left-to-right
             (*pWindingNumber)--;
-            VLOG(1) << "CROSS: dy == 1, winding number = " << int(*pWindingNumber) << "\n";
+            RELEASE_LOG_VERYVERBOSE(LOG_FONT, "CROSS: dy == 1, winding number = %d\n", int(*pWindingNumber));
         }
         else if (dY == 0 && dX == 1)
         {
@@ -93,7 +94,7 @@ namespace
         {
             // Locally crossing this segment from right-to-left
             (*pWindingNumber)++;
-            VLOG(1) << "CROSS: dy == -1, winding number = " << int(*pWindingNumber) << "\n";
+            RELEASE_LOG_VERYVERBOSE(LOG_FONT, "CROSS: dy == -1, winding number = %d\n", int(*pWindingNumber));
         }
         else
         {

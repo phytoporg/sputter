@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <filesystem>
 #include <string>
+#include <cstring>
 
 #include <sputter/system/system.h>
 #include <sputter/log/log.h>

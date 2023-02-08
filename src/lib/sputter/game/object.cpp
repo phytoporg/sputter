@@ -1,6 +1,7 @@
 #include "object.h"
 
 #include <sputter/assets/assetstorageprovider.h>
+#include <cstring>
 
 using namespace sputter::game;
 

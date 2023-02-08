@@ -2,6 +2,7 @@
 #include "truetypeparser.h"
 
 #include <sputter/system/system.h>
+#include <sputter/log/log.h>
 
 #include <cstring>
 
@@ -39,7 +40,7 @@ bool Font::GetGlyph(char character, Glyph* pOut)
         {
             if (characterIndex > m_glyphCache.size())
             {
-                LOG(WARNING) << "Character index is out of bounds for the glyph cache.";
+                RELEASE_LOG_WARNING_(LOG_FONT, "Character index is out of bounds for the glyph cache.");
                 m_glyphCache.resize(characterIndex);
             }
 

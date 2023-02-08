@@ -1,6 +1,8 @@
 #include "scenestack.h"
 #include "scene.h"
 
+#include <cstring>
+
 #include <sputter/system/system.h>
 
 using namespace sputter::game;

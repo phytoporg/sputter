@@ -2,9 +2,6 @@
 
 #include <string>
 
-#define GLOG_NO_ABBREVIATED_SEVERITIES
-#include <glog/logging.h>
-
 namespace sputter { namespace system {
     // Initialize the logging system. programName is this executable name,
     // pLogFile is optional and redirects logging to a file path if not null. 

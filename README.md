@@ -23,7 +23,7 @@ At some point I intend to whittle away at this list, but for the moment, here it
 
 In Debian:
 ```
-libglew-dev libglfw3-dev libgoogle-glog-dev googletest libgtest-dev libglm-dev
+libglew-dev libglfw3-dev googletest libgtest-dev libglm-dev
 ```
 
 To build, execute from the source tree root:

@@ -1,6 +1,5 @@
 #include "system.h"
 
-#include <glog/logging.h>
 #include <sputter/log/log.h>
 #include <stdexcept>
 

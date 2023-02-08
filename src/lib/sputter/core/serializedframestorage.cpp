@@ -1,6 +1,8 @@
 #include "serializedframestorage.h"
 #include "check.h"
 
+#include <cstring>
+
 #include <sputter/memory/fixedmemoryallocator.h>
 
 using namespace sputter;

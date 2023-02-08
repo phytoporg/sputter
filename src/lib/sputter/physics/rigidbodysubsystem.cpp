@@ -3,6 +3,7 @@
 #include <sputter/system/system.h>
 
 #include <string>
+#include <cstring>
 #include <cassert>
 
 namespace sputter { namespace physics {

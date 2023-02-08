@@ -4,6 +4,7 @@
 #include "shaderstorage.h"
 
 #include <sputter/system/system.h>
+#include <sputter/log/log.h>
 
 #include <sputter/assets/assetstorage.h>
 #include <sputter/assets/textdata.h>
@@ -33,14 +34,14 @@ SpriteSubsystem::SpriteSubsystem(
     auto pSpriteFragmentShader = dynamic_cast<assets::TextData*>(spSpriteFragmentShader.get());
     if (!pShaderStorage->AddShader(*pSpriteVertexShader, *pSpriteFragmentShader, "sprite_shader"))
     {
-        LOG(ERROR) << "Could not add sprite shader to storage.";
+        RELEASE_LOG_ERROR_(LOG_RENDER, "Could not add sprite shader to storage.");
         return;
     }
 
     render::ShaderPtr spShader = pShaderStorage->FindShaderByName("sprite_shader");
     if (!spShader)
     {
-        LOG(ERROR) << "Failed to find sprite_shader in shader storage";
+        RELEASE_LOG_ERROR_(LOG_RENDER, "Failed to find sprite_shader in shader storage");
         return;
     }
 

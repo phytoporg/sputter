@@ -13,6 +13,7 @@
 #include <sputter/math/vector2i.h>
 #include <sputter/core/check.h>
 #include <sputter/system/system.h>
+#include <sputter/log/log.h>
 
 using namespace sputter::render;
 
@@ -53,7 +54,7 @@ bool shapes::InitializeLineRenderer(assets::AssetStorage* pAssetStorage, ShaderS
     // Do not allow for reinit. If any parameters need to be updated, address by adding accessors as needed.
     if (IsInitialized)
     {
-        LOG(WARNING) << "InitializeLineRenderer() called more than once";
+        RELEASE_LOG_WARNING_(LOG_RENDER, "InitializeLineRenderer() called more than once");
         return false;
     }
 
@@ -63,7 +64,7 @@ bool shapes::InitializeLineRenderer(assets::AssetStorage* pAssetStorage, ShaderS
         kLineFragmentShaderName,
         kLineShaderName))
     {
-        LOG(ERROR) << "Failed to load line shader";
+        RELEASE_LOG_ERROR_(LOG_RENDER, "Failed to load line shader");
         return false;
     }
     
@@ -72,14 +73,14 @@ bool shapes::InitializeLineRenderer(assets::AssetStorage* pAssetStorage, ShaderS
     ViewMatrixUniformHandle = pLineShader->GetUniform(pViewUniformName);
     if (ViewMatrixUniformHandle == Shader::kInvalidHandleValue)
     {
-        LOG(WARNING) << "Failed to reterieve view matrix uniform handle for line renderer.";
+        RELEASE_LOG_WARNING_(LOG_RENDER, "Failed to retrieve view matrix uniform handle for line renderer.");
         return false;
     }
 
     ProjectionMatrixUniformHandle = pLineShader->GetUniform(pProjectionUniformName);
     if (ProjectionMatrixUniformHandle == Shader::kInvalidHandleValue)
     {
-        LOG(WARNING) << "Failed to reterieve projection matrix uniform handle for line renderer.";
+        RELEASE_LOG_WARNING_(LOG_RENDER, "Failed to retrieve projection matrix uniform handle for line renderer.");
         return false;
     }
 
@@ -115,7 +116,7 @@ void shapes::UninitializeLineRenderer()
 {
     if (!IsInitialized)
     {
-        LOG(WARNING) << "Attempting to uninitialize uninitialized line renderer";
+        RELEASE_LOG_WARNING_(LOG_RENDER, "Attempting to uninitialize uninitialized line renderer");
         return;
     }
     

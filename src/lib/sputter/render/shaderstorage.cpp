@@ -7,6 +7,7 @@
 #include <sputter/log/log.h>
 
 #include <algorithm>
+#include <cstring>
 
 using namespace sputter;
 using namespace sputter::render;

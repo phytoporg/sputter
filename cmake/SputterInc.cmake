@@ -3,7 +3,6 @@ cmake_minimum_required (VERSION 3.8 FATAL_ERROR)
 include_directories(
     ${PROJECT_SOURCE_DIR}/src/lib
     ${GLFW_INCLUDE_DIR}
-    ${GLOG_INCLUDE_DIR}
     ${PNG_INCLUDE_DIR}
     ${GLEW_INCLUDE_DIRS}
     ${OPENGL_INCLUDE_DIRS}
@@ -18,7 +17,6 @@ endif()
 target_link_libraries(${TARGETNAME}
     sputter
     ${GLFW_LIBRARY} 
-    ${GLOG_LIBRARY}
     ${PNG_LIBRARY}
     ${GLEW_LIBRARIES}
     ${OPENGL_LIBRARIES}
@@ -30,5 +28,4 @@ if (WIN32)
         COMMAND ${CMAKE_COMMAND} -E copy_if_different   # which executes "cmake - E copy_if_different..."
         "${GLEW_ROOT}/bin/Release/x64/glew32.dll"   $<TARGET_FILE_DIR:${TARGETNAME}>
         "${GLFW_ROOT}/lib-vc2019/glfw3.dll"         $<TARGET_FILE_DIR:${TARGETNAME}>
-        "${GLOG_ROOT}/bin/glogd.dll"                $<TARGET_FILE_DIR:${TARGETNAME}>)
 endif()
