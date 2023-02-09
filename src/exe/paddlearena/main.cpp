@@ -3,6 +3,8 @@
 
 #include "paddlearena.h"
 
+#include <sputter/core/cliargumentparser.h>
+
 #include <sputter/assets/imagedata.h>
 #include <sputter/assets/assetstorage.h>
 
@@ -33,6 +35,12 @@ int main(int argc, char** argv)
     {
         std::cerr << "Usage: " << argv[0] << " " << "<asset_path>" << std::endl;
         return -1;
+    }
+
+    core::CommandLineArgumentParser parser(argc, argv);
+    if (const core::CommandLineArgument* pArgument = parser.FindArgument("log-path"))
+    {
+        log::SetLogFile(pArgument->AsString().c_str());
     }
 
     render::Window window("PADDLEARENA", gameconstants::OrthoWidth, gameconstants::OrthoHeight);
