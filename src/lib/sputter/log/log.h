@@ -57,15 +57,15 @@ namespace sputter { namespace log {
         sputter::log::Log(Zone, sputter::log::LogVerbosity::VeryVerbose, String, __VA_ARGS__);
 
     #define DEBUG_LOGLINE_ERROR(Zone, String, ...) \
-        sputter::log::Log(Zone, sputter::log::LogVerbosity::Error, String, __VA_ARGS__);
+        sputter::log::LogLine(Zone, sputter::log::LogVerbosity::Error, String, __VA_ARGS__);
     #define DEBUG_LOGLINE_WARNING(Zone, String, ...) \
-        sputter::log::Log(Zone, sputter::log::LogVerbosity::Warning, String, __VA_ARGS__);
+        sputter::log::LogLine(Zone, sputter::log::LogVerbosity::Warning, String, __VA_ARGS__);
     #define DEBUG_LOGLINE_INFO(Zone, String, ...) \
-        sputter::log::Log(Zone, sputter::log::LogVerbosity::Info, String, __VA_ARGS__);
+        sputter::log::LogLine(Zone, sputter::log::LogVerbosity::Info, String, __VA_ARGS__);
     #define DEBUG_LOGLINE_VERBOSE(Zone, String, ...) \
-        sputter::log::Log(Zone, sputter::log::LogVerbosity::Verbose, String, __VA_ARGS__);
+        sputter::log::LogLine(Zone, sputter::log::LogVerbosity::Verbose, String, __VA_ARGS__);
     #define DEBUG_LOGLINE_VERYVERBOSE(Zone, String, ...) \
-        sputter::log::Log(Zone, sputter::log::LogVerbosity::VeryVerbose, String, __VA_ARGS__);
+        sputter::log::LogLine(Zone, sputter::log::LogVerbosity::VeryVerbose, String, __VA_ARGS__);
 #else
     #define DEBUG_LOG_ERROR(Zone, String, ...) 
     #define DEBUG_LOG_WARNING(Zone, String, ...) 
