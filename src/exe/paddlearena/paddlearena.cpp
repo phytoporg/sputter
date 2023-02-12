@@ -12,7 +12,10 @@
 #include <sputter/render/window.h>
 #include <sputter/render/volumetrictext.h>
 #include <sputter/render/drawshapes.h>
+
 #include <sputter/math/fixedpoint.h>
+
+#include <sputter/log/log.h>
 
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -54,6 +57,14 @@ PaddleArena::PaddleArena(
 
         const float dHeight = height - viewportHeight;
         const float ViewportY = dHeight > 0.f ? dHeight / 2.f : 0.f;
+
+        DEBUG_LOGLINE_INFO(LOG_DEFAULT, "PaddleArena window and viewport info:");
+        DEBUG_LOGLINE_INFO(LOG_DEFAULT, "Height: %d", height);
+        DEBUG_LOGLINE_INFO(LOG_DEFAULT, "Width: %d", width);
+        DEBUG_LOGLINE_INFO(LOG_DEFAULT, "Viewport X: %f", ViewportX);
+        DEBUG_LOGLINE_INFO(LOG_DEFAULT, "Viewport Y: %f", ViewportY);
+        DEBUG_LOGLINE_INFO(LOG_DEFAULT, "Viewport Width: %f", viewportWidth);
+        DEBUG_LOGLINE_INFO(LOG_DEFAULT, "Viewport Height: %f", viewportHeight);
 
         glViewport(ViewportX, ViewportY, viewportWidth, viewportHeight);
     };

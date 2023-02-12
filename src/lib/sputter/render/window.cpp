@@ -55,7 +55,13 @@ Window::Window(const std::string& windowTitle, uint32_t w, uint32_t h)
 
     // Set up thunks
     glfwSetWindowUserPointer(m_pWindow, this);
-    glfwSetWindowSizeCallback(m_pWindow, WindowResizeThunk);
+
+    // Context at https://www.glfw.org/docs/3.3/window_guide.html:
+    // 
+    // The window size callback produces dimensions in screen coordinates,
+    // but we're interested in pixel sizes, so use frame buffer size change
+    // events instead.
+    glfwSetFramebufferSizeCallback(m_pWindow, WindowResizeThunk);
     glfwSetKeyCallback(m_pWindow, WindowKeyThunk);
 
     glEnable(GL_DEPTH_TEST);
