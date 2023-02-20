@@ -1,9 +1,0 @@
-Next high-level goal: Rollback + Synctest
-
-IMMEDIATE TODO:
-- Collision components -> POD
--- Move CollisionsThisFrame array into the CollisionSubsystem + allow for easy queries given a collision component handle
-- Make sure input system makes sense in context of ticking game (it doesn't)
-
-DONE:
-- Implement serializer
