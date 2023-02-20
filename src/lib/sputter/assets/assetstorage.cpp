@@ -10,9 +10,10 @@
 #include "binaryfilereader.h"
 
 #include <algorithm>
+#include <cstring>
 #include <filesystem>
 #include <string>
-#include <cstring>
+#include <vector>
 
 #include <sputter/system/system.h>
 #include <sputter/log/log.h>
