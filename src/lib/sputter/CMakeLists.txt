@@ -11,16 +11,17 @@ message(ERROR ${PNG_INCLUDE_DIR})
 
 file(GLOB SOURCES 
     *.cpp 
-    render/*.cpp 
-    ui/*.cpp 
-    system/*.cpp 
     assets/*.cpp 
-    physics/*.cpp
+    containers/*.cpp
+    core/*.cpp
+    game/*.cpp
+    input/*.cpp
+    log/*.cpp
     math/*.cpp
     memory/*.cpp
-    game/*.cpp
-    core/*.cpp
-    log/*.cpp
-    input/*.cpp
-    containers/*.cpp)
+    net/*.cpp
+    physics/*.cpp
+    render/*.cpp 
+    system/*.cpp 
+    ui/*.cpp)
 add_library(sputter ${SOURCES})

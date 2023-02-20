@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <string>
 
 namespace sputter { namespace system {
@@ -12,4 +13,7 @@ namespace sputter { namespace system {
 
     // Throws a runtime exception and logs an error string.
     void LogAndFail(const std::string& errorString);
+
+    // Returns current time in milliseconds
+    uint32_t GetTimeMs();
 }}

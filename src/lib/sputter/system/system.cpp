@@ -3,6 +3,10 @@
 #include <sputter/log/log.h>
 #include <stdexcept>
 
+// LINUX++
+#include <time.h>
+#include <math.h>
+// LINUX--
 
 namespace sputter { namespace system {
     void 
@@ -31,5 +35,21 @@ namespace sputter { namespace system {
     {
         RELEASE_LOG_ERROR(LOG_DEFAULT, errorString.c_str());
         throw std::runtime_error(errorString);
+    }
+
+    uint32_t GetTimeMs()
+    {
+        struct timespec spec;
+        clock_gettime(CLOCK_REALTIME, &spec);
+
+        time_t seconds = spec.tv_sec;
+        long milliseconds = round(spec.tv_nsec / 1.0e6);
+        if (milliseconds > 999)
+        {
+            ++seconds;
+            milliseconds = 0;
+        }
+
+        return seconds * 1000 + milliseconds;
     }
 }}
