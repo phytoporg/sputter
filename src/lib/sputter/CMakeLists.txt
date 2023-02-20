@@ -14,6 +14,7 @@ file(GLOB SOURCES
     render/*.cpp 
     ui/*.cpp 
     system/*.cpp 
+    net/*.cpp 
     assets/*.cpp 
     physics/*.cpp
     math/*.cpp

@@ -53,6 +53,7 @@ Point to an `asset` directory. Assets aren't yet checked in, but SoOn !!
   - `game` - ECS goo, game object and scene management, etc.
   - `input` - device discovery, input mappings and such
   - `math` - vectors and matrices of various types, useful constants, helper functions
+  - `net` - p2p network communication
   - `memory` - custom allocators
   - `physics` - fixed-timestep simulation using fixed-point math
   - `core` - commonly-used classes and functionality across sputter
@@ -61,3 +62,9 @@ Point to an `asset` directory. Assets aren't yet checked in, but SoOn !!
   - `ui` - a very rudimentary ui
 - src/exe/...
   -  where the games and experiments live
+## Style
+
+- Member variables use `m_` prefix.
+- Default values for classes go in the header.
+- Logging should be done through `glog` (include `#include <sputter/system/system.h` and look for `LOG` for examples)
+- Invalid input should be checked with `RELEASE_CHECK(bool, error message)`
