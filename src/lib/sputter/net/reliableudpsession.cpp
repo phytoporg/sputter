@@ -18,9 +18,6 @@ struct ReliableUDPSession::PImpl
     static const uint32_t kInvalidSessionId = 0xFFFFFFFF;
     uint32_t SessionId = kInvalidSessionId;
     ikcpcb*  pIkcpCb   = nullptr;
-
-    std::vector<uint8_t> SendBuffer;
-    std::vector<uint8_t> ReadBuffer;
 };
 
 ReliableUDPSession::ReliableUDPSession(uint32_t sessionId)
@@ -41,30 +38,20 @@ ReliableUDPSession::~ReliableUDPSession()
 
 void ReliableUDPSession::Tick()
 {
-    RELEASE_CHECK(m_spPimpl && m_spPimpl->pIkcpCb, "KCP state is uninitialized");
     ikcp_update(m_spPimpl->pIkcpCb, system::GetTimeMs());
 }
 
-void ReliableUDPSession::EnqueueSendData(const char* pBuffer, size_t length)
+size_t ReliableUDPSession::EnqueueSendData(const char* pBuffer, size_t length)
 {
-    m_spPimpl->SendBuffer.insert(std::end(m_spPimpl->SendBuffer), pBuffer, pBuffer + length);
+    return ikcp_send(m_spPimpl->pIkcpCb, pBuffer, length);
 }
 
 size_t ReliableUDPSession::TryReadData(char* pBuffer, size_t maxLength)
 {
-    const size_t DataSize = m_spPimpl->ReadBuffer.size();
-    const size_t BytesToCopy = maxLength < DataSize ? maxLength : DataSize;
+    return ikcp_recv(m_spPimpl->pIkcpCb, pBuffer, maxLength);
+}
 
-    if (!BytesToCopy)
-    {
-        return 0;
-    }
-
-    auto& readBuffer = m_spPimpl->ReadBuffer;
-    RELEASE_CHECK(readBuffer.size() >= BytesToCopy, "Insufficient space in read buffer");
-
-    memcpy(pBuffer, readBuffer.data(), BytesToCopy);
-    readBuffer.erase(std::begin(readBuffer), std::begin(readBuffer) + BytesToCopy);
-
-    return BytesToCopy;
+void ReliableUDPSession::SendDataCallback(const char* pBuffer, int length)
+{
+    // TODO: Sockets
 }

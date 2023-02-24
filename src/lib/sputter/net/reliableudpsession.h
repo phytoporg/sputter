@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <functional>
 
 namespace sputter { namespace net {
     class ReliableUDPSession
@@ -13,7 +14,7 @@ namespace sputter { namespace net {
         void Tick();
 
         // Queues data to be sent next tick
-        void EnqueueSendData(const char* pBuffer, size_t length);
+        size_t EnqueueSendData(const char* pBuffer, size_t length);
 
         // Returns the number of bytes actually read
         size_t TryReadData(char* pBuffer, size_t maxLength);
