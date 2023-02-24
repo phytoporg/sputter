@@ -24,7 +24,10 @@ namespace
             "Font",
             "Mesh",
             "Render",
+            "Net",
         };
+
+        static_assert(sizeof(LUT) / sizeof(LUT[0]) == static_cast<int>(LogZone::Max), "Log zone LUT size does not match enum");
 
         return LUT[Index];
     }

@@ -2,13 +2,16 @@
 
 #include <cstdint>
 #include <memory>
-#include <functional>
+#include <string>
+
+// Forward declaration
+struct IKCPCB;
 
 namespace sputter { namespace net {
     class ReliableUDPSession
     {
     public:
-        ReliableUDPSession(uint32_t sessionId);
+        ReliableUDPSession(uint32_t sessionId, const std::string& address, int port);
         ~ReliableUDPSession();
 
         void Tick();
@@ -20,9 +23,9 @@ namespace sputter { namespace net {
         size_t TryReadData(char* pBuffer, size_t maxLength);
 
     private:
-        static void SendDataCallback(const char* pBuffer, int length);
+        static int SendDataCallback(const char* pBuffer, int length, struct IKCPCB* pKcp, void* pUser);
 
         struct PImpl;
-        std::shared_ptr<PImpl> m_spPimpl;
+        std::unique_ptr<PImpl> m_spPimpl;
     };
 }}

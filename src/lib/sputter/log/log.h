@@ -23,6 +23,7 @@ namespace sputter { namespace log {
         Font,
         Mesh,
         Render,
+        Net,
         Max
     };
 
@@ -110,3 +111,4 @@ namespace sputter { namespace log {
 #define LOG_FONT sputter::log::LogZone::Font
 #define LOG_MESH sputter::log::LogZone::Mesh
 #define LOG_RENDER sputter::log::LogZone::Render
+#define LOG_NET sputter::log::LogZone::Net
