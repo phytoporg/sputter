@@ -29,7 +29,7 @@ UDPPort::UDPPort(uint32_t port)
     bindAddress.sin_port = htons(port);
     if (bind(m_socketHandle, reinterpret_cast<sockaddr *>(&bindAddress), sizeof(bindAddress)) < 0) 
     {
-        system::LogAndFail("Failed to create socket");
+        system::LogAndFail("Failed to bind to socket");
     }
 
     m_port = port;
@@ -44,13 +44,13 @@ UDPPort::~UDPPort()
     }
 }
 
-bool UDPPort::send(const void *data, int dataSize, const std::string &address) const
+bool UDPPort::send(const void *data, int dataSize, const std::string &address, int port) const
 {
     RELEASE_CHECK(m_socketHandle >= 0, "Socket is not open");
 
     sockaddr_in dest = {};
     dest.sin_family = AF_INET;
-    dest.sin_port = htons(m_port);
+    dest.sin_port = htons(port);
     if (inet_pton(AF_INET, address.c_str(), &dest.sin_addr) != 1) 
     {
         RELEASE_LOGLINE_WARNING(LOG_NET, "Failed to convert address to binary (address = %s)", address.data());

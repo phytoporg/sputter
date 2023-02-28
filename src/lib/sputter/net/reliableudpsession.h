@@ -11,7 +11,7 @@ namespace sputter { namespace net {
     class ReliableUDPSession
     {
     public:
-        ReliableUDPSession(uint32_t sessionId, const std::string& address, int port);
+        ReliableUDPSession(uint32_t sessionId, const std::string& address, int localPort, int remotePort);
         ~ReliableUDPSession();
 
         void Tick();
@@ -21,6 +21,8 @@ namespace sputter { namespace net {
 
         // Returns the number of bytes actually read
         size_t TryReadData(char* pBuffer, size_t maxLength);
+
+        int GetPort() const;
 
     private:
         static int SendDataCallback(const char* pBuffer, int length, struct IKCPCB* pKcp, void* pUser);

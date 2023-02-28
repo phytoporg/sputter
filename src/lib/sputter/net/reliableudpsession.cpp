@@ -15,20 +15,21 @@ using namespace sputter::net;
 
 struct ReliableUDPSession::PImpl
 {
-    PImpl(uint32_t sessionId, const std::string& address, int port) 
-        : SessionId(sessionId), Address(address), Port(port) {}
+    PImpl(uint32_t sessionId, const std::string& address, int localPort, int remotePortNumber) 
+        : SessionId(sessionId), Address(address), Port(localPort), RemotePortNumber(remotePortNumber) {}
 
     static const uint32_t kInvalidSessionId = 0xFFFFFFFF;
     uint32_t SessionId = kInvalidSessionId;
 
     std::string Address;
     UDPPort     Port;
+    int         RemotePortNumber;
 
     ikcpcb*  pIkcpCb   = nullptr;
 };
 
-ReliableUDPSession::ReliableUDPSession(uint32_t sessionId, const std::string& address, int port)
-    : m_spPimpl(new ReliableUDPSession::PImpl(sessionId, address, port))
+ReliableUDPSession::ReliableUDPSession(uint32_t sessionId, const std::string& address, int port, int remotePortNumber)
+    : m_spPimpl(new ReliableUDPSession::PImpl(sessionId, address, port, remotePortNumber))
 {
     m_spPimpl->pIkcpCb = ikcp_create(sessionId, this);
     RELEASE_CHECK(m_spPimpl->pIkcpCb, "Failed to create KCP object");
@@ -47,23 +48,52 @@ ReliableUDPSession::~ReliableUDPSession()
 
 void ReliableUDPSession::Tick()
 {
+    // Process any received data input before updating
+    // Size is arbitrary for the time being
+    char buffer[2048] = {};
+    int received = m_spPimpl->Port.receive(buffer, sizeof(buffer));
+    while (received > 0)
+    {
+        ikcp_input(m_spPimpl->pIkcpCb, buffer, received);
+        received = m_spPimpl->Port.receive(buffer, sizeof(buffer));
+    }
+
     ikcp_update(m_spPimpl->pIkcpCb, system::GetTimeMs());
 }
 
 size_t ReliableUDPSession::EnqueueSendData(const char* pBuffer, size_t length)
 {
-    return ikcp_send(m_spPimpl->pIkcpCb, pBuffer, length);
+    if (ikcp_send(m_spPimpl->pIkcpCb, pBuffer, length) == 0)
+    {
+        return length;
+    }
+
+    return 0;
 }
 
 size_t ReliableUDPSession::TryReadData(char* pBuffer, size_t maxLength)
 {
-    return ikcp_recv(m_spPimpl->pIkcpCb, pBuffer, maxLength);
+    const int ReturnValue = ikcp_recv(m_spPimpl->pIkcpCb, pBuffer, maxLength);
+    if (ReturnValue < 0)
+    {
+        return 0;
+    }
+
+    return static_cast<size_t>(ReturnValue);
 }
 
 int ReliableUDPSession::SendDataCallback(const char* pBuffer, int length, struct IKCPCB* pKcp, void* pUser)
 {
     auto pSession = static_cast<ReliableUDPSession*>(pUser);
     RELEASE_CHECK(pKcp == pSession->m_spPimpl->pIkcpCb, "KCP pointer mismatch");
-    // TODO
-    return 0;
+
+    const UDPPort& Port = pSession->m_spPimpl->Port;
+    const std::string& Address = pSession->m_spPimpl->Address;
+    const int RemotePort = pSession->m_spPimpl->RemotePortNumber;
+    return Port.send(pBuffer, length, Address, RemotePort);
+}
+
+int ReliableUDPSession::GetPort() const
+{
+    return m_spPimpl->Port.GetPort();
 }

@@ -6,6 +6,7 @@
 // LINUX++
 #include <time.h>
 #include <math.h>
+#include <unistd.h>
 // LINUX--
 
 namespace sputter { namespace system {

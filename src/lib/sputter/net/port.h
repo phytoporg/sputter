@@ -10,7 +10,7 @@ namespace sputter { namespace net {
         UDPPort(uint32_t port);
         ~UDPPort();
 
-        bool send(const void *data, int dataSize, const std::string &address) const;
+        bool send(const void *data, int dataSize, const std::string &address, int port) const;
         int receive(void *data, int dataSize, std::string *pAddressOut = nullptr) const;
 
         int GetPort() const;

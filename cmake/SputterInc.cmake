@@ -16,6 +16,7 @@ endif()
 
 target_link_libraries(${TARGETNAME}
     sputter
+    kcp
     ${GLFW_LIBRARY} 
     ${PNG_LIBRARY}
     ${GLEW_LIBRARIES}
