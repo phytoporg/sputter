@@ -41,8 +41,12 @@ compile_commands.json
 
 # cmake
 build/
+build-debug/
 Testing/
 .cache/
 
 # vscode
 .vscode/
+
+# CLion, etc
+.idea
