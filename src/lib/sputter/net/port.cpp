@@ -5,7 +5,11 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <fcntl.h>
+#include <errno.h>
 // LINUX--
+
+#include <cstring>
 
 #include <sputter/core/check.h>
 #include <sputter/log/log.h>
@@ -20,6 +24,11 @@ UDPPort::UDPPort(uint32_t port)
     if (m_socketHandle < 0)
     {
         system::LogAndFail("Failed to create socket");
+    }
+
+    if (fcntl(m_socketHandle, F_SETFL, O_NONBLOCK) < 0)
+    {
+        system::LogAndFail("Failed to set nonblocking flag for socket handle");
     }
 
     // Store port address
@@ -80,6 +89,25 @@ bool UDPPort::send(const void *data, int dataSize, const std::string &address, i
 int UDPPort::receive(void *data, int dataSize, std::string* pAddressOut) const
 {
     RELEASE_CHECK(m_socketHandle >= 0, "Socket is not open");
+
+    fd_set readFds;
+    FD_ZERO(&readFds);
+    FD_SET(m_socketHandle, &readFds);
+
+    timeval tv;
+    tv.tv_sec = 0;
+    tv.tv_usec = 0;
+    const int SelectValue = select(m_socketHandle + 1, &readFds, nullptr, nullptr, &tv);
+    if (SelectValue < 0)
+    {
+        RELEASE_LOGLINE_ERROR(LOG_DEFAULT, "select() failed on socket: %s", strerror(errno));
+        return -1;
+    }
+
+    if (!SelectValue)
+    {
+        return 0;
+    }
 
     sockaddr_in src = {};
     socklen_t srcLength;

@@ -41,12 +41,14 @@ TEST(session_send_receive, udpsession_tests)
 
     const char* pDataToSend = "hey sup";
     const size_t Sent = clientSession.EnqueueSendData(pDataToSend, sizeof(pDataToSend));
-    // EXPECT_EQ(Sent, sizeof(pDataToSend));
+    EXPECT_EQ(Sent, sizeof(pDataToSend));
 
+    // TODO: Why is this necessary?
+    system::SleepMs(100);
     clientSession.Tick();
     serverSession.Tick();
 
     char pReadBuffer[256] = {};
     const size_t Received = serverSession.TryReadData(pReadBuffer, sizeof(pReadBuffer));
-    EXPECT_EQ(Received, sizeof(pReadBuffer));
+    EXPECT_EQ(Received, sizeof(pDataToSend));
 }

@@ -51,6 +51,7 @@ void ReliableUDPSession::Tick()
     // Process any received data input before updating
     // Size is arbitrary for the time being
     char buffer[2048] = {};
+
     int received = m_spPimpl->Port.receive(buffer, sizeof(buffer));
     while (received > 0)
     {
