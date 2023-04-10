@@ -43,8 +43,7 @@ TEST(session_send_receive, udpsession_tests)
     const size_t Sent = clientSession.EnqueueSendData(pDataToSend, sizeof(pDataToSend));
     EXPECT_EQ(Sent, sizeof(pDataToSend));
 
-    // TODO: Why is this necessary?
-    system::SleepMs(100);
+    system::SleepMs(16);
     clientSession.Tick();
     serverSession.Tick();
 

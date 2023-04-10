@@ -35,6 +35,11 @@ ReliableUDPSession::ReliableUDPSession(uint32_t sessionId, const std::string& ad
     RELEASE_CHECK(m_spPimpl->pIkcpCb, "Failed to create KCP object");
 
     ikcp_setoutput(m_spPimpl->pIkcpCb, SendDataCallback);
+    const int kNoDelay = 1;
+    const int kUpdateInterval = 1000 / 60; // Once per frame
+    const int kEnableFastResend = 1;
+    const int kDisableCongestionControl = 1;
+    ikcp_nodelay(m_spPimpl->pIkcpCb, kNoDelay, kUpdateInterval, kEnableFastResend, kDisableCongestionControl);
 }
 
 ReliableUDPSession::~ReliableUDPSession()
