@@ -99,16 +99,12 @@ private:
 
     sputter::assets::AssetStorageProvider*    m_pAssetStorageProvider = nullptr;
 
-    sputter::render::Camera*                  m_pCamera = nullptr;
-    glm::mat4*                                m_pOrthoMatrix = nullptr;
-
     sputter::render::VolumetricTextRenderer*  m_pTextRenderer = nullptr;
     sputter::render::Window*                  m_pWindow = nullptr;
     sputter::ui::Screen*                      m_pScreen = nullptr;
     sputter::ui::ModalPopup*                  m_pModalPopup = nullptr;
     sputter::ui::Theme                        m_uiTheme;
 
-    GameState*                                m_pGameState = nullptr;
     PaddleArena*                              m_pPaddleArena = nullptr;
 
     GameInstance*                             m_pGameInstance = nullptr;

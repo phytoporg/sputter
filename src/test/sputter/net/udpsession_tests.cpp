@@ -39,7 +39,7 @@ TEST(session_send_receive, udpsession_tests)
     serverSession.Tick();
     system::SleepMs(16);
 
-    const char* pDataToSend = "hey sup";
+    const char pDataToSend[] = "hey sup";
     const size_t Sent = clientSession.EnqueueSendData(pDataToSend, sizeof(pDataToSend));
     EXPECT_EQ(Sent, sizeof(pDataToSend));
 
@@ -50,4 +50,5 @@ TEST(session_send_receive, udpsession_tests)
     char pReadBuffer[256] = {};
     const size_t Received = serverSession.TryReadData(pReadBuffer, sizeof(pReadBuffer));
     EXPECT_EQ(Received, sizeof(pDataToSend));
+    EXPECT_EQ(memcmp(pDataToSend, pReadBuffer, sizeof(pDataToSend)), 0);
 }

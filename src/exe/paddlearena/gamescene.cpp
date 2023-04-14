@@ -6,12 +6,9 @@
 
 #include <sputter/assets/assetstorageprovider.h>
 
-#include <sputter/core/serializer.h>
-
 #include <sputter/log/log.h>
 
 #include <sputter/render/window.h>
-#include <sputter/render/fontstorage.h>
 #include <sputter/render/volumetrictext.h>
 
 #include <sputter/input/inputsubsystem.h>
@@ -19,8 +16,6 @@
 #include <sputter/ui/modalpopup.h>
 
 #include <GLFW/glfw3.h>
-
-#include <glm/glm.hpp>
 
 using namespace sputter;
 
@@ -44,8 +39,6 @@ GameScene::GameScene(
     : m_reservedRegion(0x100000),
       m_fixedAllocator("GameState", m_reservedRegion.GetRegionBase(), m_reservedRegion.GetRegionSize()),
       m_pAssetStorageProvider(pStorageProvider),
-      m_pCamera(pCamera),
-      m_pOrthoMatrix(pOrthoMatrix),
       m_pTextRenderer(pTextRenderer),
       m_pWindow(pWindow),
       m_pPaddleArena(pPaddleArena)

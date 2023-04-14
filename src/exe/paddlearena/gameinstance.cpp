@@ -56,8 +56,7 @@ GameInstance::GameInstance(
       m_pCamera(pCamera),
       m_pOrthoMatrix(pOrthoMatrix),
       m_pTextRenderer(pTextRenderer),
-      m_pSubsystemProvider(pSubsystemProvider),
-      m_pAssetStorageProvider(pAssetStorageProvider)
+      m_pSubsystemProvider(pSubsystemProvider)
 {
     physics::RigidBodySubsystemSettings rigidBodySubsystemSettings;
     m_pRigidBodySubsystem = 

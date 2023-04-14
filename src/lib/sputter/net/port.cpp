@@ -53,7 +53,7 @@ UDPPort::~UDPPort()
     }
 }
 
-bool UDPPort::send(const void *data, int dataSize, const std::string &address, int port) const
+int UDPPort::send(const void *data, int dataSize, const std::string &address, int port) const
 {
     RELEASE_CHECK(m_socketHandle >= 0, "Socket is not open");
 
@@ -63,7 +63,7 @@ bool UDPPort::send(const void *data, int dataSize, const std::string &address, i
     if (inet_pton(AF_INET, address.c_str(), &dest.sin_addr) != 1) 
     {
         RELEASE_LOGLINE_WARNING(LOG_NET, "Failed to convert address to binary (address = %s)", address.data());
-        return false;
+        return -1;
     }
 
 #if DEBUG
@@ -76,13 +76,13 @@ bool UDPPort::send(const void *data, int dataSize, const std::string &address, i
     const int sent = sendto(m_socketHandle, data, dataSize, 0, reinterpret_cast<sockaddr *>(&dest), sizeof(dest));
     if (sent < 0) 
     {
-        RELEASE_LOGLINE_WARNING(LOG_NET, "Failed to send data");
-        return false;
+        RELEASE_LOGLINE_WARNING(LOG_NET, "Failed to send data: %s", strerror(errno));
+        return -1;
     } 
     else 
     {
         DEBUG_LOGLINE_INFO(LOG_NET, "Sent %d bytes", sent);
-        return true;
+        return sent;
     }
 }
 
@@ -100,7 +100,7 @@ int UDPPort::receive(void *data, int dataSize, std::string* pAddressOut) const
     const int SelectValue = select(m_socketHandle + 1, &readFds, nullptr, nullptr, &tv);
     if (SelectValue < 0)
     {
-        RELEASE_LOGLINE_ERROR(LOG_DEFAULT, "select() failed on socket: %s", strerror(errno));
+        RELEASE_LOGLINE_ERROR(LOG_NET, "select() failed on socket: %s", strerror(errno));
         return -1;
     }
 

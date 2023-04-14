@@ -11,12 +11,7 @@
 
 namespace sputter
 {
-    namespace assets
-    {
-        class AssetStorageProvider;
-    }
-
-    namespace game 
+    namespace game
     {
         class TimerSystem;
         class SubsystemProvider;
@@ -36,7 +31,6 @@ namespace sputter
 
     namespace input
     {
-        class InputSubsystem;
         class InputSource;
     }
 
@@ -96,12 +90,10 @@ private:
     sputter::render::VolumetricTextRenderer* m_pTextRenderer = nullptr;
 
     sputter::game::SubsystemProvider*        m_pSubsystemProvider = nullptr;
-    sputter::assets::AssetStorageProvider*   m_pAssetStorageProvider = nullptr;
 
     sputter::physics::RigidBodySubsystem*    m_pRigidBodySubsystem = nullptr;
     sputter::physics::CollisionSubsystem*    m_pCollisionSubsystem = nullptr;
     sputter::render::MeshSubsystem*          m_pMeshSubsystem = nullptr;
-    sputter::input::InputSubsystem*          m_pInputSubsystem = nullptr;
     sputter::input::InputSource*             m_pInputSources[2] = {};
 
     GameState*                               m_pGameState    = nullptr;
