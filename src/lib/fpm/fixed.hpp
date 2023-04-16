@@ -25,12 +25,12 @@ class fixed
     static_assert(sizeof(IntermediateType) > sizeof(BaseType), "IntermediateType must be larger than BaseType");
     static_assert(std::is_signed<IntermediateType>::value == std::is_signed<BaseType>::value, "IntermediateType must have same signedness as BaseType");
 
-    static constexpr BaseType FRACTION_MULT = BaseType(1) << FractionBits;
-
     struct raw_construct_tag {};
     constexpr inline fixed(BaseType val, raw_construct_tag) noexcept : m_value(val) {}
 
 public:
+    static constexpr BaseType FRACTION_MULT = BaseType(1) << FractionBits;
+
     inline fixed() noexcept {}
 
     // Converts an integral number to the fixed-point type.
