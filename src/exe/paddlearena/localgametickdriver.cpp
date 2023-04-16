@@ -103,9 +103,14 @@ void LocalGameTickDriver::Tick(math::FixedPoint dt)
         m_serializer.SaveFrame(CurrentFrame);
         if (m_serializer.GetChecksum(CurrentFrame) != synctestChecksum)
         {
-            // SAVE THE FRAMES YO
-            FrameStateLogger::LogFrameSlot(OldFrameLogSlot, CurrentFrame, "old");
-            FrameStateLogger::LogFrameSlot(NewFrameLogSlot, CurrentFrame, "new");
+            FrameStateLogger::LogFrameSlot(
+                OldFrameLogSlot,
+                CurrentFrame,
+                "old");
+            FrameStateLogger::LogFrameSlot(
+                NewFrameLogSlot,
+                CurrentFrame,
+                "new");
             sputter::system::LogAndFail("Checksum mismatch!");
         }
     }

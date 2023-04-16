@@ -21,6 +21,8 @@
 
 #include <sputter/memory/fixedmemoryallocator.h>
 
+#include <sputter/log/framestatelogger.h>
+
 namespace {
     void DrawScore(int x, int y, sputter::render::VolumetricTextRenderer* pTextRenderer, uint16_t score)
     {
@@ -82,10 +84,17 @@ GameInstance::GameInstance(
 
 bool GameInstance::Serialize(void* pBuffer, size_t* pBytesWrittenOut, size_t maxBytes)
 {
-    if (!m_pTimerSystem->Serialize(pBuffer, pBytesWrittenOut, maxBytes)) { return false; }
-    if (!m_pRigidBodySubsystem->Serialize(pBuffer, pBytesWrittenOut, maxBytes)) { return false; }
-    if (!m_pCollisionSubsystem->Serialize(pBuffer, pBytesWrittenOut, maxBytes)) { return false; }
-    if (!m_pGameState->Serialize(pBuffer, pBytesWrittenOut, maxBytes)) { return false; }
+    auto& TimerSystem = *m_pTimerSystem;
+    WRITE_OBJECT(TimerSystem, pBuffer, pBytesWrittenOut, maxBytes);
+
+    auto& RigidBodySubsystem = *m_pRigidBodySubsystem;
+    WRITE_OBJECT(RigidBodySubsystem, pBuffer, pBytesWrittenOut, maxBytes);
+
+    auto& CollisionSubsystem = *m_pCollisionSubsystem;
+    WRITE_OBJECT(CollisionSubsystem, pBuffer, pBytesWrittenOut, maxBytes);
+
+    auto& GameState = *m_pGameState;
+    WRITE_OBJECT(GameState, pBuffer, pBytesWrittenOut, maxBytes);
 
     return true;
 }
