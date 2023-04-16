@@ -194,7 +194,7 @@ void FrameStateLogger::LogFrameSlot(int slot, int frameNumber, const char *pIden
 #else
 void FrameStateLogger::SetSlot(size_t slotIndex) {}
 void FrameStateLogger::BeginFrame() {}
-void FrameStateLogger::EndFrame(uint32_t checksum);
+void FrameStateLogger::EndFrame(uint32_t checksum) {}
 void FrameStateLogger::BeginStruct(const char* pStructName) {}
 void FrameStateLogger::EndStruct() {}
 void FrameStateLogger::WriteProperty(const char* pPropertyName, bool value) {}
