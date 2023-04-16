@@ -34,6 +34,7 @@ namespace sputter { namespace physics {
         // Begin ISerializable
         virtual bool Serialize(void* pBuffer, size_t* pBytesWrittenOut, size_t maxBytes) override;
         virtual bool Deserialize(void* pBuffer, size_t* pBytesReadOut, size_t maxBytes) override;
+        virtual const char * GetName() const override { return "CollisionSubsystem"; };
         // End ISerializable
 
         core::ComponentHandle GetComponentHandle(Collision* pCollision) const;

@@ -35,6 +35,7 @@ public:
 
     virtual void Tick(sputter::math::FixedPoint deltaTime) override;
     virtual void PostTick(sputter::math::FixedPoint deltaTime) override;
+    virtual const char * GetName() const override { return "Ball"; };
 
     // Begin ISerializable
     virtual bool Serialize(void* pBuffer, size_t* pBytesWrittenOut, size_t maxBytes) override;

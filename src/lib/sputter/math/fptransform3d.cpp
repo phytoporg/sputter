@@ -2,6 +2,8 @@
 
 #include <glm/gtx/euler_angles.hpp>
 
+#include <cstdio>
+
 using namespace sputter::math;
 
 FPTransform3D::FPTransform3D() 
@@ -57,4 +59,18 @@ glm::mat4 FPTransform3D::ToMat4() const
     returnValue[3] = glm::vec4(translation, 1.0f);
 
     return returnValue;
+}
+
+void ToString(const FPTransform3D& transform, char *pBuffer)
+{
+    char translationBuffer[128];
+    ToString(transform.GetTranslation(), translationBuffer);
+    char scaleBuffer[128];
+    ToString(transform.GetScale(), scaleBuffer);
+    char rotationBuffer[128];
+    ToString(transform.GetRotation(), rotationBuffer);
+    sprintf(
+        pBuffer,
+        "translation: %s | scale: %s | rotation: %s",
+        translationBuffer, scaleBuffer, rotationBuffer);
 }

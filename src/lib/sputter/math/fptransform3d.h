@@ -38,4 +38,6 @@ namespace sputter { namespace math {
         // Roll, pitch, yaw
         FPVector3D m_rotation;
     };
-} }
+}}
+
+void ToString(const sputter::math::FPTransform3D& transform, char* pBuffer);

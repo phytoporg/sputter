@@ -1,4 +1,5 @@
 #include "collisionsubsystem.h"
+#include "sputter/log/framestatelogger.h"
 
 #include <sputter/system/system.h>
 #include <sputter/core/check.h>
@@ -58,10 +59,10 @@ void CollisionSubsystem::ReleaseComponent(Collision* pComponent)
 
 bool CollisionSubsystem::Serialize(void* pBuffer, size_t* pBytesWrittenOut, size_t maxBytes)
 {
-    WRITE(m_collisionCount, pBuffer, *pBytesWrittenOut, maxBytes);
+    WRITE_PROPERTY(m_collisionCount, pBuffer, *pBytesWrittenOut, maxBytes);
     *pBytesWrittenOut += sizeof(m_collisionCount);
 
-    WRITE_ARRAY(m_collisions, pBuffer, *pBytesWrittenOut, maxBytes);
+    WRITE_ARRAY_PROPERTY(m_collisions, pBuffer, *pBytesWrittenOut, maxBytes);
     *pBytesWrittenOut += sizeof(m_collisions);
 
     return true;

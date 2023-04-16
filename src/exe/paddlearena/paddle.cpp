@@ -25,8 +25,6 @@
 
 #include <sputter/containers/arrayvector.h>
 
-#include <sputter/system/system.h>
-
 #include <fpm/math.hpp>
 
 using namespace sputter::core;
@@ -229,16 +227,16 @@ void Paddle::PostTick(FixedPoint deltaTime)
 
 bool Paddle::Serialize(void* pBuffer, size_t* pBytesWrittenOut, size_t maxBytes)
 {
-    WRITE(m_localTransform, pBuffer, *pBytesWrittenOut, maxBytes);
+    WRITE_PROPERTY(m_localTransform, pBuffer, *pBytesWrittenOut, maxBytes);
     *pBytesWrittenOut += sizeof(m_localTransform);
 
-    WRITE(m_initialLocation, pBuffer, *pBytesWrittenOut, maxBytes);
+    WRITE_PROPERTY(m_initialLocation, pBuffer, *pBytesWrittenOut, maxBytes);
     *pBytesWrittenOut += sizeof(m_initialLocation);
 
-    WRITE(m_dashVelocityY, pBuffer, *pBytesWrittenOut, maxBytes);
+    WRITE_PROPERTY(m_dashVelocityY, pBuffer, *pBytesWrittenOut, maxBytes);
     *pBytesWrittenOut += sizeof(m_dashVelocityY);
 
-    WRITE(m_ballAttached, pBuffer, *pBytesWrittenOut, maxBytes);
+    WRITE_PROPERTY(m_dashVelocityY, pBuffer, *pBytesWrittenOut, maxBytes);
     *pBytesWrittenOut += sizeof(m_ballAttached);
 
     return true;

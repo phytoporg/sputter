@@ -8,9 +8,12 @@
 #include <sputter/input/inputdevice.h>
 #include <sputter/input/inputsource.h>
 
+#include <sputter/log/framestatelogger.h>
+
 using namespace sputter;
 using namespace sputter::game;
 using namespace sputter::input;
+using namespace sputter::log;
 
 struct LocalGameTickDriver::InputStorage
 {
@@ -72,6 +75,9 @@ void LocalGameTickDriver::Tick(math::FixedPoint dt)
     const uint32_t P1InputMask = m_pInputStorage->SamplePlayerDevice(0);
     const uint32_t P2InputMask = m_pInputStorage->SamplePlayerDevice(1);
 
+    static constexpr int OldFrameLogSlot = 0;
+    static constexpr int NewFrameLogSlot = 1;
+
     uint32_t synctestChecksum = 0;
     if (m_syncTestEnabled)
     {
@@ -81,6 +87,7 @@ void LocalGameTickDriver::Tick(math::FixedPoint dt)
 
         const uint32_t CurrentFrame = m_pGameInstance->GetFrame();
 
+        FrameStateLogger::SetSlot(OldFrameLogSlot);
         m_serializer.SaveFrame(CurrentFrame);
         synctestChecksum = m_serializer.GetChecksum(CurrentFrame);
         m_serializer.LoadFrame(InitialFrame);
@@ -91,9 +98,14 @@ void LocalGameTickDriver::Tick(math::FixedPoint dt)
     if (m_syncTestEnabled)
     {
         const uint32_t CurrentFrame = m_pGameInstance->GetFrame();
+
+        FrameStateLogger::SetSlot(NewFrameLogSlot);
         m_serializer.SaveFrame(CurrentFrame);
         if (m_serializer.GetChecksum(CurrentFrame) != synctestChecksum)
         {
+            // SAVE THE FRAMES YO
+            FrameStateLogger::LogFrameSlot(OldFrameLogSlot, CurrentFrame, "old");
+            FrameStateLogger::LogFrameSlot(NewFrameLogSlot, CurrentFrame, "new");
             sputter::system::LogAndFail("Checksum mismatch!");
         }
     }

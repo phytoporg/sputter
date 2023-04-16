@@ -14,6 +14,8 @@
 #include <sputter/math/fpvector3d.h>
 #include <sputter/math/fpconstants.h>
 
+#include <sputter/log/framestatelogger.h>
+
 namespace sputter
 {
     namespace render
@@ -47,6 +49,7 @@ public:
     // Begin ISerializable
     virtual bool Serialize(void* pBuffer, size_t* pBytesWrittenOut, size_t maxBytes) override;
     virtual bool Deserialize(void* pBuffer, size_t* pBytesReadOut, size_t maxBytes) override;
+    virtual const char * GetName() const override { return "Paddle"; };
     // End ISerializable
 
     void Initialize(

@@ -2,8 +2,11 @@
 #include "serializable.h"
 #include "check.h"
 
+#include <sputter/log/framestatelogger.h>
+
 using namespace sputter;
 using namespace sputter::core;
+using namespace sputter::log;
 
 static const uint32_t kInvalidIndex = 0xFFFFFFFF;
 static const uint32_t kDefaultFrameSize = 0x2000;
@@ -61,6 +64,8 @@ bool Serializer::UnregisterSerializableObject(ISerializable* pSerializableObject
 
 bool Serializer::SaveFrame(uint32_t frame)
 {
+    FrameStateLogger::BeginFrame();
+
     SerializedFrameInfo* pFrameInfo = m_frameStorage.GetOrCreateFrame(frame);
     if (!pFrameInfo)
     {
@@ -76,6 +81,8 @@ bool Serializer::SaveFrame(uint32_t frame)
     pFrameInfo->Size = bytesWritten;
     pFrameInfo->FrameID = frame;
     pFrameInfo->ComputeChecksum();
+
+    FrameStateLogger::EndFrame(pFrameInfo->Checksum);
     return true;
 }
 
@@ -170,7 +177,10 @@ bool Serializer::WriteAllObjects(void* pBuffer, size_t* pBytesWrittenOut, size_t
         size_t bytesWritten = 0;
         RELEASE_CHECK(numBytes >= totalBytesWritten, "Serializer has written beyond available buffer size");
         const size_t BytesRemaining = numBytes - totalBytesWritten;
+
+        FrameStateLogger::BeginStruct(pCurrentSerializableObject->GetName());
         const bool Success = pCurrentSerializableObject->Serialize(pCurrentWriteBase, &bytesWritten, BytesRemaining);
+        FrameStateLogger::EndStruct();
         if (!Success)
         {
             // Bail if a single object failed to write.

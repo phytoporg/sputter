@@ -4,6 +4,8 @@
 
 #include <sputter/system/system.h>
 
+#include <cstdio>
+
 using namespace sputter::math;
 
 const FPVector3D FPVector3D::ZERO = FPVector3D(0, 0, 0);
@@ -133,4 +135,18 @@ FixedPoint FPVector3D::DotProduct(const FPVector3D& other) const
 glm::vec3 FPVector3D::ToVec3() const 
 {
     return glm::vec3(float(m_x), float(m_y), float(m_z));
+}
+
+void ToString(const FPVector3D &vector, char *pBuffer)
+{
+    char xBuffer[64];
+    ToString(vector.GetX(), xBuffer);
+    char yBuffer[64];
+    ToString(vector.GetY(), yBuffer);
+    char zBuffer[64];
+    ToString(vector.GetZ(), zBuffer);
+
+    sprintf(
+            pBuffer,
+            "[x: %s, y: %s, z: %s]", xBuffer, yBuffer, zBuffer);
 }

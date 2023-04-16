@@ -2,6 +2,7 @@
 
 #include "fpconstants.h"
 #include <fpm/math.hpp>
+#include <cstdio>
 
 using namespace sputter::math;
 
@@ -118,4 +119,14 @@ bool FPVector2D::IsZero() const
 glm::vec2 sputter::math::FPVector2D::ToVec2() const 
 {
     return glm::vec2(float(m_x), float(m_y));
+}
+
+void ToString(const FPVector2D &vector, char *pBuffer)
+{
+    char xBuffer[64];
+    ToString(vector.GetX(), xBuffer);
+    char yBuffer[64];
+    ToString(vector.GetY(), yBuffer);
+
+    sprintf(pBuffer, "[x: %s, y: %s]", xBuffer, yBuffer);
 }

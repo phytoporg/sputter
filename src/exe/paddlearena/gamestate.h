@@ -51,3 +51,5 @@ struct GameState : public sputter::core::ISerializable
 private:
     static GameState* s_pGameState;
 };
+
+void ToString(GameState::State state, char* pBuffer);

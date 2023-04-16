@@ -24,6 +24,7 @@ namespace sputter { namespace log {
         Mesh,
         Render,
         Net,
+        FrameState,
         Max
     };
 
@@ -46,6 +47,8 @@ namespace sputter { namespace log {
 
 // Debug
 #if defined(DEBUG)
+    #define ENABLE_LOG_FRAMES 1
+
     #define DEBUG_LOG_ERROR(Zone, String, ...) \
         sputter::log::Log(Zone, sputter::log::LogVerbosity::Error, String, __VA_ARGS__);
     #define DEBUG_LOG_WARNING(Zone, String, ...) \
@@ -68,7 +71,9 @@ namespace sputter { namespace log {
     #define DEBUG_LOGLINE_VERYVERBOSE(Zone, String, ...) \
         sputter::log::LogLine(Zone, sputter::log::LogVerbosity::VeryVerbose, String, __VA_ARGS__);
 #else
-    #define DEBUG_LOG_ERROR(Zone, String, ...) 
+    #undef ENABLE_LOG_FRAMES
+
+    #define DEBUG_LOG_ERROR(Zone, String, ...)
     #define DEBUG_LOG_WARNING(Zone, String, ...) 
     #define DEBUG_LOG_INFO(Zone, String, ...) 
     #define DEBUG_LOG_VERBOSE(Zone, String, ...) 
@@ -112,3 +117,4 @@ namespace sputter { namespace log {
 #define LOG_MESH sputter::log::LogZone::Mesh
 #define LOG_RENDER sputter::log::LogZone::Render
 #define LOG_NET sputter::log::LogZone::Net
+#define LOG_FRAMESTATE sputter::log::LogZone::FrameState

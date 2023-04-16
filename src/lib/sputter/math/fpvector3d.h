@@ -68,3 +68,5 @@ namespace sputter { namespace math {
 
     FPVector3D operator*(FixedPoint scalar, const FPVector3D& other);
 }}
+
+void ToString(const sputter::math::FPVector3D& vector, char* pBuffer);

@@ -195,19 +195,19 @@ void Ball::PostTick(sputter::math::FixedPoint deltaTime)
 
 bool Ball::Serialize(void* pBuffer, size_t* pBytesWrittenOut, size_t maxBytes)
 {
-    WRITE(m_localTransform, pBuffer, *pBytesWrittenOut, maxBytes);
+    WRITE_PROPERTY(m_localTransform, pBuffer, *pBytesWrittenOut, maxBytes);
     *pBytesWrittenOut += sizeof(m_localTransform);
 
-    WRITE(m_initialLocation, pBuffer, *pBytesWrittenOut, maxBytes);
+    WRITE_PROPERTY(m_initialLocation, pBuffer, *pBytesWrittenOut, maxBytes);
     *pBytesWrittenOut += sizeof(m_initialLocation);
 
-    WRITE(m_travelVector, pBuffer, *pBytesWrittenOut, maxBytes);
+    WRITE_PROPERTY(m_travelVector, pBuffer, *pBytesWrittenOut, maxBytes);
     *pBytesWrittenOut += sizeof(m_travelVector);
 
-    WRITE(m_isAlive, pBuffer, *pBytesWrittenOut, maxBytes);
+    WRITE_PROPERTY(m_isAlive, pBuffer, *pBytesWrittenOut, maxBytes);
     *pBytesWrittenOut += sizeof(m_isAlive);
 
-    WRITE(m_isInitialized, pBuffer, *pBytesWrittenOut, maxBytes);
+    WRITE_PROPERTY(m_isInitialized, pBuffer, *pBytesWrittenOut, maxBytes);
     *pBytesWrittenOut += sizeof(m_isInitialized);
 
     return true;

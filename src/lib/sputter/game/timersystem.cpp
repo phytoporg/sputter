@@ -1,4 +1,5 @@
 #include "timersystem.h"
+#include "sputter/log/framestatelogger.h"
 
 #include <utility>
 
@@ -7,13 +8,13 @@ using TimerHandle = TimerSystem::TimerHandle;
 
 bool TimerSystem::Serialize(void* pBuffer, size_t* pBytesWrittenOut, size_t maxBytes)
 {
-    WRITE_ARRAY(m_entries, pBuffer, *pBytesWrittenOut, maxBytes);
+    WRITE_ARRAY_PROPERTY(m_entries, pBuffer, *pBytesWrittenOut, maxBytes);
     *pBytesWrittenOut += sizeof(m_entries);
 
-    WRITE(m_nextTimerHandle, pBuffer, *pBytesWrittenOut, maxBytes);
+    WRITE_PROPERTY(m_nextTimerHandle, pBuffer, *pBytesWrittenOut, maxBytes);
     *pBytesWrittenOut += sizeof(m_nextTimerHandle);
 
-    WRITE(m_nextEntry, pBuffer, *pBytesWrittenOut, maxBytes);
+    WRITE_PROPERTY(m_nextEntry, pBuffer, *pBytesWrittenOut, maxBytes);
     *pBytesWrittenOut += sizeof(m_nextEntry);
 
     return true;
