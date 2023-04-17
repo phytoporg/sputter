@@ -20,8 +20,8 @@ namespace sputter { namespace core {
     };
 }}
 
-#define WRITE_ARRAY(toWrite, pDestination, offset, maxBytes) \
-    if (!Write(toWrite, (char*)pDestination + offset, sizeof(toWrite), maxBytes - offset)) { return false; }
+#define WRITE_ARRAY(toWrite, numElements, pDestination, offset, maxBytes) \
+    if (!Write(toWrite, (char*)pDestination + offset, sizeof(toWrite[0]) * numElements, maxBytes - offset)) { return false; }
 
 #define WRITE(toWrite, pDestination, offset, maxBytes) \
     if (!Write(&(toWrite), (char*)pDestination + offset, sizeof(toWrite), maxBytes - offset)) { return false; }
@@ -29,5 +29,5 @@ namespace sputter { namespace core {
 #define READ(toRead, pSource, offset, maxBytes) \
     if (!Read(&(toRead), (char*)pSource + offset, sizeof(toRead), maxBytes - offset)) { return false; }
 
-#define READ_ARRAY(toRead, pSource, offset, maxBytes) \
-    if (!Read(toRead, (char*)pSource + offset, sizeof(toRead), maxBytes - offset)) { return false; }
+#define READ_ARRAY(toRead, numElements, pSource, offset, maxBytes) \
+    if (!Read(toRead, (char*)pSource + offset, sizeof(toRead[0]) * numElements, maxBytes - offset)) { return false; }

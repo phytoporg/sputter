@@ -6,7 +6,6 @@
 // LINUX++
 #include <time.h>
 #include <math.h>
-#include <unistd.h>
 // LINUX--
 
 namespace sputter { namespace system {
@@ -35,6 +34,7 @@ namespace sputter { namespace system {
     void LogAndFail(const std::string& errorString)
     {
         RELEASE_LOG_ERROR(LOG_DEFAULT, errorString.c_str());
+        log::LogFlush();
         throw std::runtime_error(errorString);
     }
 

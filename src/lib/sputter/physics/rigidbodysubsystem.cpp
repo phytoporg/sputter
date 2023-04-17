@@ -1,14 +1,12 @@
 #include "rigidbodysubsystem.h"
 #include <sputter/math/fixedpoint.h>
 #include <sputter/math/fpvector2d.h>
-#include <sputter/math/fpvector3d.h>
 #include <sputter/log/framestatelogger.h>
 
 #include <sputter/system/system.h>
 
 #include <string>
 #include <cstring>
-#include <cassert>
 
 namespace sputter { namespace physics {
     RigidBodySubsystem::RigidBodySubsystem(const RigidBodySubsystemSettings& settings)
@@ -109,10 +107,10 @@ namespace sputter { namespace physics {
 
     bool RigidBodySubsystem::Serialize(void* pBuffer, size_t* pBytesWrittenOut, size_t maxBytes)
     {
-        WRITE_ARRAY_PROPERTY(m_rigidBodies, pBuffer, *pBytesWrittenOut, maxBytes);
+        WRITE_ARRAY_PROPERTY(m_rigidBodies, kMaxRigidBodies, pBuffer, *pBytesWrittenOut, maxBytes);
         *pBytesWrittenOut += sizeof(m_rigidBodies);
 
-        WRITE_ARRAY_PROPERTY(m_validRigidBodyVector, pBuffer, *pBytesWrittenOut, maxBytes);
+        WRITE_ARRAY_PROPERTY(m_validRigidBodyVector, kMaxRigidBodies, pBuffer, *pBytesWrittenOut, maxBytes);
         *pBytesWrittenOut += sizeof(m_validRigidBodyVector);
 
         WRITE_PROPERTY(m_isGravityEnabled, pBuffer, *pBytesWrittenOut, maxBytes);
@@ -129,10 +127,10 @@ namespace sputter { namespace physics {
 
     bool RigidBodySubsystem::Deserialize(void* pBuffer, size_t* pBytesReadOut, size_t maxBytes)
     {
-        READ_ARRAY(m_rigidBodies, pBuffer, *pBytesReadOut, maxBytes);
+        READ_ARRAY(m_rigidBodies, kMaxRigidBodies, pBuffer, *pBytesReadOut, maxBytes);
         *pBytesReadOut += sizeof(m_rigidBodies);
 
-        READ_ARRAY(m_validRigidBodyVector, pBuffer, *pBytesReadOut, maxBytes);
+        READ_ARRAY(m_validRigidBodyVector, kMaxRigidBodies, pBuffer, *pBytesReadOut, maxBytes);
         *pBytesReadOut += sizeof(m_validRigidBodyVector);
 
         READ(m_isGravityEnabled, pBuffer, *pBytesReadOut, maxBytes);

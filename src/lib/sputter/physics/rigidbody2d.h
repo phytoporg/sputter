@@ -19,3 +19,5 @@ namespace sputter { namespace physics {
         math::FixedPoint Mass;
     };
 }}
+
+void ToString(const sputter::physics::RigidBody2D& rigidBody2D, char* pBuffer);

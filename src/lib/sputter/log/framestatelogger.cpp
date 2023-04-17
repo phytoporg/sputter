@@ -92,7 +92,7 @@ void FrameStateLogger::WriteProperty(const char* pPropertyName, unsigned long va
     WritePropertyName(pPropertyName);
 
     char ValueBuffer[kMaxValueLength] = {};
-    sprintf(ValueBuffer, "%ul", value);
+    sprintf(ValueBuffer, "%lu", value);
     WritePropertyValue(ValueBuffer);
 }
 
@@ -123,7 +123,7 @@ void FrameStateLogger::WriteProperty(const char *pPropertyName, int16_t value)
     WritePropertyValue(ValueBuffer);
 }
 
-void FrameStateLogger::WritePropertyName(const char *pPropertyName)
+void FrameStateLogger::WritePropertyName(const char *pPropertyName, bool withNewLine)
 {
     const char* pLast = &s_LogBuffers[s_SlotIndex][kLogFrameBufferSize];
     const size_t SlotPosition = s_LogBufferSizes[s_SlotIndex];
@@ -148,6 +148,12 @@ void FrameStateLogger::WritePropertyName(const char *pPropertyName)
     pNext[0] = ':';
     pNext[1] = ' ';
     pNext += 2;
+
+    if (withNewLine)
+    {
+        pNext[0] = '\n';
+        pNext++;
+    }
 
     s_LogBufferSizes[s_SlotIndex] += (pNext - pStart);
 }
@@ -208,3 +214,8 @@ void FrameStateLogger::WritePropertyName(const char *pPropertyName) {}
 void FrameStateLogger::WritePropertyValue(const char *pValueString) {}
 void FrameStateLogger::LogFrameSlot(int slot, int frameNumber, const char *pIdentifier) {}
 #endif
+
+void ToString(bool boolValue, char *pBuffer)
+{
+    sprintf(pBuffer, "%s", (boolValue ? "true" : "false"));
+}

@@ -30,6 +30,9 @@ using namespace sputter;
 int main(int argc, char** argv)
 {
     system::InitializeLogging(argv[0]);
+    // REMOVEME
+    log::SetLogFile("/tmp/logout");
+    // REMOVEME
 
     if (argc < 2)
     {

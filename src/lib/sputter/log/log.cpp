@@ -107,3 +107,8 @@ void sputter::log::Log(LogZone zone, LogVerbosity verbosity, const char* pFormat
 
     fprintf(s_pFile, "%s: %s", ZoneToString(zone), formatted);
 }
+
+void sputter::log::LogFlush()
+{
+    fflush(s_pFile);
+}

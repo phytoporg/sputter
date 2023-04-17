@@ -45,7 +45,7 @@ struct GameState : public sputter::core::ISerializable
     State            CurrentState = State::Invalid;
 
     using TimerSystem = sputter::game::TimerSystem;
-    TimerSystem::TimerHandle CountdownTimerHandle = TimerSystem::kInvalidTimerHandle;
+    sputter::game::TimerHandle CountdownTimerHandle = sputter::game::kInvalidTimerHandle;
     uint8_t          CountdownTimeRemaining = 0;
 
 private:

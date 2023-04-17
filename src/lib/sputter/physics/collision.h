@@ -39,3 +39,5 @@ namespace sputter { namespace physics {
         uint32_t CollisionFlags = 0;
     };
 }}
+
+void ToString(const sputter::physics::Collision& collision, char* pBuffer);

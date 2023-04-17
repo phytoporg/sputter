@@ -1,8 +1,8 @@
 #include "collisionsubsystem.h"
-#include "sputter/log/framestatelogger.h"
-
+#include <sputter/physics/collision.h>
 #include <sputter/system/system.h>
 #include <sputter/core/check.h>
+#include <sputter/log/framestatelogger.h>
 
 using namespace sputter::core;
 using namespace sputter::physics;
@@ -62,7 +62,7 @@ bool CollisionSubsystem::Serialize(void* pBuffer, size_t* pBytesWrittenOut, size
     WRITE_PROPERTY(m_collisionCount, pBuffer, *pBytesWrittenOut, maxBytes);
     *pBytesWrittenOut += sizeof(m_collisionCount);
 
-    WRITE_ARRAY_PROPERTY(m_collisions, pBuffer, *pBytesWrittenOut, maxBytes);
+    WRITE_ARRAY_PROPERTY(m_collisions, m_collisionCount, pBuffer, *pBytesWrittenOut, maxBytes);
     *pBytesWrittenOut += sizeof(m_collisions);
 
     return true;
@@ -75,7 +75,7 @@ bool CollisionSubsystem::Deserialize(void* pBuffer, size_t* pBytesReadOut, size_
 
     RELEASE_CHECK(m_collisionCount < kMaxCollisions, "Invalid collision count read while deserializing");
 
-    READ_ARRAY(m_collisions, pBuffer, *pBytesReadOut, maxBytes);
+    READ_ARRAY(m_collisions, m_collisionCount, pBuffer, *pBytesReadOut, maxBytes);
     *pBytesReadOut += sizeof(m_collisions);
 
     return true;

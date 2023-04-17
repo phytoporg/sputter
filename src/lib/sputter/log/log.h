@@ -41,6 +41,8 @@ namespace sputter { namespace log {
 
     void LogLine(LogZone zone, LogVerbosity verbosity, const char* pFormatString, ...);
     void Log(LogZone zone, LogVerbosity verbosity, const char* pFormatString, ...);
+
+    void LogFlush();
 }}
 
 // Log macros

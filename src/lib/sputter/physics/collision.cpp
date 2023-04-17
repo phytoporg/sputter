@@ -35,3 +35,21 @@ bool Collision::TestIntersection(const Collision& other, CollisionResult* pColli
 
     return false;
 }
+
+// game::objectstorage::ObjectHandle ObjectHandle = game::objectstorage::kInvalidHandle;
+//
+// static const size_t kMaxCollisionShapes = 8;
+// AABB            CollisionShapes[kMaxCollisionShapes];
+// size_t          NumCollisionShapes = 0;
+//
+// // Game-specified bitfields. Only objects with the same bits set can collide.
+// uint32_t CollisionFlags = 0;
+
+void ToString(const Collision &collision, char *pBuffer)
+{
+    sprintf(
+        pBuffer,
+        "ObjectHandle: %u, CollisionShapes: TODO, NumCollisionShapes: %llu, CollisionFlags: 0x%08X",
+        collision.ObjectHandle, collision.NumCollisionShapes, collision.CollisionFlags
+    );
+}

@@ -1,35 +1,76 @@
 #include "timersystem.h"
-#include "sputter/log/framestatelogger.h"
+#include <sputter/log/framestatelogger.h>
 
 #include <utility>
 
 using namespace sputter::game;
-using TimerHandle = TimerSystem::TimerHandle;
+
+bool TimerEntry::Serialize(void *pBuffer, size_t *pBytesWrittenOut, size_t maxBytes)
+{
+    WRITE_PROPERTY(Handle, pBuffer, *pBytesWrittenOut, maxBytes);
+    *pBytesWrittenOut += sizeof(Handle);
+
+    WRITE_OBJECT(OnTimerExpired, pBuffer, pBytesWrittenOut, maxBytes);
+
+    WRITE_PROPERTY(InitialFrames, pBuffer, *pBytesWrittenOut, maxBytes);
+    *pBytesWrittenOut += sizeof(InitialFrames);
+
+    WRITE_PROPERTY(FramesRemaining, pBuffer, *pBytesWrittenOut, maxBytes);
+    *pBytesWrittenOut += sizeof(FramesRemaining);
+
+    WRITE_PROPERTY(LoopCount, pBuffer, *pBytesWrittenOut, maxBytes);
+    *pBytesWrittenOut += sizeof(LoopCount);
+
+    return true;
+}
+
+bool TimerEntry::Deserialize(void *pBuffer, size_t *pBytesReadOut, size_t maxBytes)
+{
+    READ(Handle, pBuffer, *pBytesReadOut, maxBytes);
+    *pBytesReadOut += sizeof(Handle);
+
+    if (!OnTimerExpired.Deserialize(pBuffer, pBytesReadOut, maxBytes)) { return false; }
+
+    READ(InitialFrames, pBuffer, *pBytesReadOut, maxBytes);
+    *pBytesReadOut += sizeof(InitialFrames);
+
+    READ(FramesRemaining, pBuffer, *pBytesReadOut, maxBytes);
+    *pBytesReadOut += sizeof(FramesRemaining);
+
+    READ(LoopCount, pBuffer, *pBytesReadOut, maxBytes);
+    *pBytesReadOut += sizeof(LoopCount);
+
+    return true;
+}
 
 bool TimerSystem::Serialize(void* pBuffer, size_t* pBytesWrittenOut, size_t maxBytes)
 {
-    WRITE_ARRAY_PROPERTY(m_entries, pBuffer, *pBytesWrittenOut, maxBytes);
-    *pBytesWrittenOut += sizeof(m_entries);
+    WRITE_PROPERTY(m_nextEntry, pBuffer, *pBytesWrittenOut, maxBytes);
+    *pBytesWrittenOut += sizeof(m_nextEntry);
+
+    for (uint8_t i = 0; i < m_nextEntry; ++i)
+    {
+        WRITE_OBJECT(m_entries[i], pBuffer, pBytesWrittenOut, maxBytes);
+    }
 
     WRITE_PROPERTY(m_nextTimerHandle, pBuffer, *pBytesWrittenOut, maxBytes);
     *pBytesWrittenOut += sizeof(m_nextTimerHandle);
-
-    WRITE_PROPERTY(m_nextEntry, pBuffer, *pBytesWrittenOut, maxBytes);
-    *pBytesWrittenOut += sizeof(m_nextEntry);
 
     return true;
 }
 
 bool TimerSystem::Deserialize(void* pBuffer, size_t* pBytesReadOut, size_t maxBytes)
 {
-    READ_ARRAY(m_entries, pBuffer, *pBytesReadOut, maxBytes);
-    *pBytesReadOut += sizeof(m_entries);
+    READ(m_nextEntry, pBuffer, *pBytesReadOut, maxBytes);
+    *pBytesReadOut += sizeof(m_nextEntry);
+
+    for (uint8_t i = 0; i < m_nextEntry; ++i)
+    {
+        if (!m_entries[i].Deserialize(pBuffer, pBytesReadOut, maxBytes)) { return false; }
+    }
 
     READ(m_nextTimerHandle, pBuffer, *pBytesReadOut, maxBytes);
     *pBytesReadOut += sizeof(m_nextTimerHandle);
-
-    READ(m_nextEntry, pBuffer, *pBytesReadOut, maxBytes);
-    *pBytesReadOut += sizeof(m_nextEntry);
 
     return true;
 }
@@ -51,7 +92,10 @@ TimerHandle TimerSystem::CreateFrameTimer(uint32_t numFrames, const core::Functo
     return CreateLoopingFrameTimer(numFrames, 1, onTimerExpired);
 }
 
-TimerHandle TimerSystem::CreateLoopingFrameTimer(uint32_t numFrames, int8_t loopCount, const core::Functor& onTimerExpired)
+TimerHandle TimerSystem::CreateLoopingFrameTimer(
+    uint32_t numFrames,
+    int8_t loopCount,
+    const core::Functor& onTimerExpired)
 {
     if (m_nextEntry >= kMaxTimerEntries || numFrames == 0)
     {
@@ -140,4 +184,16 @@ void TimerSystem::Tick()
             }
         }
     }
+}
+
+void ToString(const TimerEntry &timerEntry, char *pBuffer)
+{
+    sprintf(
+        pBuffer,
+        "Handle: %u, Functor: %u, InitialFrames: %llu, FramesRemaining: %llu, LoopCount: %hhd",
+        timerEntry.Handle,
+        timerEntry.OnTimerExpired.GetHandle(),
+        timerEntry.InitialFrames,
+        timerEntry.FramesRemaining,
+        timerEntry.LoopCount);
 }

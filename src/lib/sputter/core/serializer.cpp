@@ -4,6 +4,8 @@
 
 #include <sputter/log/framestatelogger.h>
 
+#include <cstring>
+
 using namespace sputter;
 using namespace sputter::core;
 using namespace sputter::log;
@@ -71,6 +73,9 @@ bool Serializer::SaveFrame(uint32_t frame)
     {
         return false;
     }
+
+    // Clear the frame info buffer first
+    memset(pFrameInfo->pBuffer, 0, pFrameInfo->Size);
 
     size_t bytesWritten = 0;
     if (!WriteAllObjects(pFrameInfo->pBuffer, &bytesWritten, m_frameStorage.GetFrameSize()))

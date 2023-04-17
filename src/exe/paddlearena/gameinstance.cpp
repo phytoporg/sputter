@@ -114,7 +114,7 @@ void GameInstance::Initialize()
     // Register timer callback functor during initialization
     functorstorage::RegisterFunctor(reinterpret_cast<intptr_t>(&GameInstance::OnCountdownTimerExpired));
 
-    m_pGameState->CountdownTimerHandle = game::TimerSystem::kInvalidTimerHandle;
+    m_pGameState->CountdownTimerHandle = game::kInvalidTimerHandle;
     m_pGameState->Arena.Initialize(gameconstants::ArenaDimensions);        
     m_pGameState->Camera.SetTranslation(gameconstants::InitialCameraPosition);
     m_pGameState->Player1Score = 0;
@@ -160,7 +160,7 @@ void GameInstance::Tick(math::FixedPoint dt, uint32_t p1InputState, uint32_t p2I
             gameconstants::GetReadyString);
 
         // TODO: Need a way to check inputs to advance the state.
-        if (m_pGameState->CountdownTimerHandle == game::TimerSystem::kInvalidTimerHandle)
+        if (m_pGameState->CountdownTimerHandle == game::kInvalidTimerHandle)
         {
             const int8_t LoopCount = gameconstants::StartCountdownSeconds;
             const uint32_t TimerFrames = 60; // 1sec

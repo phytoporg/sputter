@@ -11,6 +11,8 @@
 #include <sputter/core/check.h>
 #include <sputter/core/serializable.h>
 
+void ToString(bool boolValue, char* pBuffer);
+
 namespace sputter { namespace log {
     class FrameStateLogger
     {
@@ -47,7 +49,7 @@ namespace sputter { namespace log {
         static void LogFrameSlot(int slot, int frameNumber, const char* pIdentifier);
 
     private:
-        static void WritePropertyName(const char* pPropertyName);
+        static void WritePropertyName(const char* pPropertyName, bool withNewLine = false);
         static void WritePropertyValue(const char* pValueString);
 
         static size_t s_SlotIndex;
@@ -73,7 +75,21 @@ namespace sputter { namespace log {
         T *pValues,
         size_t numValues)
     {
-        // TODO
+        const bool WithNewLine = true;
+        WritePropertyName(pPropertyName, WithNewLine);
+
+        s_LogBufferIndentations[s_SlotIndex]++;
+        for (size_t i = 0; i < numValues; ++i)
+        {
+            char indexStringBuffer[32] = {};
+            sprintf(indexStringBuffer, "%u: ", i);
+            WritePropertyName(indexStringBuffer);
+
+            char valueStringBuffer[kMaxValueLength];
+            ToString(pValues[i], valueStringBuffer);
+            WritePropertyValue(valueStringBuffer);
+        }
+        s_LogBufferIndentations[s_SlotIndex]--;
     }
 }}
 
@@ -86,9 +102,9 @@ namespace sputter { namespace log {
     sputter::log::FrameStateLogger::WriteProperty(#toWrite, (toWrite)); \
     WRITE(toWrite, pDestination, offset, maxBytes)
 
-#define WRITE_ARRAY_PROPERTY(toWrite, pDestination, offset, maxBytes) \
-    sputter::log::FrameStateLogger::WriteArrayProperty(               \
-        #toWrite,                                                     \
-        (toWrite),                                                    \
-        sizeof(toWrite) / sizeof((toWrite)[0]));                      \
-    WRITE_ARRAY(toWrite, pDestination, offset, maxBytes)
+#define WRITE_ARRAY_PROPERTY(toWrite, numElements, pDestination, offset, maxBytes) \
+    sputter::log::FrameStateLogger::WriteArrayProperty(     \
+        #toWrite,                                           \
+        (toWrite),                                          \
+        numElements);                                       \
+    WRITE_ARRAY(toWrite, numElements, pDestination, offset, maxBytes)

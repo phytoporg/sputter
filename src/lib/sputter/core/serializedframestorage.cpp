@@ -30,9 +30,11 @@ void SerializedFrameInfo::ComputeChecksum()
     for (size_t i = 0; i < Size; ++i)
     {
         sum += pByte[i];
+        RELEASE_LOGLINE_ERROR(LOG_DEFAULT, "%llu: SUM = %u", i, sum);
     }
 
     Checksum = ~sum;
+    RELEASE_LOGLINE_ERROR(LOG_DEFAULT, "CHECKSUM: %llu", Checksum);
 }
 
 SerializedFrameStorage::SerializedFrameStorage(FixedMemoryAllocator &allocator, size_t frameSize)

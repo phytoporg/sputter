@@ -1,5 +1,6 @@
 #include "stage.h"
 #include "objecttypes.h"
+#include "sputter/log/framestatelogger.h"
 
 #include <string>
 
@@ -154,12 +155,22 @@ void Stage::Initialize(FPVector2D stageDimensions)
 
 bool Stage::Serialize(void* pBuffer, size_t* pBytesWrittenOut, size_t maxBytes)
 {
-    // Nothing for rollback state just yet
+    WRITE_PROPERTY(m_localTransform, pBuffer, *pBytesWrittenOut, maxBytes);
+    *pBytesWrittenOut += sizeof(m_localTransform);
+
+    WRITE_PROPERTY(m_initialLocation, pBuffer, *pBytesWrittenOut, maxBytes);
+    *pBytesWrittenOut += sizeof(m_initialLocation);
+
     return true;
 }
 
 bool Stage::Deserialize(void* pBuffer, size_t* pBytesReadOut, size_t maxBytes)
 {
-    // Nothing for rollback state just yet
+    READ(m_localTransform, pBuffer, *pBytesReadOut, maxBytes);
+    *pBytesReadOut += sizeof(m_localTransform);
+
+    READ(m_initialLocation, pBuffer, *pBytesReadOut, maxBytes);
+    *pBytesReadOut += sizeof(m_initialLocation);
+
     return true;
 }
