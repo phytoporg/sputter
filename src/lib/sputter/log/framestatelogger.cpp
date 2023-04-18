@@ -10,11 +10,12 @@
 using namespace sputter;
 using namespace sputter::log;
 
-#if defined(ENABLE_LOG_FRAMES)
 size_t FrameStateLogger::s_SlotIndex = 0;
 char FrameStateLogger::s_LogBuffers[FrameStateLogger::kMaxFrameLoggerSlots][FrameStateLogger::kLogFrameBufferSize];
 size_t FrameStateLogger::s_LogBufferSizes[FrameStateLogger::kMaxFrameLoggerSlots];
 size_t FrameStateLogger::s_LogBufferIndentations[FrameStateLogger::kMaxFrameLoggerSlots];
+
+#if defined(ENABLE_LOG_FRAMES)
 
 void FrameStateLogger::SetSlot(size_t slotIndex)
 {
@@ -209,7 +210,7 @@ void FrameStateLogger::WriteProperty(const char* pPropertyName, unsigned long va
 void FrameStateLogger::WriteProperty(const char* pPropertyName, uint32_t value) {}
 void FrameStateLogger::WriteProperty(const char* pPropertyName, uint8_t value) {}
 void FrameStateLogger::WriteProperty(const char* pPropertyName, int16_t value) {}
-void FrameStateLogger::WritePropertyName(const char *pPropertyName) {}
+void FrameStateLogger::WritePropertyName(const char *pPropertyName, bool withNewLine) {}
 void FrameStateLogger::WritePropertyValue(const char *pValueString) {}
 void FrameStateLogger::LogFrameSlot(int slot, int frameNumber, const char *pIdentifier) {}
 #endif
