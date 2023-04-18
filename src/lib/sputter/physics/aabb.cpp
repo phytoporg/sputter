@@ -128,3 +128,17 @@ void AABB::SetExtents(const FPVector3D& extents)
 {
     m_extents = extents;
 }
+
+void ToString(const sputter::physics::AABB aabb, char *pBuffer)
+{
+    char lowerLeftBuffer[128];
+    ToString(aabb.GetLowerLeft(), lowerLeftBuffer);
+
+    char extentsBuffer[128];
+    ToString(aabb.GetExtents(), extentsBuffer);
+
+    sprintf(
+        pBuffer,
+        "LowerLeft: %s | Extents: %s",
+        lowerLeftBuffer, extentsBuffer);
+}

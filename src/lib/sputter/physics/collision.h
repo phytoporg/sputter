@@ -19,9 +19,15 @@ namespace sputter { namespace game {
 namespace sputter { namespace physics {
     struct CollisionResult;
 
-    struct Collision
+    struct Collision : public core::ISerializable
     {
         static const game::SubsystemType ComponentId = game::SubsystemType::TYPE_COLLISION;
+
+        // Begin ISerializable
+        virtual bool Serialize(void* pBuffer, size_t* pBytesWrittenOut, size_t maxBytes) override;
+        virtual bool Deserialize(void* pBuffer, size_t* pBytesReadOut, size_t maxBytes) override;
+        virtual const char * GetName() const override { return "Collision"; };
+        // End ISerializable
 
         bool Intersects(const Collision& other) const;
         bool TestIntersection(const Collision& other, CollisionResult* pCollisionResultOut) const;

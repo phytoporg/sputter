@@ -26,3 +26,5 @@ namespace sputter { namespace physics {
         sputter::math::FPVector3D m_extents;
     };
 }}
+
+void ToString(const sputter::physics::AABB aabb, char* pBuffer);

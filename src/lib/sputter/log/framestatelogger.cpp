@@ -10,8 +10,7 @@
 using namespace sputter;
 using namespace sputter::log;
 
-//#if defined(ENABLE_LOG_FRAMES)
-#if 1
+if defined(ENABLE_LOG_FRAMES)
 size_t FrameStateLogger::s_SlotIndex = 0;
 char FrameStateLogger::s_LogBuffers[FrameStateLogger::kMaxFrameLoggerSlots][FrameStateLogger::kLogFrameBufferSize];
 size_t FrameStateLogger::s_LogBufferSizes[FrameStateLogger::kMaxFrameLoggerSlots];

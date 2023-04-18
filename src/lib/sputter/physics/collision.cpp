@@ -1,5 +1,6 @@
 #include "collision.h"
 
+#include <sputter/log/framestatelogger.h>
 #include <sputter/core/check.h>
 
 using namespace sputter::physics;
@@ -32,6 +33,34 @@ bool Collision::TestIntersection(const Collision& other, CollisionResult* pColli
             }
         }
     }
+
+    return false;
+}
+
+bool Collision::Serialize(void *pBuffer, size_t *pBytesWrittenOut, size_t maxBytes)
+{
+    WRITE_PROPERTY(NumCollisionShapes, pBuffer, *pBytesWrittenOut, maxBytes);
+    *pBytesWrittenOut += sizeof(NumCollisionShapes);
+
+    WRITE_ARRAY_PROPERTY(CollisionShapes, NumCollisionShapes, pBuffer, *pBytesWrittenOut, maxBytes);
+    *pBytesWrittenOut += sizeof(CollisionShapes[0]) * NumCollisionShapes;
+
+    WRITE_PROPERTY(CollisionFlags, pBuffer, *pBytesWrittenOut, maxBytes);
+    *pBytesWrittenOut += sizeof(CollisionFlags);
+
+    return true;
+}
+
+bool Collision::Deserialize(void *pBuffer, size_t *pBytesReadOut, size_t maxBytes)
+{
+    READ(NumCollisionShapes, pBuffer, *pBytesReadOut, maxBytes);
+    *pBytesReadOut += sizeof(NumCollisionShapes);
+
+    READ_ARRAY(CollisionShapes, NumCollisionShapes, pBuffer, *pBytesReadOut, maxBytes);
+    *pBytesReadOut += sizeof(CollisionShapes[0]) * NumCollisionShapes;
+
+    READ(CollisionFlags, pBuffer, *pBytesReadOut, maxBytes);
+    *pBytesReadOut += sizeof(CollisionFlags);
 
     return false;
 }

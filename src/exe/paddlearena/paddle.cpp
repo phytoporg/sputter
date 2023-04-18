@@ -236,7 +236,7 @@ bool Paddle::Serialize(void* pBuffer, size_t* pBytesWrittenOut, size_t maxBytes)
     WRITE_PROPERTY(m_dashVelocityY, pBuffer, *pBytesWrittenOut, maxBytes);
     *pBytesWrittenOut += sizeof(m_dashVelocityY);
 
-    WRITE_PROPERTY(m_dashVelocityY, pBuffer, *pBytesWrittenOut, maxBytes);
+    WRITE_PROPERTY(m_ballAttached, pBuffer, *pBytesWrittenOut, maxBytes);
     *pBytesWrittenOut += sizeof(m_ballAttached);
 
     return true;

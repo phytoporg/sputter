@@ -62,8 +62,10 @@ bool CollisionSubsystem::Serialize(void* pBuffer, size_t* pBytesWrittenOut, size
     WRITE_PROPERTY(m_collisionCount, pBuffer, *pBytesWrittenOut, maxBytes);
     *pBytesWrittenOut += sizeof(m_collisionCount);
 
-    WRITE_ARRAY_PROPERTY(m_collisions, m_collisionCount, pBuffer, *pBytesWrittenOut, maxBytes);
-    *pBytesWrittenOut += sizeof(m_collisions);
+    for (size_t i = 0; i < m_collisionCount; ++i)
+    {
+        WRITE_OBJECT(m_collisions[i], pBuffer, pBytesWrittenOut, maxBytes);
+    }
 
     return true;
 }
@@ -75,8 +77,10 @@ bool CollisionSubsystem::Deserialize(void* pBuffer, size_t* pBytesReadOut, size_
 
     RELEASE_CHECK(m_collisionCount < kMaxCollisions, "Invalid collision count read while deserializing");
 
-    READ_ARRAY(m_collisions, m_collisionCount, pBuffer, *pBytesReadOut, maxBytes);
-    *pBytesReadOut += sizeof(m_collisions);
+    for (size_t i = 0; i < m_collisionCount; ++i)
+    {
+        m_collisions[i].Deserialize(pBuffer, pBytesReadOut, maxBytes);
+    }
 
     return true;
 }

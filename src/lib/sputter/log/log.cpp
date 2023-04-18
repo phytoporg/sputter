@@ -84,7 +84,6 @@ void sputter::log::LogLine(LogZone zone, LogVerbosity verbosity, const char* pFo
     va_list args;
     va_start(args, pFormatString);
     vsnprintf(formatted, sizeof(formatted), pFormatString, args);
-    perror(formatted);
     va_end(args);
 
     fprintf(s_pFile, "%s: %s\n", ZoneToString(zone), formatted);
@@ -102,7 +101,6 @@ void sputter::log::Log(LogZone zone, LogVerbosity verbosity, const char* pFormat
     va_list args;
     va_start(args, pFormatString);
     vsnprintf(formatted, sizeof(formatted), pFormatString, args);
-    perror(formatted);
     va_end(args);
 
     fprintf(s_pFile, "%s: %s", ZoneToString(zone), formatted);

@@ -21,9 +21,9 @@ namespace sputter { namespace log {
         static constexpr size_t kMaxFrameLoggerSlots = 8;
 
         // Arbitrary
-        static constexpr size_t kMaxStructNameLength = 128;
-        static constexpr size_t kMaxPropertyNameLength = 128;
-        static constexpr size_t kMaxValueLength = 128;
+        static constexpr size_t kMaxStructNameLength = 256;
+        static constexpr size_t kMaxPropertyNameLength = 256;
+        static constexpr size_t kMaxValueLength = 256;
 
         static void SetSlot(size_t slotIndex);
         static void BeginFrame();
