@@ -44,12 +44,49 @@ UDPPort::UDPPort(uint32_t port)
     m_port = port;
 }
 
+UDPPort::UDPPort()
+{}
+
 UDPPort::~UDPPort()
 {
     if (m_socketHandle >= 0) 
     {
         ::close(m_socketHandle);
         m_socketHandle = -1;
+    }
+}
+
+void UDPPort::SetSocket(int newSocket)
+{
+    if (m_socketHandle >= 0)
+    {
+        RELEASE_LOGLINE_WARNING(LOG_NET, "Overriding a valid socket handle");
+    }
+
+    m_socketHandle = newSocket;
+}
+
+void UDPPort::SetPort(int newPort)
+{
+    if (m_port >= 0)
+    {
+        RELEASE_LOGLINE_WARNING(LOG_NET, "Overriding a valid port number");
+    }
+
+    m_port = newPort;
+}
+
+void UDPPort::Close()
+{
+    if (m_socketHandle >= 0)
+    {
+        ::close(m_socketHandle);
+        m_socketHandle = -1;
+    }
+
+    if (m_port >= 0)
+    {
+        m_port = -1;
     }
 }
 
@@ -137,3 +174,14 @@ int UDPPort::GetPort() const
 {
     return m_port;
 }
+
+int UDPPort::GetSocket() const
+{
+    return m_socketHandle;
+}
+
+bool UDPPort::IsBound() const
+{
+    return m_socketHandle >= 0 && m_port >= 0;
+}
+

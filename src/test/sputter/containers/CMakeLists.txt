@@ -8,7 +8,7 @@ add_executable(${TARGETNAME} ${SOURCES})
 include_directories(${GTEST_INCLUDE_DIR})
 
 if(UNIX)
-    set(ADDITIONAL_LIBRARIES pthread)
+    set(ADDITIONAL_LIBRARIES gtest gtest_main pthread)
 endif()
 
 target_link_libraries(

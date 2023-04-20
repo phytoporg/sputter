@@ -1,8 +1,11 @@
 #include "log.h"
 
+#include <sputter/core/check.h>
+
 #include <cstdio>
 #include <cstdarg>
 #include <cstdlib>
+#include <cstring>
 
 using namespace sputter;
 using namespace sputter::log;
@@ -37,6 +40,36 @@ namespace
 void sputter::log::SetLogVerbosity(LogVerbosity newLogVerbosity)
 {
     s_CurrentVerbosity = newLogVerbosity;
+}
+
+void SetLogVerbosityFromString(const char* pVerbosityString)
+{
+    RELEASE_CHECK(pVerbosityString, "pVerbosityString cannot be null");
+
+    // const uint8_t Index = static_cast<uint8_t>(zone);
+    static const char* LUT[] = {
+            "Error",
+            "Warning",
+            "Info",
+            "Verbose",
+            "VeryVerbose",
+    };
+
+    static_assert(
+        sizeof(LUT) / sizeof(LUT[0]) == static_cast<int>(LogVerbosity::Max),
+        "Log verbosity LUT size does not match enum");
+
+    for (size_t i = 0; i < static_cast<int>(LogVerbosity::Max); ++i)
+    {
+        // TODO: case-insensitive search
+        if (strncmp(LUT[i], pVerbosityString, sizeof(LUT[i])) == 0)
+        {
+            SetLogVerbosity(static_cast<LogVerbosity>(i));
+            return;
+        }
+    }
+
+    RELEASE_LOGLINE_WARNING(LOG_DEFAULT, "Failed to find verbosity string: %s", pVerbosityString);
 }
 
 bool sputter::log::SetLogFile(const char* pLogFilePath)

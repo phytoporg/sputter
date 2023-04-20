@@ -2,8 +2,10 @@
 #define NOMINMAX
 
 #include "paddlearena.h"
+#include "gamemode.h"
 
 #include <sputter/core/cliargumentparser.h>
+#include <sputter/core/check.h>
 
 #include <sputter/assets/imagedata.h>
 #include <sputter/assets/assetstorage.h>
@@ -30,24 +32,78 @@ using namespace sputter;
 int main(int argc, char** argv)
 {
     system::InitializeLogging(argv[0]);
-    // REMOVEME
-    log::SetLogFile("/tmp/logout");
-    // REMOVEME
 
     if (argc < 2)
     {
-        std::cerr << "Usage: " << argv[0] << " " << "<asset_path>" << std::endl;
+        std::cerr << "Usage: " << argv[0] << " <asset_path> "
+                  << "--log-path <log_path> "
+                  << "--log-verbosity <Error|Warning|Info|Verbose|VeryVerbose> "
+                  << "--p2p-server "
+                  << "--p2p-client <server_ip:server_port> "
+                  << std::endl;
         return -1;
     }
 
+    GameMode gameMode = GameMode::Local; // Game plays local by default
     core::CommandLineArgumentParser parser(argc, argv);
     if (const core::CommandLineArgument* pArgument = parser.FindArgument("log-path"))
     {
         log::SetLogFile(pArgument->AsString().c_str());
     }
 
+    if (const core::CommandLineArgument* pArgument = parser.FindArgument("p2p-server"))
+    {
+        gameMode = GameMode::Server;
+        RELEASE_LOGLINE_INFO(LOG_DEFAULT, "PaddleArena starting in server mode");
+    }
+
+    const int32_t kDefaultServerPort = 7001; // TODO: Put in some kinda server class
+    std::string remoteServerAddress;
+    int32_t remoteServerPort = kDefaultServerPort;
+    if (const core::CommandLineArgument* pArgument = parser.FindArgument("p2p-client"))
+    {
+        if (gameMode == GameMode::Server)
+        {
+            RELEASE_LOGLINE_ERROR(LOG_DEFAULT, "p2p-client and p2p-server are mutually exclusive");
+            return -1;
+        }
+        gameMode = GameMode::Client;
+
+        const std::string& ArgValue = pArgument->AsString();
+        if (const size_t ColonPosition = ArgValue.find(':') != std::string::npos)
+        {
+            if (ColonPosition == 0 || ColonPosition == (ArgValue.size() - 1))
+            {
+                RELEASE_LOGLINE_ERROR(LOG_DEFAULT, "Malformed server address: %s", ArgValue.c_str());
+                return -1;
+            }
+
+            const std::string PortString = ArgValue.substr(ColonPosition);
+            remoteServerPort = std::atoi(PortString.c_str());
+            remoteServerAddress = ArgValue.substr(0, ColonPosition - 1);
+        }
+        else
+        {
+            remoteServerAddress = ArgValue;
+        }
+
+        RELEASE_LOGLINE_INFO(LOG_DEFAULT, "PaddleArena starting in client mode");
+        RELEASE_LOGLINE_INFO(
+            LOG_DEFAULT,
+            "Remote server: %s:%d",
+            remoteServerAddress.c_str(), remoteServerPort);
+    }
+
+    if (gameMode == GameMode::Local)
+    {
+        RELEASE_LOGLINE_INFO(
+                LOG_DEFAULT,
+                "PaddleArena starting in local mode",
+                remoteServerAddress.c_str(), remoteServerPort);
+    }
+
     render::Window window("PADDLEARENA", gameconstants::OrthoWidth, gameconstants::OrthoHeight);
-    PaddleArena game(&window, argv[1]);
+    PaddleArena game(&window, argv[1], gameMode, remoteServerAddress, remoteServerPort);
 
     game.StartGame();
 

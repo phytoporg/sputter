@@ -23,8 +23,14 @@ using namespace sputter;
 
 PaddleArena::PaddleArena(
         render::Window* pWindow,
-        const std::string& assetStoragePath) 
-    : m_assetStorage(assetStoragePath),
+        const std::string& assetStoragePath,
+        GameMode gameMode,
+        const std::string& remoteServerAddress,
+        int32_t remoteServerPort)
+    : m_gameMode(gameMode),
+      m_remoteServerAddress(remoteServerAddress),
+      m_remoteServerPort(remoteServerPort),
+      m_assetStorage(assetStoragePath),
       m_pWindow(pWindow),
       m_storageProvider(&m_assetStorage)
 {
@@ -121,14 +127,25 @@ bool PaddleArena::StartGame()
            0.0f,
            0.0f, 1000.0f);
 
-    // TODO: Initialize UI
     render::shapes::InitializeLineRenderer(&m_assetStorage, &m_shaderStorage, m_camera.ViewMatrix4d(), m_orthoMatrix);
 
     // Set up the scene stack
-    m_pMainMenuScene = new MainMenuScene(m_pWindow, this, m_pTextRenderer, &m_camera, &m_orthoMatrix);
-    m_pGameScene = new GameScene(m_pWindow, this, &m_camera, &m_orthoMatrix, m_pTextRenderer, &m_storageProvider);
-    game::IScene* ppScenes[] = { m_pMainMenuScene, m_pGameScene };
-    m_pSceneStack = new game::SceneStack(ppScenes, sizeof(ppScenes) / sizeof(ppScenes[0]));
+    if (m_gameMode == GameMode::Local)
+    {
+        m_pMainMenuScene = new MainMenuScene(m_pWindow, this, m_pTextRenderer, &m_camera, &m_orthoMatrix);
+        m_pGameScene = new GameScene(m_pWindow, this, &m_camera, &m_orthoMatrix, m_pTextRenderer, &m_storageProvider);
+        game::IScene* ppScenes[] = { m_pMainMenuScene, m_pGameScene };
+        m_pSceneStack = new game::SceneStack(ppScenes, sizeof(ppScenes) / sizeof(ppScenes[0]));
+    }
+    else
+    {
+        // Skip the main menu for server/client games
+        // TODO: use p2pconnectscene !!
+        m_pGameScene = new GameScene(m_pWindow, this, &m_camera, &m_orthoMatrix, m_pTextRenderer, &m_storageProvider);
+        game::IScene* ppScenes[] = { m_pMainMenuScene, m_pGameScene };
+        m_pSceneStack = new game::SceneStack(ppScenes, sizeof(ppScenes) / sizeof(ppScenes[0]));
+    }
+
     m_pSceneStack->Initialize();
 
     return true;
@@ -152,4 +169,19 @@ void PaddleArena::PreviousSceneFromGame()
     }
     
     m_pSceneStack->PopToPreviousScene();
+}
+
+GameMode PaddleArena::GetGameMode() const
+{
+    return m_gameMode;
+}
+
+const char *PaddleArena::GetRemoteServerAddress() const
+{
+    return m_remoteServerAddress.c_str();
+}
+
+int32_t PaddleArena::GetRemoteServerPort() const
+{
+    return m_remoteServerPort;
 }

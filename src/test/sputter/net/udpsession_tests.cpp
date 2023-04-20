@@ -29,6 +29,7 @@ TEST(session_ports, udpsession_tests)
 
 TEST(session_send_receive, udpsession_tests)
 {
+    // TODO: this test should be using ReliableUDPServer and ReliableUDPClient
     const uint32_t SessionId = 0x1234;
     const int ClientPort = 5001;
     const int ServerPort = 5002;

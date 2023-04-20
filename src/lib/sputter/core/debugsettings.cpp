@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <cstring>
 
+#include <sputter/core/check.h>
+
 namespace debugsettings = sputter::core::debugsettings;
 
 #if !defined(DEBUG)
@@ -29,7 +31,7 @@ namespace debugsettings = sputter::core::debugsettings;
             {
                 return -1;
             }
-            else if (strncmp(pName, CurrentPair.pName) == 0)
+            else if (strncmp(pName, CurrentPair.pName, debugsettings::kMaxSettingNameLength) == 0)
             {
                 return i;
             }
@@ -49,7 +51,7 @@ namespace debugsettings = sputter::core::debugsettings;
                 settingIndex = NumBooleanSettings;
                 ++NumBooleanSettings;
 
-                BooleanSettings[i].pName = pSettingName;
+                BooleanSettings[settingIndex].pName = pSettingName;
             }
             else
             {
@@ -59,7 +61,7 @@ namespace debugsettings = sputter::core::debugsettings;
         
         if (settingIndex >= 0)
         {
-            const SettingNameBooleanPair& CurrentPair = BooleanSettings[i];
+            SettingNameBooleanPair& CurrentPair = BooleanSettings[settingIndex];
             CurrentPair.Value = value;
         }
     }
@@ -74,7 +76,7 @@ namespace debugsettings = sputter::core::debugsettings;
         
         if (settingIndex >= 0)
         {
-            CHECK_RELEASE(settingIndex < NumBooleanSettings, "Index out of bounds");
+            RELEASE_CHECK(settingIndex < NumBooleanSettings, "Index out of bounds");
             return BooleanSettings[settingIndex].Value;
         }
 

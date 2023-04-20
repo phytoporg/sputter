@@ -1,5 +1,7 @@
 #pragma once
 
+#include "gamemode.h"
+
 #include <sputter/memory/fixedmemoryallocator.h>
 
 #include <sputter/game/game.h>
@@ -44,9 +46,13 @@ enum class PaddleArenaInput {
 class PaddleArena : public sputter::game::Game
 {
 public:
+    // Address and port are only interesting for the client game mode
     PaddleArena(
         sputter::render::Window* pWindow,
-        const std::string& assetStoragePath);
+        const std::string& assetStoragePath,
+        GameMode gameMode,
+        const std::string& remoteServerAddress,
+        int32_t remoteServerPort);
     virtual ~PaddleArena();
 
     virtual void Tick(sputter::math::FixedPoint deltaTime) override;
@@ -56,9 +62,17 @@ public:
     void NextSceneFromMainMenu();
     void PreviousSceneFromGame();
 
+    GameMode GetGameMode() const;
+    const char* GetRemoteServerAddress() const;
+    int32_t GetRemoteServerPort() const;
+
 private:
     PaddleArena() = delete;
     PaddleArena(const PaddleArena& other) = delete;
+
+    GameMode                                 m_gameMode = GameMode::Local;
+    const std::string                        m_remoteServerAddress;
+    const int32_t                            m_remoteServerPort;
 
     sputter::game::IScene*                   m_pMainMenuScene = nullptr;
     sputter::game::IScene*                   m_pGameScene = nullptr;

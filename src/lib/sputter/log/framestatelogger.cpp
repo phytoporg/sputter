@@ -16,7 +16,6 @@ size_t FrameStateLogger::s_LogBufferSizes[FrameStateLogger::kMaxFrameLoggerSlots
 size_t FrameStateLogger::s_LogBufferIndentations[FrameStateLogger::kMaxFrameLoggerSlots];
 
 #if defined(ENABLE_LOG_FRAMES)
-
 void FrameStateLogger::SetSlot(size_t slotIndex)
 {
     RELEASE_CHECK(slotIndex < FrameStateLogger::kMaxFrameLoggerSlots, "slotIndex is too large");
@@ -197,7 +196,6 @@ void FrameStateLogger::LogFrameSlot(int slot, int frameNumber, const char *pIden
     out.write(s_LogBuffers[slot], s_LogBufferSizes[slot]);
     out.flush();
 }
-
 #else
 void FrameStateLogger::SetSlot(size_t slotIndex) {}
 void FrameStateLogger::BeginFrame() {}

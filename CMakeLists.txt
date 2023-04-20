@@ -8,6 +8,16 @@ set (MyProject_VERSION_PATCH 1)
 
 set (CMAKE_CXX_STANDARD 20)
 
+option(OPTION_ENABLE_LOG_FRAMES "Enable serialized frame logging" OFF)
+if (OPTION_ENABLE_LOG_FRAMES)
+    add_definitions(-DENABLE_LOG_FRAMES)
+endif()
+
+option(OPTION_DEBUG "Enable debug features" OFF)
+if (OPTION_DEBUG)
+    add_definitions(-DDEBUG)
+endif()
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/external/cmake")
 
 # OpenGL
