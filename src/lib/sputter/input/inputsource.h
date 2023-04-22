@@ -32,6 +32,7 @@ namespace sputter { namespace input {
 
         void SetFrame(uint32_t frame);
         void Reset();
+        void Tick();
 
     private:
         IInputDevice* m_pInputDevice;

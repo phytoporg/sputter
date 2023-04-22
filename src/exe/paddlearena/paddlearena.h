@@ -30,6 +30,11 @@ namespace sputter
         class VolumetricTextRenderer;
         class Window;
     }
+
+    namespace net
+    {
+        class ReliableUDPSession;
+    }
 }
 
 enum class PaddleArenaInput {
@@ -62,6 +67,8 @@ public:
     void NextSceneFromMainMenu();
     void PreviousSceneFromGame();
 
+    void NextSceneFromP2PScreen();
+
     GameMode GetGameMode() const;
     const char* GetRemoteServerAddress() const;
     int32_t GetRemoteServerPort() const;
@@ -76,7 +83,10 @@ private:
 
     sputter::game::IScene*                   m_pMainMenuScene = nullptr;
     sputter::game::IScene*                   m_pGameScene = nullptr;
+    sputter::game::IScene*                   m_pP2PScene = nullptr;
     sputter::game::SceneStack*               m_pSceneStack = nullptr;
+
+    sputter::net::ReliableUDPSession*        m_pReliableUDPSession = nullptr;
 
     sputter::game::TimerSystem               m_timerSystem;
 

@@ -31,8 +31,8 @@ struct LocalGameTickDriver::InputStorage
                    0;
     }
 
-    static const int kMaxPlayerInputs = 8;
-    IInputDevice* PlayerInputDevices[kMaxPlayerInputs] = {};
+    static const int kMaxPlayerInputDevices = 2;
+    IInputDevice* PlayerInputDevices[kMaxPlayerInputDevices] = {};
 };
 
 LocalGameTickDriver::LocalGameTickDriver(

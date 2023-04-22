@@ -18,13 +18,15 @@ CommandLineArgumentParser::CommandLineArgumentParser(int argc, char** argv)
         {
             if (lastArgNameTokenIndex == (i - 1))
             {
-                // The previous argument was a flag, which isn't supported yet.
-                RELEASE_LOGLINE_ERROR(LOG_DEFAULT, "CLI argument has no value: %s", argv[lastArgNameTokenIndex]);
+                // The previous argument was a flag, emplace right here
+                // +2 to skip the "--" characters
+                m_parsedArguments.emplace_back(argv[lastArgNameTokenIndex] + 2);
             }
             else if (i == (argc - 1))
             {
                 // This argument is a flag
-                RELEASE_LOGLINE_ERROR(LOG_DEFAULT, "CLI argument has no value: %s", pCurrentToken);
+                // +2 to skip the "--" characters
+                m_parsedArguments.emplace_back(argv[i] + 2);
             }
 
             // This is an argument name. Track it.

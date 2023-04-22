@@ -78,3 +78,11 @@ void InputSource::Reset()
     m_inputStateBuffer.resize(1);
     CurrentFrame = 0;
 }
+
+void InputSource::Tick()
+{
+    if (m_pInputDevice)
+    {
+        m_pInputDevice->Tick();
+    }
+}

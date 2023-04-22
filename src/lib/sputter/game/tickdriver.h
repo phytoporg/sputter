@@ -7,6 +7,7 @@ namespace sputter { namespace game {
     class ITickDriver
     {
     public:
+        virtual void Initialize() = 0;
         virtual void Tick(math::FixedPoint dt) = 0;
 
     protected:

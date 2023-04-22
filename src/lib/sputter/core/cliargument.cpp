@@ -3,6 +3,10 @@
 using namespace sputter;
 using namespace sputter::core;
 
+CommandLineArgument::CommandLineArgument(const std::string& argumentName)
+    : m_name(argumentName), m_isFlag(true)
+{}
+
 CommandLineArgument::CommandLineArgument(const std::string& argumentName, const std::string& argumentValue)
     : m_name(argumentName), m_value(argumentValue) {}
 

@@ -42,7 +42,7 @@ void sputter::log::SetLogVerbosity(LogVerbosity newLogVerbosity)
     s_CurrentVerbosity = newLogVerbosity;
 }
 
-void SetLogVerbosityFromString(const char* pVerbosityString)
+void sputter::log::SetLogVerbosityFromString(const char* pVerbosityString)
 {
     RELEASE_CHECK(pVerbosityString, "pVerbosityString cannot be null");
 

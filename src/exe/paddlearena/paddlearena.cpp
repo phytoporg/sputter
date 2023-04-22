@@ -7,6 +7,7 @@
 #include "paddlearena.h"
 #include "gameconstants.h"
 #include "mainmenuscene.h"
+#include "p2pconnectscene.h"
 #include "gamescene.h"
 
 #include <sputter/render/window.h>
@@ -14,6 +15,8 @@
 #include <sputter/render/drawshapes.h>
 
 #include <sputter/math/fixedpoint.h>
+
+#include <sputter/net/reliableudpsession.h>
 
 #include <sputter/log/log.h>
 
@@ -100,6 +103,13 @@ PaddleArena::~PaddleArena()
         m_pMainMenuScene = nullptr;
     }
 
+    if (m_pP2PScene)
+    {
+        m_pP2PScene->Uninitialize();
+        delete m_pP2PScene;
+        m_pP2PScene = nullptr;
+    }
+
     delete m_pTextRenderer;
 
     render::shapes::UninitializeLineRenderer();
@@ -107,6 +117,11 @@ PaddleArena::~PaddleArena()
 
 void PaddleArena::Tick(math::FixedPoint dt)
 {
+    if (m_pReliableUDPSession)
+    {
+        m_pReliableUDPSession->Tick();
+    }
+
     m_timerSystem.Tick(/* TODO: dt */);
     m_pSceneStack->Tick(dt);
 }
@@ -142,7 +157,8 @@ bool PaddleArena::StartGame()
         // Skip the main menu for server/client games
         // TODO: use p2pconnectscene !!
         m_pGameScene = new GameScene(m_pWindow, this, &m_camera, &m_orthoMatrix, m_pTextRenderer, &m_storageProvider);
-        game::IScene* ppScenes[] = { m_pMainMenuScene, m_pGameScene };
+        m_pP2PScene = new P2PConnectScene(m_pWindow, this);
+        game::IScene* ppScenes[] = { m_pP2PScene, m_pGameScene };
         m_pSceneStack = new game::SceneStack(ppScenes, sizeof(ppScenes) / sizeof(ppScenes[0]));
     }
 
@@ -155,7 +171,7 @@ void PaddleArena::NextSceneFromMainMenu()
 {
     if (m_pSceneStack->GetCurrentScene() != m_pMainMenuScene)
     {
-        system::LogAndFail("Unexpected scene calling main menu event");
+        system::LogAndFail("Unexpected scene, expected main menu");
     }
     
     m_pSceneStack->PushToNextScene();
@@ -165,10 +181,20 @@ void PaddleArena::PreviousSceneFromGame()
 {
     if (m_pSceneStack->GetCurrentScene() != m_pGameScene)
     {
-        system::LogAndFail("Unexpected scene calling main menu event");
+        system::LogAndFail("Unexpected scene, expected game scene");
     }
     
     m_pSceneStack->PopToPreviousScene();
+}
+
+void PaddleArena::NextSceneFromP2PScreen()
+{
+    if (m_pSceneStack->GetCurrentScene() != m_pP2PScene)
+    {
+        system::LogAndFail("Unexpected scene, expected p2p screen");
+    }
+
+    m_pSceneStack->PushToNextScene();
 }
 
 GameMode PaddleArena::GetGameMode() const

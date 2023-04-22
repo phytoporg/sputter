@@ -3,6 +3,7 @@
 #include <sputter/game/scene.h>
 #include <sputter/game/subsystemprovider.h>
 #include <sputter/game/timersystem.h>
+#include <sputter/game/tickdriver.h>
 
 #include <sputter/core/serializedframestorage.h>
 
@@ -15,6 +16,7 @@
 #include <glm/glm.hpp>
 
 #include "localgametickdriver.h"
+#include "networkgametickdriver.h"
 
 // Forward declarations
 namespace sputter 
@@ -109,5 +111,5 @@ private:
 
     GameInstance*                             m_pGameInstance = nullptr;
 
-    LocalGameTickDriver*                      m_pGameTickDriver = nullptr;
+    sputter::game::ITickDriver*               m_pGameTickDriver = nullptr;
 };

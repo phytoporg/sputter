@@ -5,15 +5,10 @@
 #include <sputter/render/volumetrictext.h>
 #include <sputter/render/drawshapes.h>
 
-#include <sputter/game/timersystem.h>
-
 #include <sputter/core/check.h>
 
 #include <sputter/ui/screen.h>
 #include <sputter/ui/button.h>
-
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 
 using namespace sputter;
 

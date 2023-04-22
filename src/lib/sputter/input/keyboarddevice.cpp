@@ -11,6 +11,11 @@ KeyboardDevice::KeyboardDevice(sputter::render::Window* pWindow)
     : m_pWindow(pWindow)
 {}
 
+DeviceType KeyboardDevice::GetDeviceType() const
+{
+    return DeviceType::KeyboardInputDevice;
+}
+
 uint32_t KeyboardDevice::SampleGameInputState() const
 {
     uint32_t bitFlags = 0;
@@ -55,3 +60,4 @@ void KeyboardDevice::SetInputMap(InputMapEntry const* pEntries, size_t numEntrie
             };
     }
 }
+

@@ -5,32 +5,51 @@
 #include <sputter/system/system.h>
 #include <kcp/ikcp.h>
 
-#include <cstring>
-
 #include <vector>
-#include <algorithm>
 
 using namespace sputter;
 using namespace sputter::net;
 
 struct ReliableUDPSession::PImpl
 {
-    PImpl(uint32_t sessionId, const std::string& address, int localPort, int remotePortNumber) 
-        : SessionId(sessionId), Address(address), Port(localPort), RemotePortNumber(remotePortNumber) {}
+    PImpl(uint32_t sessionId, int localPort, const std::string& address, int remotePortNumber)
+        : SessionId(sessionId), Port(localPort), Address(address), RemotePortNumber(remotePortNumber) {}
+
+    PImpl(uint32_t sessionId, const UDPPort& port, const std::string& address, int remotePortNumber)
+            : SessionId(sessionId), Port(port), Address(address), RemotePortNumber(remotePortNumber) {}
 
     static const uint32_t kInvalidSessionId = 0xFFFFFFFF;
     uint32_t SessionId = kInvalidSessionId;
 
     std::string Address;
     UDPPort     Port;
-    int         RemotePortNumber;
-
-    ikcpcb*  pIkcpCb   = nullptr;
+    int         RemotePortNumber = -1;
+    ikcpcb*     pIkcpCb = nullptr;
 };
 
-ReliableUDPSession::ReliableUDPSession(uint32_t sessionId, const std::string& address, int port, int remotePortNumber)
-    : m_spPimpl(new ReliableUDPSession::PImpl(sessionId, address, port, remotePortNumber))
+ReliableUDPSession::ReliableUDPSession(uint32_t sessionId, int localPort, const std::string& address, int remotePortNumber)
+    : m_spPimpl(new ReliableUDPSession::PImpl(sessionId, localPort, address, remotePortNumber))
 {
+    RELEASE_CHECK(m_spPimpl->Port.bind(), "Failed to bind to local port");
+    RELEASE_CHECK(m_spPimpl->Port.connect(address, remotePortNumber), "Reliable UDP session failed to connect");
+
+    m_spPimpl->pIkcpCb = ikcp_create(sessionId, this);
+    RELEASE_CHECK(m_spPimpl->pIkcpCb, "Failed to create KCP object");
+
+    ikcp_setoutput(m_spPimpl->pIkcpCb, SendDataCallback);
+    const int kNoDelay = 1;
+    const int kUpdateInterval = 1000 / 60; // Once per frame
+    const int kEnableFastResend = 1;
+    const int kDisableCongestionControl = 1;
+    ikcp_nodelay(m_spPimpl->pIkcpCb, kNoDelay, kUpdateInterval, kEnableFastResend, kDisableCongestionControl);
+}
+
+ReliableUDPSession::ReliableUDPSession(uint32_t sessionId, const UDPPort& port, const std::string& address, int remotePortNumber)
+    : m_spPimpl(new ReliableUDPSession::PImpl(sessionId, port, address, remotePortNumber))
+{
+    m_spPimpl->Port.bind();
+    m_spPimpl->Port.connect(address, remotePortNumber);
+
     m_spPimpl->pIkcpCb = ikcp_create(sessionId, this);
     RELEASE_CHECK(m_spPimpl->pIkcpCb, "Failed to create KCP object");
 

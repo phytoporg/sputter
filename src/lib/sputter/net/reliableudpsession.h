@@ -1,5 +1,7 @@
 #pragma once
 
+#include "port.h"
+
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -11,7 +13,8 @@ namespace sputter { namespace net {
     class ReliableUDPSession
     {
     public:
-        ReliableUDPSession(uint32_t sessionId, const std::string& address, int localPort, int remotePort);
+        ReliableUDPSession(uint32_t sessionId, int localPort, const std::string& address, int remotePort);
+        ReliableUDPSession(uint32_t sessionId, const UDPPort& port, const std::string& address, int remotePort);
         ~ReliableUDPSession();
 
         void Tick();

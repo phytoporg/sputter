@@ -3,6 +3,7 @@
 #include "inputsource.h"
 #include <sputter/core/subsystem.h>
 #include <sputter/core/component.h>
+#include <sputter/net/reliableudpsession.h>
 #include <sputter/game/subsystemtype.h>
 #include <vector>
 
@@ -16,6 +17,7 @@ namespace sputter { namespace input {
         Invalid = 0,
         None,
         KeyboardInputDevice,
+        Remote,
         MaxDeviceType
     };
 
@@ -27,8 +29,11 @@ namespace sputter { namespace input {
 
     struct InputSubsystemSettings
     {
+        // For remote devices
+        net::ReliableUDPSession* pReliableUDPSession = nullptr;
+
         // For keyboards
-        sputter::render::Window* pWindow;
+        sputter::render::Window* pWindow = nullptr;
 
         // 2 players max for now?
         DeviceType PlayerDevices[2];

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <sputter/game/scene.h>
+#include <sputter/net/port.h>
 
 class PaddleArena;
 
@@ -34,7 +35,32 @@ public:
     virtual void Draw() override;
 
 private:
+    enum class ClientConnectState
+    {
+        Invalid = 0,
+        Starting,
+        SendingHello,
+        AwaitingServerResponse,
+        Connected,
+        Max
+    };
+    bool TickClient(); // Return true when connected
+    ClientConnectState m_clientConnectState = ClientConnectState::Invalid;
+
+    enum class ServerConnectState
+    {
+        Invalid = 0,
+        Starting,
+        AwaitingClientHello,
+        SendingHello,
+        Connected,
+        Max
+    };
+    bool TickServer(); // Return true when connected
+    ServerConnectState m_serverConnectState = ServerConnectState::Invalid;
+
     sputter::net::ReliableUDPSession*         m_pUdpSession = nullptr;
+    sputter::net::UDPPort                     m_port;
 
     sputter::render::Window*                  m_pWindow = nullptr;
     PaddleArena*                              m_pPaddleArena = nullptr;

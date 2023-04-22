@@ -45,8 +45,23 @@ GameScene::GameScene(
 {
     sputter::input::InputSubsystemSettings inputSubsystemSettings;
     inputSubsystemSettings.pWindow = pWindow;
-    inputSubsystemSettings.PlayerDevices[0] = sputter::input::DeviceType::KeyboardInputDevice;
-    inputSubsystemSettings.PlayerDevices[1] = sputter::input::DeviceType::None;
+
+    const GameMode GameMode = m_pPaddleArena->GetGameMode();
+    if (GameMode == GameMode::Local)
+    {
+        inputSubsystemSettings.PlayerDevices[0] = sputter::input::DeviceType::KeyboardInputDevice;
+        inputSubsystemSettings.PlayerDevices[1] = sputter::input::DeviceType::None;
+    }
+    else if(GameMode == GameMode::Client)
+    {
+        inputSubsystemSettings.PlayerDevices[0] = sputter::input::DeviceType::Remote;
+        inputSubsystemSettings.PlayerDevices[1] = sputter::input::DeviceType::KeyboardInputDevice;
+    }
+    else if(GameMode == GameMode::Server)
+    {
+        inputSubsystemSettings.PlayerDevices[0] = sputter::input::DeviceType::KeyboardInputDevice;
+        inputSubsystemSettings.PlayerDevices[1] = sputter::input::DeviceType::Remote;
+    }
 
     const std::vector<sputter::input::InputMapEntry> p1InputMap = { 
         InputMapping(GLFW_KEY_W, PaddleArenaInput::INPUT_MOVE_UP),
@@ -92,9 +107,17 @@ GameScene::GameScene(
     m_uiTheme.ModalBorderSize = 4;
     m_uiTheme.ModalBackgroundColor = render::Color::BLACK;
 
-    m_pGameTickDriver = 
-        m_fixedAllocator.Create<LocalGameTickDriver>(
-            m_fixedAllocator, m_pInputSubsystem, m_pGameInstance);
+    if (GameMode == GameMode::Local)
+    {
+        m_pGameTickDriver =
+            m_fixedAllocator.Create<LocalGameTickDriver>(
+                m_fixedAllocator, m_pInputSubsystem, m_pGameInstance);
+}
+    else if (GameMode == GameMode::Client || GameMode == GameMode::Server)
+    {
+        m_pGameTickDriver =
+            m_fixedAllocator.Create<NetworkGameTickDriver>(m_pInputSubsystem, m_pGameInstance);
+    }
 }
 
 GameScene::~GameScene()

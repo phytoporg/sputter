@@ -1,5 +1,6 @@
 #include "inputsubsystem.h"
 #include "keyboarddevice.h"
+#include "remotedevice.h"
 
 #include <sputter/core/check.h>
 #include <sputter/render/window.h>
@@ -17,6 +18,10 @@ InputSubsystem::InputSubsystem(const InputSubsystemSettings& settings)
             settings.pWindow)
         {
             pInputDevice = new KeyboardDevice(settings.pWindow);
+        }
+        else if (settings.PlayerDevices[i] == DeviceType::Remote && settings.pReliableUDPSession)
+        {
+            pInputDevice = new RemoteDevice(settings.pReliableUDPSession);
         }
         else if (settings.PlayerDevices[i] != DeviceType::None)
         {
@@ -38,6 +43,11 @@ InputSubsystem::InputSubsystem(const InputSubsystemSettings& settings)
 void InputSubsystem::Tick(math::FixedPoint dt)
 {
     glfwPollEvents();
+
+    for (InputSource& inputSource : m_inputSources)
+    {
+        inputSource.Tick();
+    }
 }
 
 InputSource* InputSubsystem::CreateComponent(const InputSource::InitializationParameters& params)

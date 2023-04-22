@@ -5,20 +5,11 @@
 #include "gamemode.h"
 
 #include <sputter/core/cliargumentparser.h>
-#include <sputter/core/check.h>
-
-#include <sputter/assets/imagedata.h>
-#include <sputter/assets/assetstorage.h>
 
 #include <sputter/render/spritesubsystem.h>
-#include <sputter/render/sprite.h>
-#include <sputter/render/texturestorage.h>
 #include <sputter/render/window.h>
 
-#include <sputter/physics/rigidbodysubsystem.h>
 #include <sputter/physics/rigidbody2d.h>
-
-#include <sputter/memory/reservedregion.h>
 
 #include <sputter/system/system.h>
 #include <sputter/system/time.h>
@@ -32,6 +23,7 @@ using namespace sputter;
 int main(int argc, char** argv)
 {
     system::InitializeLogging(argv[0]);
+    log::EnableZone(log::LogZone::Net);
 
     if (argc < 2)
     {
@@ -49,6 +41,11 @@ int main(int argc, char** argv)
     if (const core::CommandLineArgument* pArgument = parser.FindArgument("log-path"))
     {
         log::SetLogFile(pArgument->AsString().c_str());
+    }
+
+    if (const core::CommandLineArgument* pArgument = parser.FindArgument("log-verbosity"))
+    {
+        log::SetLogVerbosityFromString(pArgument->AsString().c_str());
     }
 
     if (const core::CommandLineArgument* pArgument = parser.FindArgument("p2p-server"))
@@ -70,7 +67,8 @@ int main(int argc, char** argv)
         gameMode = GameMode::Client;
 
         const std::string& ArgValue = pArgument->AsString();
-        if (const size_t ColonPosition = ArgValue.find(':') != std::string::npos)
+        const size_t ColonPosition = ArgValue.find(':');
+        if (ColonPosition != std::string::npos)
         {
             if (ColonPosition == 0 || ColonPosition == (ArgValue.size() - 1))
             {
@@ -78,9 +76,9 @@ int main(int argc, char** argv)
                 return -1;
             }
 
-            const std::string PortString = ArgValue.substr(ColonPosition);
+            const std::string PortString = ArgValue.substr(ColonPosition + 1);
             remoteServerPort = std::atoi(PortString.c_str());
-            remoteServerAddress = ArgValue.substr(0, ColonPosition - 1);
+            remoteServerAddress = ArgValue.substr(0, ColonPosition);
         }
         else
         {
@@ -97,9 +95,9 @@ int main(int argc, char** argv)
     if (gameMode == GameMode::Local)
     {
         RELEASE_LOGLINE_INFO(
-                LOG_DEFAULT,
-                "PaddleArena starting in local mode",
-                remoteServerAddress.c_str(), remoteServerPort);
+            LOG_DEFAULT,
+            "PaddleArena starting in local mode",
+            remoteServerAddress.c_str(), remoteServerPort);
     }
 
     render::Window window("PADDLEARENA", gameconstants::OrthoWidth, gameconstants::OrthoHeight);

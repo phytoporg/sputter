@@ -7,29 +7,28 @@ namespace sputter { namespace net {
     class UDPPort
     {
     public:
-        UDPPort(uint32_t port);
-
-        // TODO: right now the above constructor auto-binds. We want this to be a much
-        // dumber implementation, but for now we'll leave it so we can keep tests passing
-        // and iteratively migrate. In the meantime, this is the alternate set of port
-        // construction/initialization functions.
-        UDPPort();
-        void SetSocket(int newSocket);
-        void SetPort(int newPort);
-        void Close();
-
+        UDPPort(int port);
+        UDPPort(const UDPPort& port);
         ~UDPPort();
 
-        int send(const void *data, int dataSize, const std::string &address, int port) const;
+        bool connect(const std::string& address, int remotePort);
+        bool bind();
+        int send(const void *data, int dataSize, const std::string& address = "", int port = -1) const;
         int receive(void *data, int dataSize, std::string *pAddressOut = nullptr) const;
 
         int GetSocket() const;
         int GetPort() const;
+
+        std::string GetRemoteAddress() const;
+        int GetRemotePort() const;
 
         bool IsBound() const;
 
     private:
         int m_socketHandle = -1;
         int m_port = -1;
+
+        std::string m_remoteAddress;
+        int         m_remotePort = -1;
     };
 }}

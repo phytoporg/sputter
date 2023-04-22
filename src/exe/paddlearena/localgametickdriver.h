@@ -21,7 +21,7 @@ public:
         sputter::input::InputSubsystem* pInputSubsystem,
         GameInstance* pGameInstance);
 
-    void Initialize();
+    virtual void Initialize() override;
     void SetEnableSyncTest(bool enableSyncTest);
 
     virtual void Tick(sputter::math::FixedPoint dt) override;
@@ -32,7 +32,7 @@ private:
     sputter::input::InputSubsystem* m_pInputSubsystem = nullptr;
     GameInstance*                   m_pGameInstance = nullptr;
 
-    bool                            m_syncTestEnabled = true;
+    bool                            m_syncTestEnabled = false;
 
     sputter::core::Serializer       m_serializer;
 

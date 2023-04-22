@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <netdb.h>
 // LINUX--
 
 #include <cstring>
@@ -18,7 +19,7 @@
 using namespace sputter;
 using namespace sputter::net;
 
-UDPPort::UDPPort(uint32_t port)
+UDPPort::UDPPort(int port)
 {
     m_socketHandle = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (m_socketHandle < 0)
@@ -31,20 +32,14 @@ UDPPort::UDPPort(uint32_t port)
         system::LogAndFail("Failed to set nonblocking flag for socket handle");
     }
 
-    // Store port address
-    sockaddr_in bindAddress = {};
-    bindAddress.sin_family = AF_INET;
-    bindAddress.sin_addr.s_addr = htonl(INADDR_ANY);
-    bindAddress.sin_port = htons(port);
-    if (bind(m_socketHandle, reinterpret_cast<sockaddr *>(&bindAddress), sizeof(bindAddress)) < 0) 
-    {
-        system::LogAndFail("Failed to bind to socket");
-    }
-
     m_port = port;
 }
 
-UDPPort::UDPPort()
+UDPPort::UDPPort(const UDPPort &port)
+    : m_socketHandle(port.m_socketHandle),
+      m_port(port.m_port),
+      m_remoteAddress(port.m_remoteAddress),
+      m_remotePort(port.m_remotePort)
 {}
 
 UDPPort::~UDPPort()
@@ -56,48 +51,66 @@ UDPPort::~UDPPort()
     }
 }
 
-void UDPPort::SetSocket(int newSocket)
+bool UDPPort::bind()
 {
-    if (m_socketHandle >= 0)
+    // Store port address
+    sockaddr_in bindAddress = {};
+    bindAddress.sin_family = AF_INET;
+    bindAddress.sin_addr.s_addr = htonl(INADDR_ANY);
+    bindAddress.sin_port = htons(m_port);
+    if (::bind(m_socketHandle, reinterpret_cast<sockaddr *>(&bindAddress), sizeof(bindAddress)) < 0)
     {
-        RELEASE_LOGLINE_WARNING(LOG_NET, "Overriding a valid socket handle");
+        RELEASE_LOGLINE_ERROR(LOG_NET, "Failed to bind to socket: %d (%s)", m_port, strerror(errno));
+        return false;
     }
 
-    m_socketHandle = newSocket;
+    RELEASE_LOGLINE_INFO(LOG_NET, "Port bound to port: %d", m_port);
+    return true;
 }
 
-void UDPPort::SetPort(int newPort)
+bool UDPPort::connect(const std::string &address, int remotePort)
 {
-    if (m_port >= 0)
+    struct addrinfo info = {};
+    struct addrinfo* pRes = {};
+
+    char portStringBuffer[6] = {};
+    sprintf(portStringBuffer, "%d", remotePort);
+    if (getaddrinfo(address.c_str(), portStringBuffer, &info, &pRes) != 0)
     {
-        RELEASE_LOGLINE_WARNING(LOG_NET, "Overriding a valid port number");
+        RELEASE_LOGLINE_ERROR(
+                LOG_NET,
+                "Could not retrieve address info for %s:%s",
+                address.c_str(), portStringBuffer);
+        return false;
     }
 
-    m_port = newPort;
+    if (::connect(m_socketHandle, pRes->ai_addr, pRes->ai_addrlen) < 0)
+    {
+        RELEASE_LOGLINE_ERROR(
+                LOG_NET,
+                "Failed to connect to %s:%s",
+                address.c_str(), portStringBuffer);
+        return false;
+    }
+
+    RELEASE_LOGLINE_INFO(
+            LOG_NET,
+            "Successfully connected to %s:%s",
+            address.c_str(), portStringBuffer);
+    m_remoteAddress = address;
+    m_remotePort = remotePort;
+
+    return true;
 }
 
-void UDPPort::Close()
-{
-    if (m_socketHandle >= 0)
-    {
-        ::close(m_socketHandle);
-        m_socketHandle = -1;
-    }
-
-    if (m_port >= 0)
-    {
-        m_port = -1;
-    }
-}
-
-int UDPPort::send(const void *data, int dataSize, const std::string &address, int port) const
+int UDPPort::send(const void *data, int dataSize, const std::string& address, int port) const
 {
     RELEASE_CHECK(m_socketHandle >= 0, "Socket is not open");
 
     sockaddr_in dest = {};
     dest.sin_family = AF_INET;
     dest.sin_port = htons(port);
-    if (inet_pton(AF_INET, address.c_str(), &dest.sin_addr) != 1) 
+    if (inet_pton(AF_INET, address.c_str(), &dest.sin_addr) <= 0)
     {
         RELEASE_LOGLINE_WARNING(LOG_NET, "Failed to convert address to binary (address = %s)", address.data());
         return -1;
@@ -107,7 +120,7 @@ int UDPPort::send(const void *data, int dataSize, const std::string &address, in
     // Print the address and port we're sending to
     char addressBuffer[INET_ADDRSTRLEN];
     inet_ntop(AF_INET, &dest.sin_addr, addressBuffer, sizeof(addressBuffer));
-    DEBUG_LOGLINE_INFO(LOG_NET, "Sending to %s: %d", addressBuffer, m_port);
+    DEBUG_LOGLINE_INFO(LOG_NET, "Sending to %s: %d", addressBuffer, port);
 #endif
 
     const int sent = sendto(m_socketHandle, data, dataSize, 0, reinterpret_cast<sockaddr *>(&dest), sizeof(dest));
@@ -147,18 +160,19 @@ int UDPPort::receive(void *data, int dataSize, std::string* pAddressOut) const
     }
 
     sockaddr_in src = {};
-    socklen_t srcLength;
+    socklen_t srcLength = sizeof(src);
     const int received = recvfrom(m_socketHandle, data, dataSize, 0, reinterpret_cast<sockaddr *>(&src), &srcLength);
     if (received < 0) 
     {
         RELEASE_LOGLINE_WARNING(LOG_NET, "Failed to receive data");
         return -1;
     }
+    RELEASE_LOGLINE_INFO(LOG_NET, "Received %d bytes", received);
 
     if (pAddressOut)
     {
         // Convert address to string and assign to *pAddressOut
-        char addressBuffer[INET_ADDRSTRLEN];
+        char addressBuffer[INET_ADDRSTRLEN] = {};
         if (inet_ntop(AF_INET, &src.sin_addr, addressBuffer, sizeof(addressBuffer)) == nullptr) 
         {
             RELEASE_LOGLINE_ERROR(LOG_NET, "Failed to convert address to string");
@@ -170,14 +184,24 @@ int UDPPort::receive(void *data, int dataSize, std::string* pAddressOut) const
     return received;
 }
 
+int UDPPort::GetSocket() const
+{
+    return m_socketHandle;
+}
+
 int UDPPort::GetPort() const
 {
     return m_port;
 }
 
-int UDPPort::GetSocket() const
+std::string UDPPort::GetRemoteAddress() const
 {
-    return m_socketHandle;
+    return m_remoteAddress;
+}
+
+int UDPPort::GetRemotePort() const
+{
+    return m_remotePort;
 }
 
 bool UDPPort::IsBound() const

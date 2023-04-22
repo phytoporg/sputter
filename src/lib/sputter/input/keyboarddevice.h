@@ -13,6 +13,8 @@ namespace sputter { namespace input {
     public:
         KeyboardDevice(sputter::render::Window* pWindow);
 
+        virtual DeviceType GetDeviceType() const override;
+
         virtual uint32_t SampleGameInputState() const override;
         virtual uint32_t SampleGameInputState(uint32_t code) const override;
 
