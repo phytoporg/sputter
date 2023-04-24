@@ -211,3 +211,13 @@ int32_t PaddleArena::GetRemoteServerPort() const
 {
     return m_remoteServerPort;
 }
+
+sputter::net::ReliableUDPSession *PaddleArena::GetUDPSession() const
+{
+    return m_pReliableUDPSession;
+}
+
+void PaddleArena::SetUDPSession(sputter::net::ReliableUDPSession *pSession)
+{
+    m_pReliableUDPSession = pSession;
+}

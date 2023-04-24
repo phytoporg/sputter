@@ -120,7 +120,7 @@ int UDPPort::send(const void *data, int dataSize, const std::string& address, in
     // Print the address and port we're sending to
     char addressBuffer[INET_ADDRSTRLEN];
     inet_ntop(AF_INET, &dest.sin_addr, addressBuffer, sizeof(addressBuffer));
-    DEBUG_LOGLINE_INFO(LOG_NET, "Sending to %s: %d", addressBuffer, port);
+    DEBUG_LOGLINE_VERBOSE(LOG_NET, "Sending to %s: %d", addressBuffer, port);
 #endif
 
     const int sent = sendto(m_socketHandle, data, dataSize, 0, reinterpret_cast<sockaddr *>(&dest), sizeof(dest));
@@ -131,7 +131,7 @@ int UDPPort::send(const void *data, int dataSize, const std::string& address, in
     } 
     else 
     {
-        DEBUG_LOGLINE_INFO(LOG_NET, "Sent %d bytes", sent);
+        DEBUG_LOGLINE_VERBOSE(LOG_NET, "Sent %d bytes", sent);
         return sent;
     }
 }
@@ -167,7 +167,7 @@ int UDPPort::receive(void *data, int dataSize, std::string* pAddressOut) const
         RELEASE_LOGLINE_WARNING(LOG_NET, "Failed to receive data");
         return -1;
     }
-    RELEASE_LOGLINE_INFO(LOG_NET, "Received %d bytes", received);
+    RELEASE_LOGLINE_VERBOSE(LOG_NET, "Received %d bytes", received);
 
     if (pAddressOut)
     {

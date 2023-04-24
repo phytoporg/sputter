@@ -50,6 +50,7 @@ void P2PConnectScene::Tick(sputter::math::FixedPoint dt)
     {
         if (TickClient())
         {
+            m_pPaddleArena->SetUDPSession(m_pUdpSession);
             m_pPaddleArena->NextSceneFromP2PScreen();
         }
     }
@@ -57,6 +58,7 @@ void P2PConnectScene::Tick(sputter::math::FixedPoint dt)
     {
         if (TickServer())
         {
+            m_pPaddleArena->SetUDPSession(m_pUdpSession);
             m_pPaddleArena->NextSceneFromP2PScreen();
         }
     }

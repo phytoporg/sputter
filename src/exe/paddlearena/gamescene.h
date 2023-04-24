@@ -107,9 +107,14 @@ private:
     sputter::ui::ModalPopup*                  m_pModalPopup = nullptr;
     sputter::ui::Theme                        m_uiTheme;
 
+    sputter::render::Camera*                  m_pCamera = nullptr;
+    glm::mat4*                                m_pOrthoMatrix = nullptr;
+
     PaddleArena*                              m_pPaddleArena = nullptr;
 
     GameInstance*                             m_pGameInstance = nullptr;
 
     sputter::game::ITickDriver*               m_pGameTickDriver = nullptr;
+
+    bool CreateInputSubsystem();
 };

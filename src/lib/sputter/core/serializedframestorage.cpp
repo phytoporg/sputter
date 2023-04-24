@@ -4,10 +4,7 @@
 #include <cstring>
 
 #include <sputter/memory/fixedmemoryallocator.h>
-
-// REMOVEME
 #include <sputter/log/log.h>
-// REMOVEME
 
 using namespace sputter;
 using namespace sputter::core;

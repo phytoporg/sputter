@@ -15,6 +15,7 @@
 
 #include <sputter/input/inputsource.h>
 #include <sputter/input/inputsubsystem.h>
+#include <sputter/input/inputdevice.h>
 
 #include <sputter/physics/aabb.h>
 #include <sputter/physics/collision.h>
@@ -95,8 +96,10 @@ Paddle::Paddle(uint32_t playerId)
 void Paddle::Tick(FixedPoint deltaTime)
 {
     FPVector3D velocity = FPVector3D::ZERO;
-    if (m_playerId == 1)
+    InputSource* pInputSource = GetComponentByType<InputSource>();
+    if (pInputSource->GetInputDevice()->GetDeviceType() == DeviceType::None)
     {
+        // This is an AI
         if (IsBallAttached())
         {
             DetachBall(GetFacingDirection());
@@ -128,6 +131,7 @@ void Paddle::Tick(FixedPoint deltaTime)
     }
     else
     {
+        // This is a player
         InputSource* pInputSource = GetComponentByType<InputSource>();
         if (pInputSource->IsInputHeld(static_cast<uint32_t>(PaddleArenaInput::INPUT_MOVE_UP)))
         {

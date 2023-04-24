@@ -41,83 +41,16 @@ GameScene::GameScene(
       m_pAssetStorageProvider(pStorageProvider),
       m_pTextRenderer(pTextRenderer),
       m_pWindow(pWindow),
-      m_pPaddleArena(pPaddleArena)
+      m_pPaddleArena(pPaddleArena),
+      m_pCamera(pCamera),
+      m_pOrthoMatrix(pOrthoMatrix)
 {
-    sputter::input::InputSubsystemSettings inputSubsystemSettings;
-    inputSubsystemSettings.pWindow = pWindow;
-
-    const GameMode GameMode = m_pPaddleArena->GetGameMode();
-    if (GameMode == GameMode::Local)
-    {
-        inputSubsystemSettings.PlayerDevices[0] = sputter::input::DeviceType::KeyboardInputDevice;
-        inputSubsystemSettings.PlayerDevices[1] = sputter::input::DeviceType::None;
-    }
-    else if(GameMode == GameMode::Client)
-    {
-        inputSubsystemSettings.PlayerDevices[0] = sputter::input::DeviceType::Remote;
-        inputSubsystemSettings.PlayerDevices[1] = sputter::input::DeviceType::KeyboardInputDevice;
-    }
-    else if(GameMode == GameMode::Server)
-    {
-        inputSubsystemSettings.PlayerDevices[0] = sputter::input::DeviceType::KeyboardInputDevice;
-        inputSubsystemSettings.PlayerDevices[1] = sputter::input::DeviceType::Remote;
-    }
-
-    const std::vector<sputter::input::InputMapEntry> p1InputMap = { 
-        InputMapping(GLFW_KEY_W, PaddleArenaInput::INPUT_MOVE_UP),
-        InputMapping(GLFW_KEY_UP, PaddleArenaInput::INPUT_MOVE_UP),
-        InputMapping(GLFW_KEY_S, PaddleArenaInput::INPUT_MOVE_DOWN),
-        InputMapping(GLFW_KEY_DOWN, PaddleArenaInput::INPUT_MOVE_DOWN),
-        InputMapping(GLFW_KEY_A, PaddleArenaInput::INPUT_MOVE_LEFT),
-        InputMapping(GLFW_KEY_LEFT, PaddleArenaInput::INPUT_MOVE_LEFT),
-        InputMapping(GLFW_KEY_D, PaddleArenaInput::INPUT_MOVE_RIGHT),
-        InputMapping(GLFW_KEY_RIGHT, PaddleArenaInput::INPUT_MOVE_RIGHT),
-        InputMapping(GLFW_KEY_P, PaddleArenaInput::INPUT_PAUSE),
-        InputMapping(GLFW_KEY_SPACE, PaddleArenaInput::INPUT_SERVE),
-        InputMapping(GLFW_KEY_J, PaddleArenaInput::INPUT_DASH),
-    };
-    inputSubsystemSettings.pInputMapEntryArrays[0] = p1InputMap.data();
-    inputSubsystemSettings.pInputMapEntryArrays[1] = nullptr;
-        
-    inputSubsystemSettings.pNumInputMapEntries[0] = p1InputMap.size();
-    inputSubsystemSettings.pNumInputMapEntries[1] = 0;
-    m_pInputSubsystem = new sputter::input::InputSubsystem(inputSubsystemSettings);
-
-    m_pInputSources[0] = m_pInputSubsystem->GetInputSource(0);
-    m_pInputSources[1] = m_pInputSubsystem->GetInputSource(1);
-
-    m_subsystemProvider.AddSubsystem(m_pInputSubsystem);
-
-    m_pGameInstance = 
-        m_fixedAllocator.Create<GameInstance>(
-            &m_fixedAllocator,
-            m_pAssetStorageProvider,
-            &m_subsystemProvider,
-            &m_timerSystem,
-            pCamera,
-            pOrthoMatrix,
-            pTextRenderer,
-            m_pInputSources[0],
-            m_pInputSources[1]);
-
     m_uiTheme.FocusedBorderColor = render::Color::WHITE;
     m_uiTheme.ButtonBorderSize = gameconstants::MainMenuButtonBorderSize;
     m_uiTheme.UnfocusedBorderColor = render::Color::GRAY;
     m_uiTheme.ButtonDownAndDisabledBorderColor = render::Color::RED;
     m_uiTheme.ModalBorderSize = 4;
     m_uiTheme.ModalBackgroundColor = render::Color::BLACK;
-
-    if (GameMode == GameMode::Local)
-    {
-        m_pGameTickDriver =
-            m_fixedAllocator.Create<LocalGameTickDriver>(
-                m_fixedAllocator, m_pInputSubsystem, m_pGameInstance);
-}
-    else if (GameMode == GameMode::Client || GameMode == GameMode::Server)
-    {
-        m_pGameTickDriver =
-            m_fixedAllocator.Create<NetworkGameTickDriver>(m_pInputSubsystem, m_pGameInstance);
-    }
 }
 
 GameScene::~GameScene()
@@ -135,6 +68,46 @@ GameScene::~GameScene()
 
 void GameScene::Initialize() 
 {
+    if (!CreateInputSubsystem())
+    {
+        RELEASE_LOGLINE_ERROR(LOG_GAME, "Failed to create input subsystem");
+        return;
+    }
+
+    if (!m_pGameInstance)
+    {
+        m_pGameInstance =
+            m_fixedAllocator.Create<GameInstance>(
+                &m_fixedAllocator,
+                m_pAssetStorageProvider,
+                &m_subsystemProvider,
+                &m_timerSystem,
+                m_pCamera,
+                m_pOrthoMatrix,
+                m_pTextRenderer,
+                m_pInputSources[0],
+                m_pInputSources[1]);
+}
+
+    const GameMode GameMode = m_pPaddleArena->GetGameMode();
+    if (GameMode == GameMode::Local)
+    {
+        m_pGameTickDriver =
+                m_fixedAllocator.Create<LocalGameTickDriver>(
+                        m_fixedAllocator,
+                        m_pInputSubsystem,
+                        m_pGameInstance);
+    }
+    else if (GameMode == GameMode::Client || GameMode == GameMode::Server)
+    {
+        m_pGameTickDriver =
+                m_fixedAllocator.Create<NetworkGameTickDriver>(
+                        m_fixedAllocator,
+                        m_pInputSubsystem,
+                        m_pPaddleArena->GetUDPSession(),
+                        m_pGameInstance);
+    }
+
     if (!m_pScreen)
     {
         m_pScreen = new ui::Screen(m_pWindow);
@@ -161,6 +134,84 @@ void GameScene::Initialize()
             Initialize();
         }
     });
+}
+
+bool GameScene::CreateInputSubsystem()
+{
+    if (m_pInputSubsystem)
+    {
+        // Nothing to do
+        return true;
+    }
+
+    input::InputSubsystemSettings inputSubsystemSettings;
+    inputSubsystemSettings.pWindow = m_pWindow;
+
+    const std::vector<input::InputMapEntry> p1InputMap = {
+            InputMapping(GLFW_KEY_W, PaddleArenaInput::INPUT_MOVE_UP),
+            InputMapping(GLFW_KEY_UP, PaddleArenaInput::INPUT_MOVE_UP),
+            InputMapping(GLFW_KEY_S, PaddleArenaInput::INPUT_MOVE_DOWN),
+            InputMapping(GLFW_KEY_DOWN, PaddleArenaInput::INPUT_MOVE_DOWN),
+            InputMapping(GLFW_KEY_A, PaddleArenaInput::INPUT_MOVE_LEFT),
+            InputMapping(GLFW_KEY_LEFT, PaddleArenaInput::INPUT_MOVE_LEFT),
+            InputMapping(GLFW_KEY_D, PaddleArenaInput::INPUT_MOVE_RIGHT),
+            InputMapping(GLFW_KEY_RIGHT, PaddleArenaInput::INPUT_MOVE_RIGHT),
+            InputMapping(GLFW_KEY_P, PaddleArenaInput::INPUT_PAUSE),
+            InputMapping(GLFW_KEY_SPACE, PaddleArenaInput::INPUT_SERVE),
+            InputMapping(GLFW_KEY_J, PaddleArenaInput::INPUT_DASH),
+    };
+
+    const GameMode GameMode = m_pPaddleArena->GetGameMode();
+    if (GameMode == GameMode::Local)
+    {
+        inputSubsystemSettings.PlayerDevices[0] = input::DeviceType::KeyboardInputDevice;
+        inputSubsystemSettings.PlayerDevices[1] = input::DeviceType::None;
+
+        inputSubsystemSettings.pInputMapEntryArrays[0] = p1InputMap.data();
+        inputSubsystemSettings.pInputMapEntryArrays[1] = nullptr;
+
+        inputSubsystemSettings.pNumInputMapEntries[0] = p1InputMap.size();
+        inputSubsystemSettings.pNumInputMapEntries[1] = 0;
+    }
+    else
+    {
+        uint32_t localIndex;
+        uint32_t remoteIndex;
+        if (GameMode == GameMode::Client)
+        {
+            localIndex = 1;
+            remoteIndex = 0;
+
+        }
+        else if (GameMode == GameMode::Server)
+        {
+            localIndex = 0;
+            remoteIndex = 1;
+        }
+        else
+        {
+            system::LogAndFail("Unexpected game mode!");
+        }
+
+        inputSubsystemSettings.PlayerDevices[remoteIndex] = input::DeviceType::Remote;
+        inputSubsystemSettings.PlayerDevices[localIndex] = input::DeviceType::KeyboardInputDevice;
+        inputSubsystemSettings.pReliableUDPSession = m_pPaddleArena->GetUDPSession();
+
+        inputSubsystemSettings.pInputMapEntryArrays[localIndex] = p1InputMap.data();
+        inputSubsystemSettings.pInputMapEntryArrays[remoteIndex] = nullptr;
+
+        inputSubsystemSettings.pNumInputMapEntries[localIndex] = p1InputMap.size();
+        inputSubsystemSettings.pNumInputMapEntries[remoteIndex] = 0;
+    }
+
+    m_pInputSubsystem = new input::InputSubsystem(inputSubsystemSettings);
+
+    m_pInputSources[0] = m_pInputSubsystem->GetInputSource(0);
+    m_pInputSources[1] = m_pInputSubsystem->GetInputSource(1);
+
+    m_subsystemProvider.AddSubsystem(m_pInputSubsystem);
+
+    return true;
 }
 
 void GameScene::Uninitialize() 

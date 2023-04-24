@@ -36,8 +36,15 @@ private:
         uint32_t p1InputMask,
         uint32_t p2InputMask) override;
 
-    bool ReadNextRemotePlayerMessage(InputsMessage* pInputMessage, size_t messageLen);
+    bool ReadNextRemotePlayerMessage(InputsMessage* pInputMessage);
     bool SendNextInputMessage() const;
+
+    struct RollbackTickInfo
+    {
+        int32_t StartFrame;
+        int32_t TargetFrame;
+    };
+    RollbackTickInfo ProcessRemoteInputsMessage(InputsMessage* pInputMessage);
 
     uint32_t                          m_inputDelay = 3; // Hardcode for now
 
@@ -52,6 +59,6 @@ private:
 
     uint32_t*                         m_pInputDelayBuffer = nullptr;
 
-    static constexpr uint32_t         kNumInputsToSend = 4; // TODO: what's good???
+    static constexpr uint32_t         kNumInputsToSend = 8; // TODO: what's good???
     InputsMessage*                    m_pSendMessage = nullptr;
 };

@@ -72,6 +72,8 @@ public:
     GameMode GetGameMode() const;
     const char* GetRemoteServerAddress() const;
     int32_t GetRemoteServerPort() const;
+    sputter::net::ReliableUDPSession* GetUDPSession() const;
+    void SetUDPSession(sputter::net::ReliableUDPSession* pSession);
 
 private:
     PaddleArena() = delete;

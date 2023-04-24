@@ -23,7 +23,8 @@ using namespace sputter;
 int main(int argc, char** argv)
 {
     system::InitializeLogging(argv[0]);
-    log::EnableZone(log::LogZone::Net);
+    log::EnableZone(log::LogZone::Game);
+    // log::EnableZone(log::LogZone::Net);
 
     if (argc < 2)
     {

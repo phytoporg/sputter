@@ -28,7 +28,7 @@ struct InputsMessage
 
     MessageHeader Header;
     uint8_t NumFrames;
-    uint32_t StartFrame;
+    int32_t StartFrame;
     uint32_t GameInputMasks[];
 };
 
