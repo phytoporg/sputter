@@ -1,13 +1,7 @@
 #include "mesh.h"
 #include "render.h"
 #include "uniform.h"
-#include "attribute.h"
-#include "indexbuffer.h"
 #include "draw.h"
-
-#include <glm/glm.hpp>
-
-#include <sputter/render/uniform.h>
 
 #include <sputter/system/system.h>
 #include <sputter/log/log.h>

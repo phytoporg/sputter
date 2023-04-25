@@ -153,12 +153,6 @@ void GameInstance::Tick(math::FixedPoint dt, uint32_t p1InputState, uint32_t p2I
     const GameState::State CurrentState = m_pGameState->CurrentState;
     if (CurrentState == GameState::State::Starting)
     {
-        m_pTextRenderer->DrawText(
-            gameconstants::GetReadyPositionX,
-            gameconstants::GetReadyPositionY,
-            gameconstants::GetReadySize,
-            gameconstants::GetReadyString);
-
         // TODO: Need a way to check inputs to advance the state.
         if (m_pGameState->CountdownTimerHandle == game::kInvalidTimerHandle)
         {
@@ -168,18 +162,7 @@ void GameInstance::Tick(math::FixedPoint dt, uint32_t p1InputState, uint32_t p2I
             m_pGameState->CountdownTimeRemaining = gameconstants::StartCountdownSeconds;
         }
 
-        const char CountdownChar = '0' + static_cast<char>(m_pGameState->CountdownTimeRemaining);
-        char pCountdownString[2] = { CountdownChar, '\0' };
-
-        if (m_pGameState->CountdownTimeRemaining > 0)
-        {
-            m_pTextRenderer->DrawText(
-                gameconstants::StartCountdownPositionX,
-                gameconstants::StartCountdownPositionY,
-                gameconstants::StartCountdownSize,
-                pCountdownString);
-        }
-        else
+        if (m_pGameState->CountdownTimeRemaining <= 0)
         {
             // TODO: Clean up unnecessary state once serving behavior is settled
             m_pGameState->TheBall.Initialize(
@@ -282,6 +265,26 @@ uint32_t GameInstance::GetFrame() const
 
 void GameInstance::Draw()
 {
+    const GameState::State CurrentState = m_pGameState->CurrentState;
+    if (CurrentState == GameState::State::Starting) {
+        m_pTextRenderer->DrawText(
+                gameconstants::GetReadyPositionX,
+                gameconstants::GetReadyPositionY,
+                gameconstants::GetReadySize,
+                gameconstants::GetReadyString);
+    }
+
+    const char CountdownChar = '0' + static_cast<char>(m_pGameState->CountdownTimeRemaining);
+    char pCountdownString[2] = { CountdownChar, '\0' };
+    if (m_pGameState->CountdownTimeRemaining > 0)
+    {
+        m_pTextRenderer->DrawText(
+                gameconstants::StartCountdownPositionX,
+                gameconstants::StartCountdownPositionY,
+                gameconstants::StartCountdownSize,
+                pCountdownString);
+    }
+
     const glm::mat4 viewMatrix = m_pCamera->ViewMatrix4d();
     m_pMeshSubsystem->Draw(*m_pOrthoMatrix, viewMatrix);
     m_pTextRenderer->SetMatrices(*m_pOrthoMatrix, viewMatrix);
@@ -290,7 +293,6 @@ void GameInstance::Draw()
     DrawScore(gameconstants::P1ScorePositionX, gameconstants::ScorePositionY, m_pTextRenderer, m_pGameState->Player1Score);
     DrawScore(gameconstants::P2ScorePositionX, gameconstants::ScorePositionY, m_pTextRenderer, m_pGameState->Player2Score);
 
-    const GameState::State CurrentState = m_pGameState->CurrentState;
     if (CurrentState == GameState::State::Paused)
     {
         m_pTextRenderer->DrawText(-160, -20, 5, "PAUSE");

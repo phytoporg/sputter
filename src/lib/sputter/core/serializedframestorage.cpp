@@ -67,6 +67,8 @@ SerializedFrameInfo* SerializedFrameStorage::GetOrCreateFrame(uint32_t frameInde
         RELEASE_CHECK(m_pFramePointers[FrameArrayIndex], "Frame pointer is unexpectedly null");
 
         SerializedFrameInfo& frameInfo = m_frameInfos[FrameArrayIndex];
+        RELEASE_CHECK(frameIndex == frameInfo.FrameID, "Retrieved wrong frame from serializer");
+
         return &frameInfo;
     }
     else

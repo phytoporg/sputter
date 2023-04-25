@@ -9,14 +9,15 @@
 using namespace sputter;
 using namespace sputter::input;
 
-// TODO: get packets, manage inputs, etc.
-
 struct NetworkGameTickDriver::InputStorage
 {
-    InputStorage(IInputDevice* p1InputDevice, IInputDevice* p2InputDevice)
+    InputStorage(InputSource* pP1InputSource, InputSource* pP2InputSource)
     {
-        memset(PlayerInputs, 0, sizeof(PlayerInputs));
+        memset(PlayerInputSources, 0, sizeof(PlayerInputSources));
         memset(PlayerInputDevices, 0, sizeof(PlayerInputDevices));
+
+        IInputDevice* p1InputDevice = pP1InputSource->GetInputDevice();
+        IInputDevice* p2InputDevice = pP2InputSource->GetInputDevice();
 
         const DeviceType P1DeviceType = p1InputDevice->GetDeviceType();
         const DeviceType P2DeviceType = p2InputDevice->GetDeviceType();
@@ -29,6 +30,9 @@ struct NetworkGameTickDriver::InputStorage
         LocalPlayerIndex = p1InputDevice->GetDeviceType() == DeviceType::Remote ? 1 : 0;
         RemotePlayerIndex = LocalPlayerIndex ^ 1;
 
+        PlayerInputSources[0] = pP1InputSource;
+        PlayerInputSources[1] = pP2InputSource;
+
         PlayerInputDevices[0] = p1InputDevice;
         PlayerInputDevices[1] = p2InputDevice;
     }
@@ -36,31 +40,39 @@ struct NetworkGameTickDriver::InputStorage
     uint32_t SampleLocalPlayerDevice() const
     {
         RELEASE_CHECK(LocalPlayerIndex < 2, "Player index out of bound sampling player device");
-        return PlayerInputDevices[LocalPlayerIndex] ?
-               PlayerInputDevices[LocalPlayerIndex]->SampleGameInputState() :
-               0;
+        return PlayerInputDevices[LocalPlayerIndex]->SampleGameInputState();
     }
 
-    uint32_t GetInputMaskForFrame(uint8_t playerIndex, uint32_t frame, bool predict = false)
+    uint32_t GetInputMaskForFrame(uint8_t playerIndex, uint32_t frame)
     {
-        // Provide a predicted result if we're ahead of the last confirmed frame
-        if (predict)
+        size_t latestValidFrame;
+        if (!PlayerInputSources[playerIndex]->GetLatestValidFrame(&latestValidFrame))
         {
-            return PlayerInputs[playerIndex][LastConfirmedFrame & kMaxPlayerInputFrames];
+            // No inputs yet, just return a "predicted" value of zero.
+            return 0;
         }
 
-        return PlayerInputs[playerIndex][frame % kMaxPlayerInputFrames];
+        if (frame > latestValidFrame)
+        {
+            // Provide a predicted result if we're ahead of the last valid input frame
+            RELEASE_CHECK(
+                LastConfirmedFrame < latestValidFrame,
+                "Confirmed frame is larger than latest valid input frame for input source");
+            return PlayerInputSources[playerIndex]->GetInputState(latestValidFrame);
+        }
+
+        return PlayerInputSources[playerIndex]->GetInputState(frame);
     }
 
     void SetInputMaskForFrame(uint8_t playerIndex, uint32_t frame, uint32_t inputMask)
     {
-        PlayerInputs[playerIndex][frame % kMaxPlayerInputFrames] = inputMask;
+        PlayerInputSources[playerIndex]->SetInputState(inputMask, frame);
     }
 
-    static constexpr int kMaxPlayerInputDevices = 8;
+    static constexpr int kMaxPlayers = 2;
     static constexpr int kMaxPlayerInputFrames = 8;
-    IInputDevice* PlayerInputDevices[kMaxPlayerInputDevices];
-    uint32_t PlayerInputs[kMaxPlayerInputDevices][kMaxPlayerInputFrames];
+    IInputDevice* PlayerInputDevices[kMaxPlayers];
+    InputSource* PlayerInputSources[kMaxPlayers];
     uint8_t LocalPlayerIndex = 0;
     uint8_t RemotePlayerIndex = 0;
 
@@ -80,22 +92,10 @@ NetworkGameTickDriver::NetworkGameTickDriver(
       m_serializer(fixedAllocator)
 {
     m_serializer.RegisterSerializableObject(m_pGameInstance);
-
-    InputSource* playerInputSources[2] = {
-        m_pInputSubsystem->GetInputSource(0),
-        m_pInputSubsystem->GetInputSource(1),
-    };
     m_pInputStorage = fixedAllocator.Create<InputStorage>(
-        playerInputSources[0] ? playerInputSources[0]->GetInputDevice() : nullptr,
-        playerInputSources[1] ? playerInputSources[1]->GetInputDevice() : nullptr
+        m_pInputSubsystem->GetInputSource(0), m_pInputSubsystem->GetInputSource(1)
     );
     RELEASE_CHECK(m_pInputStorage, "Failed to allocate input storage in LocalGameTickDriver");
-
-    const size_t DelayBufferSize = sizeof(uint32_t) * m_inputDelay;
-    m_pInputDelayBuffer =
-        fixedAllocator.ReserveNext<uint32_t>(DelayBufferSize);
-    memset(m_pInputDelayBuffer, 0, DelayBufferSize);
-    RELEASE_CHECK(m_pInputDelayBuffer, "Failed to allocate input delay buffer");
 
     const size_t SendMessageSize = InputsMessage::GetExpectedSize(kNumInputsToSend);
     m_pSendMessage =
@@ -107,6 +107,15 @@ NetworkGameTickDriver::NetworkGameTickDriver(
 void NetworkGameTickDriver::Initialize()
 {
     m_serializer.Reset();
+
+    // Initialize the first m_delay frames with 0 from both players
+    for (int i = 0; i < m_inputDelay; ++i)
+    {
+        m_pInputStorage->PlayerInputSources[0]->SetInputState(0, i);
+        m_pInputStorage->PlayerInputSources[1]->SetInputState(0, i);
+    }
+    m_serializer.SaveFrame(m_inputDelay - 1);
+    m_pInputStorage->LastConfirmedFrame = m_inputDelay - 1;
 }
 
 void NetworkGameTickDriver::Tick(sputter::math::FixedPoint dt)
@@ -114,12 +123,15 @@ void NetworkGameTickDriver::Tick(sputter::math::FixedPoint dt)
     const uint32_t CurrentFrame = m_pGameInstance->GetFrame();
     const uint32_t LocalPlayerIndex = m_pInputStorage->LocalPlayerIndex;
 
+    RELEASE_LOGLINE_VERBOSE(LOG_GAME, "TickDriver Ticking frame %u", CurrentFrame);
+
     m_pInputSubsystem->SetFrame(CurrentFrame);
     m_pInputSubsystem->Tick(dt);
 
-    // Sample local input and send "delayframes" into the future
     const uint32_t LocalInputs = m_pInputStorage->SampleLocalPlayerDevice();
-    m_pInputStorage->SetInputMaskForFrame(LocalPlayerIndex, CurrentFrame + m_inputDelay, LocalInputs);
+    // Sample local input and send "delayframes" into the future
+    m_pInputStorage->SetInputMaskForFrame(
+        LocalPlayerIndex, CurrentFrame + m_inputDelay, LocalInputs);
 
     if (!SendNextInputMessage())
     {
@@ -128,73 +140,36 @@ void NetworkGameTickDriver::Tick(sputter::math::FixedPoint dt)
         return;
     }
 
-    bool receivedRemotePlayerMessage = true;
-    if (!ReadNextRemotePlayerMessage(m_pSendMessage))
+    bool receivedRemotePlayerMessage = false;
+    int32_t rollbackStartFrame = CurrentFrame;
+    while (ReadNextRemotePlayerMessage(m_pSendMessage))
     {
-        RELEASE_LOGLINE_VERBOSE(LOG_GAME, "Did not read any remote input");
-        // TODO: something more. Are we disconnected?
-        receivedRemotePlayerMessage = false;
-    }
-
-    if (CurrentFrame < m_inputDelay)
-    {
-        // No inputs yet! Won't receive any for these frames either.
-        TickOneFrame(dt, 0, 0);
-        m_serializer.SaveFrame(CurrentFrame);
-        m_pInputStorage->LastConfirmedFrame = CurrentFrame;
-        return;
+        rollbackStartFrame =
+            std::min(ProcessRemoteInputsMessage(m_pSendMessage), rollbackStartFrame);
+        receivedRemotePlayerMessage = true;
     }
 
     if (!receivedRemotePlayerMessage)
     {
+        RELEASE_LOGLINE_VERBOSE(LOG_GAME, "Did not read any remote input");
+        // TODO: something more. Are we disconnected?
+    }
+
+    if (!receivedRemotePlayerMessage || CurrentFrame < m_inputDelay)
+    {
         TickOneFrame(
             dt,
-            m_pInputStorage->GetInputMaskForFrame(0, CurrentFrame, 0 != LocalPlayerIndex),
-            m_pInputStorage->GetInputMaskForFrame(1, CurrentFrame, 1 != LocalPlayerIndex));
+            m_pInputStorage->GetInputMaskForFrame(0, CurrentFrame),
+            m_pInputStorage->GetInputMaskForFrame(1, CurrentFrame));
         return;
     }
 
-    const NetworkGameTickDriver::RollbackTickInfo RollbackTickInfo =
-        ProcessRemoteInputsMessage(m_pSendMessage);
-
-    // Shouldn't StartFrame always be the confirmed frame?
-    RELEASE_CHECK(
-        RollbackTickInfo.StartFrame >= 0,
-        "Unexpected rollback start frame");
-    RELEASE_CHECK(
-        RollbackTickInfo.StartFrame == m_pInputStorage->LastConfirmedFrame + 1,
-        "Rollback not starting with last confirmed frame");
-    if (RollbackTickInfo.StartFrame < CurrentFrame)
-    {
-        m_serializer.LoadFrame(m_pInputStorage->LastConfirmedFrame);
-    }
-
-    const uint32_t TargetFrame =
-        std::min(CurrentFrame, static_cast<uint32_t>(RollbackTickInfo.TargetFrame));
-    RELEASE_LOGLINE_INFO(
-        LOG_GAME,
-        "Beginning rollback: %d -> %d",
-        RollbackTickInfo.StartFrame,
-        TargetFrame);
-    for (uint32_t frame = RollbackTickInfo.StartFrame; frame <= CurrentFrame; ++frame)
-    {
-        const bool PredictP1Input = 0 != LocalPlayerIndex && frame > TargetFrame;
-        const bool PredictP2Input = 1 != LocalPlayerIndex && frame > TargetFrame;
-        m_pInputSubsystem->SetFrame(frame);
-        TickOneFrame(
-                dt,
-                m_pInputStorage->GetInputMaskForFrame(0, frame, PredictP1Input),
-                m_pInputStorage->GetInputMaskForFrame(1, frame, PredictP2Input));
-        if (frame <= TargetFrame)
-        {
-            // TODO: evaluate and compare checksums
-            m_pInputStorage->LastConfirmedFrame = frame;
-            if (frame == TargetFrame)
-            {
-                m_serializer.SaveFrame(m_pInputStorage->LastConfirmedFrame);
-            }
-        }
-    }
+    DoRollbacks(dt, rollbackStartFrame);
+    TickOneFrame(
+        dt,
+        m_pInputStorage->GetInputMaskForFrame(0, CurrentFrame),
+        m_pInputStorage->GetInputMaskForFrame(1, CurrentFrame));
+    m_serializer.SaveFrame(m_pGameInstance->GetFrame());
 }
 
 void NetworkGameTickDriver::TickOneFrame(
@@ -248,7 +223,7 @@ bool NetworkGameTickDriver::SendNextInputMessage() const
     m_pSendMessage->StartFrame = CurrentFrame - m_pSendMessage->NumFrames + 1;
     RELEASE_LOGLINE_VERBOSE(
         LOG_GAME,
-        "Sending - START: %u - NUM: %hhu",
+        "Sending - START: %d - NUM: %hhu",
         m_pSendMessage->StartFrame,
         m_pSendMessage->NumFrames);
     const uint8_t LocalPlayerIndex = m_pInputStorage->LocalPlayerIndex;
@@ -256,15 +231,6 @@ bool NetworkGameTickDriver::SendNextInputMessage() const
     {
         m_pSendMessage->GameInputMasks[i] =
             m_pInputStorage->GetInputMaskForFrame(LocalPlayerIndex, m_pSendMessage->StartFrame + i);
-
-        if (m_pSendMessage->GameInputMasks[i] != 0)
-        {
-            RELEASE_LOGLINE_INFO(
-                LOG_GAME,
-                "INPUT TO SEND: Frame %u, Mask %u",
-                m_pSendMessage->StartFrame + i,
-                m_pSendMessage->GameInputMasks[i]);
-        }
     }
     const size_t SendMessageSize = InputsMessage::GetExpectedSize(kNumInputsToSend);
     m_pSendMessage->Header.MessageSize = InputsMessage::GetExpectedSize(m_pSendMessage->NumFrames);
@@ -280,22 +246,23 @@ bool NetworkGameTickDriver::SendNextInputMessage() const
     return true;
 }
 
-NetworkGameTickDriver::RollbackTickInfo
+int32_t
 NetworkGameTickDriver::ProcessRemoteInputsMessage(InputsMessage *pInputMessage)
 {
-    NetworkGameTickDriver::RollbackTickInfo rollbackTickInfo
-    {
-        .StartFrame = -1,
-        .TargetFrame = -1
-    };
-    RELEASE_LOGLINE_INFO(LOG_GAME, "ProcessMessage++");
+    int32_t newConfirmedFrame = m_pInputStorage->LastConfirmedFrame;
+    int32_t startFrame = -1;
+    RELEASE_LOGLINE_VERYVERBOSE(
+        LOG_GAME,
+        "ProcessMessage++: NumFrames = %d, StartFrame = %d",
+        pInputMessage->NumFrames,
+        pInputMessage->StartFrame);
 
     for (uint32_t i = 0; i < pInputMessage->NumFrames; ++i)
     {
         const int32_t Frame = pInputMessage->StartFrame + i;
         if (Frame <= m_pInputStorage->LastConfirmedFrame)
         {
-            RELEASE_LOGLINE_INFO(
+            RELEASE_LOGLINE_VERBOSE(
                 LOG_GAME,
                 "Skipping frame which predates last confirmed frame: %d <= %d, mask = %u",
                 Frame,
@@ -303,37 +270,99 @@ NetworkGameTickDriver::ProcessRemoteInputsMessage(InputsMessage *pInputMessage)
                 pInputMessage->GameInputMasks[i]);
             continue;
         }
-        else if (rollbackTickInfo.StartFrame < 0)
+
+        const uint8_t RemotePlayerIndex = m_pInputStorage->RemotePlayerIndex;
+        const uint32_t RemoteInputForFrame = pInputMessage->GameInputMasks[i];
+        if (Frame < m_pGameInstance->GetFrame())
         {
-            RELEASE_LOGLINE_INFO(
-                LOG_GAME,
-                "Initializing start frame to %u, mask = %u",
-                Frame,
-                pInputMessage->GameInputMasks[i]);
-            rollbackTickInfo.StartFrame = Frame;
+            // Does the provided input differ from our predicted/stored input?
+            const bool InputDiffers =
+                m_pInputStorage->GetInputMaskForFrame(RemotePlayerIndex, Frame) != RemoteInputForFrame;
+            if (InputDiffers && startFrame < 0)
+            {
+                RELEASE_LOGLINE_VERBOSE(
+                    LOG_GAME,
+                    "Initializing start frame to %u, mask = %u",
+                    Frame,
+                    pInputMessage->GameInputMasks[i]);
+                startFrame = Frame;
+            }
+            else if (!InputDiffers && startFrame < 0)
+            {
+                RELEASE_LOGLINE_VERBOSE(
+                    LOG_GAME,
+                    "Frame %d was accurately predicted, marking as confirmed",
+                    Frame);
+                newConfirmedFrame = Frame;
+            }
         }
 
-        rollbackTickInfo.TargetFrame = Frame;
-
-        const uint32_t FrameRemoteInputMask = pInputMessage->GameInputMasks[i];
-        if (FrameRemoteInputMask != 0)
-        {
-            //REMOVEME
-            RELEASE_LOGLINE_INFO(
-                LOG_GAME,
-                "Received nonzero remote input mask: %u",
-                FrameRemoteInputMask);
-            //REMOVEME
-        }
-        m_pInputStorage->SetInputMaskForFrame(
-            m_pInputStorage->RemotePlayerIndex, Frame, FrameRemoteInputMask);
+        m_pInputStorage->SetInputMaskForFrame(RemotePlayerIndex, Frame, RemoteInputForFrame);
     }
 
-    RELEASE_LOGLINE_INFO(
+    if (newConfirmedFrame != m_pInputStorage->LastConfirmedFrame)
+    {
+        RELEASE_LOGLINE_VERBOSE(
             LOG_GAME,
-            "START = %d, TARGET = %d",
-            rollbackTickInfo.StartFrame, rollbackTickInfo.TargetFrame);
+            "Setting new confirmed frame %d",
+            newConfirmedFrame);
+        m_pInputStorage->LastConfirmedFrame = newConfirmedFrame;
+    }
 
-    RELEASE_LOGLINE_INFO(LOG_GAME, "ProcessMessage--");
-    return rollbackTickInfo;
+    RELEASE_LOGLINE_VERYVERBOSE(LOG_GAME, "ProcessMessage--");
+    return startFrame;
+}
+
+void
+NetworkGameTickDriver::DoRollbacks(
+    sputter::math::FixedPoint dt,
+    int32_t startFrame)
+{
+    if (startFrame < 0)
+    {
+        // Nothing to do
+        return;
+    }
+
+    const uint32_t CurrentFrame = m_pGameInstance->GetFrame();
+
+    RELEASE_CHECK(startFrame >= 0, "Unexpected rollback start frame");
+    if (startFrame < CurrentFrame)
+    {
+        RELEASE_LOGLINE_VERBOSE(LOG_GAME, "Loading frame %d", m_pInputStorage->LastConfirmedFrame);
+        m_serializer.LoadFrame(m_pInputStorage->LastConfirmedFrame);
+        RELEASE_CHECK(
+            m_pGameInstance->GetFrame() == m_pInputStorage->LastConfirmedFrame,
+            "Loaded frame is not the expected frame !");
+    }
+
+    RELEASE_LOGLINE_VERBOSE(
+        LOG_GAME,
+        "Beginning rollback: %d -> %d",
+        startFrame,
+        CurrentFrame - 1);
+    for (uint32_t frame = startFrame; frame < CurrentFrame; ++frame)
+    {
+        RELEASE_LOGLINE_VERYVERBOSE(
+            LOG_GAME,
+            "Rollback tick: Frame %d",
+            frame);
+        TickOneFrame(
+            dt,
+            m_pInputStorage->GetInputMaskForFrame(0, frame),
+            m_pInputStorage->GetInputMaskForFrame(1, frame));
+
+        // TODO: evaluate and compare checksums
+
+        // Consider this the last confirmed frame if inputs weren't predicted
+        InputSource* pRemoteInputSource = m_pInputStorage->PlayerInputSources[m_pInputStorage->RemotePlayerIndex];
+        size_t latestRemoteFrame;
+        if (pRemoteInputSource->GetLatestValidFrame(&latestRemoteFrame))
+        {
+            if (frame <= latestRemoteFrame)
+            {
+                m_pInputStorage->LastConfirmedFrame = frame;
+            }
+        }
+    }
 }

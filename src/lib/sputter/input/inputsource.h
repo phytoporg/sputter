@@ -26,6 +26,9 @@ namespace sputter { namespace input {
         void SetInputState(uint32_t inputState, uint32_t frame = kCurrentFrame);
         uint32_t GetInputState(uint32_t frame = kCurrentFrame) const;
 
+        // Returns false if no frames are yet valid
+        bool GetLatestValidFrame(size_t* pLatestFrameOut) const;
+
         bool IsInputHeld(uint32_t gameInputCode, uint32_t frame = kCurrentFrame) const;
         bool IsInputReleased(uint32_t gameInputCode, uint32_t frame = kCurrentFrame) const;
         bool IsInputPressed(uint32_t gameInputCode, uint32_t frame = kCurrentFrame) const;

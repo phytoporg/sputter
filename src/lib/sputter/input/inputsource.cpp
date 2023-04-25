@@ -20,6 +20,10 @@ IInputDevice* InputSource::GetInputDevice()
 void InputSource::SetInputState(uint32_t inputState, uint32_t frame)
 {
     if (frame == kCurrentFrame) { frame = CurrentFrame; }
+    if (m_inputStateBuffer.size() <= frame)
+    {
+        m_inputStateBuffer.resize(frame + 1);
+    }
     RELEASE_CHECK(frame < m_inputStateBuffer.size() || frame == kCurrentFrame, "Sampling invalid frame");
     m_inputStateBuffer[frame] = inputState;
 }
@@ -30,6 +34,17 @@ uint32_t InputSource::GetInputState(uint32_t frame) const
 
     RELEASE_CHECK(frame < m_inputStateBuffer.size() || frame == kCurrentFrame, "Sampling invalid frame");
     return m_inputStateBuffer[frame];
+}
+
+bool InputSource::GetLatestValidFrame(size_t* pLatestFrameOut) const
+{
+    if (m_inputStateBuffer.empty())
+    {
+        return false;
+    }
+
+    *pLatestFrameOut = m_inputStateBuffer.size() - 1;
+    return true;
 }
 
 bool InputSource::IsInputHeld(uint32_t gameInputCode, uint32_t frame) const 

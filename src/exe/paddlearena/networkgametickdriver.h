@@ -39,12 +39,10 @@ private:
     bool ReadNextRemotePlayerMessage(InputsMessage* pInputMessage);
     bool SendNextInputMessage() const;
 
-    struct RollbackTickInfo
-    {
-        int32_t StartFrame;
-        int32_t TargetFrame;
-    };
-    RollbackTickInfo ProcessRemoteInputsMessage(InputsMessage* pInputMessage);
+    int32_t ProcessRemoteInputsMessage(InputsMessage* pInputMessage);
+    void DoRollbacks(
+        sputter::math::FixedPoint dt,
+        int32_t startFrame);
 
     uint32_t                          m_inputDelay = 3; // Hardcode for now
 
