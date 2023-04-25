@@ -90,6 +90,9 @@ public:
     virtual void Draw() override;
 
 private:
+    void HandleRoundResetAsLocalPlayer();
+    void HandleRoundResetNonLocal();
+
     sputter::memory::ReservedRegion           m_reservedRegion;
     sputter::memory::FixedMemoryAllocator     m_fixedAllocator;
 
@@ -115,6 +118,10 @@ private:
     GameInstance*                             m_pGameInstance = nullptr;
 
     sputter::game::ITickDriver*               m_pGameTickDriver = nullptr;
+
+    bool                                      m_enableTickDriverTick = false;
+    bool                                      m_waitingForRestartReady = false;
+    bool                                      m_sentRestartReady = false;
 
     bool CreateInputSubsystem();
 };

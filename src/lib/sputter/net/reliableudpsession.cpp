@@ -122,3 +122,14 @@ int ReliableUDPSession::GetPort() const
 {
     return m_spPimpl->Port.GetPort();
 }
+
+size_t net::ReliableUDPSession::PeekSize() const
+{
+    const int Size = ikcp_peeksize(m_spPimpl->pIkcpCb);
+    return Size < 0 ? 0 : Size;
+}
+
+void net::ReliableUDPSession::Flush()
+{
+    ikcp_flush(m_spPimpl->pIkcpCb);
+}

@@ -77,7 +77,6 @@ struct NetworkGameTickDriver::InputStorage
     uint8_t RemotePlayerIndex = 0;
 
     // Last confirmed frame entry
-    uint8_t Head = 0;
     int32_t LastConfirmedFrame = -1;
 };
 

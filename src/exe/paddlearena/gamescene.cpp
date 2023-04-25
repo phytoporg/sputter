@@ -90,22 +90,22 @@ void GameScene::Initialize()
 }
 
     const GameMode GameMode = m_pPaddleArena->GetGameMode();
-    if (GameMode == GameMode::Local)
+    if (GameMode == GameMode::Local && !m_pGameTickDriver)
     {
         m_pGameTickDriver =
-                m_fixedAllocator.Create<LocalGameTickDriver>(
-                        m_fixedAllocator,
-                        m_pInputSubsystem,
-                        m_pGameInstance);
+            m_fixedAllocator.Create<LocalGameTickDriver>(
+                m_fixedAllocator,
+                m_pInputSubsystem,
+                m_pGameInstance);
     }
-    else if (GameMode == GameMode::Client || GameMode == GameMode::Server)
+    else if ((GameMode == GameMode::Client || GameMode == GameMode::Server) || !m_pGameTickDriver)
     {
         m_pGameTickDriver =
-                m_fixedAllocator.Create<NetworkGameTickDriver>(
-                        m_fixedAllocator,
-                        m_pInputSubsystem,
-                        m_pPaddleArena->GetUDPSession(),
-                        m_pGameInstance);
+            m_fixedAllocator.Create<NetworkGameTickDriver>(
+                m_fixedAllocator,
+                m_pInputSubsystem,
+                m_pPaddleArena->GetUDPSession(),
+                m_pGameInstance);
     }
 
     if (!m_pScreen)
@@ -119,9 +119,14 @@ void GameScene::Initialize()
 
     m_pGameInstance->SetGameStateChangedCallback([this](GameState::State newState)
     {
-        if (newState == GameState::State::Ended)
+        if (newState == GameState::State::Starting)
+        {
+            m_enableTickDriverTick = true;
+        }
+        else if (newState == GameState::State::Ended)
         {
             CreateEndOfGameModalPopup();
+            m_enableTickDriverTick = false;
         }
         else if (newState == GameState::State::Exiting)
         {
@@ -134,6 +139,9 @@ void GameScene::Initialize()
             Initialize();
         }
     });
+    m_enableTickDriverTick = true;
+    m_waitingForRestartReady = false;
+    m_sentRestartReady = false;
 }
 
 bool GameScene::CreateInputSubsystem()
@@ -249,13 +257,28 @@ void GameScene::CreateEndOfGameModalPopup()
 
         if (selection == ModalPopup::ModalPopupSelection::Selection_0)
         {
-            m_pGameInstance->Restart();
+            const GameMode GameMode = m_pPaddleArena->GetGameMode();
+            if (GameMode == GameMode::Local)
+            {
+                HandleRoundResetAsLocalPlayer();
+            }
+            else if (GameMode == GameMode::Server || GameMode == GameMode::Client)
+            {
+                HandleRoundResetNonLocal();
+            }
         }
         else
         {
             m_pGameInstance->Exit();
         }
     });
+
+    const GameMode GameMode = m_pPaddleArena->GetGameMode();
+    if (GameMode == GameMode::Server || GameMode == GameMode::Client)
+    {
+        m_waitingForRestartReady = true;
+        m_sentRestartReady = false;
+    }
 
     int16_t p1Score;
     int16_t p2Score;
@@ -276,12 +299,92 @@ void GameScene::DestroyEndOfGameModalPopup()
 
 void GameScene::Tick(sputter::math::FixedPoint dt) 
 {
-    m_pGameTickDriver->Tick(dt);
+    if (m_enableTickDriverTick)
+    {
+        m_pGameTickDriver->Tick(dt);
+    }
+
     m_pScreen->Tick((float)dt);
+
+    if (m_waitingForRestartReady)
+    {
+        net::ReliableUDPSession* pSession = m_pPaddleArena->GetUDPSession();
+
+        // TODO:
+        // lol this sucks, need to reconsider protocol structure. In the meantime, drain all
+        // unwanted traffic
+        MessageHeader messageHeader;
+        int peekSize = pSession->PeekSize();
+        while (peekSize != sizeof(messageHeader) && peekSize > 0)
+        {
+            char garbage[256];
+            RELEASE_CHECK(peekSize < sizeof(garbage), "Garbage buffer is too small");
+            pSession->TryReadData(garbage, peekSize);
+            peekSize = pSession->PeekSize();
+        }
+
+        const size_t BytesRead =
+            pSession->TryReadData(
+                reinterpret_cast<char *>(&messageHeader), sizeof(messageHeader));
+        if (!BytesRead) { return; }
+        if (BytesRead < 0)
+        {
+            RELEASE_LOGLINE_ERROR(LOG_GAME, "Failed to read restart ready message");
+        }
+        else if (BytesRead != sizeof(messageHeader))
+        {
+            RELEASE_LOGLINE_ERROR(LOG_GAME, "Unexpected number of bytes read: %llu", BytesRead);
+        }
+        else if (messageHeader.Type == MessageType::RestartReady &&
+                 messageHeader.MessageSize == sizeof(messageHeader))
+        {
+            RELEASE_LOGLINE_INFO(LOG_GAME, "Received restart ready message");
+            m_waitingForRestartReady = false;
+        }
+        else
+        {
+            RELEASE_LOGLINE_ERROR(LOG_GAME, "HRRMRMM");
+        }
+    }
+    else if (!m_waitingForRestartReady && m_sentRestartReady)
+    {
+        m_pGameInstance->Restart();
+    }
 }
 
 void GameScene::Draw()
 {
     m_pGameInstance->Draw();
     m_pScreen->Draw();
+}
+
+void GameScene::HandleRoundResetAsLocalPlayer()
+{
+    m_pGameInstance->Restart();
+}
+
+void GameScene::HandleRoundResetNonLocal()
+{
+    net::ReliableUDPSession* pSession = m_pPaddleArena->GetUDPSession();
+    if (!pSession)
+    {
+        RELEASE_LOGLINE_ERROR(LOG_GAME, "Attempted to reset, but UDP session is null");
+        m_pGameInstance->Exit();
+        return;
+    }
+
+    static const RestartReadyMessage s_RestartReady;
+    const size_t BytesSent = pSession->EnqueueSendData(
+        reinterpret_cast<const char *>(&s_RestartReady),
+        sizeof(s_RestartReady));
+    if (BytesSent != sizeof(s_RestartReady))
+    {
+        RELEASE_LOGLINE_ERROR(LOG_GAME, "Failed to send restart ready message");
+        m_pGameInstance->Exit();
+        return;
+    }
+
+    pSession->Flush();
+    m_sentRestartReady = true;
+    RELEASE_LOGLINE_INFO(LOG_GAME, "Sent restart ready message");
 }

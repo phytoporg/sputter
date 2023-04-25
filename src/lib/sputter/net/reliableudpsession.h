@@ -25,6 +25,11 @@ namespace sputter { namespace net {
         // Returns the number of bytes actually read
         size_t TryReadData(char* pBuffer, size_t maxLength);
 
+        // Query the size of the next packet
+        size_t PeekSize() const;
+
+        void Flush();
+
         int GetPort() const;
 
     private:

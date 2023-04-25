@@ -8,6 +8,7 @@ enum class MessageType
     Invalid = 0,
     Hello,
     Inputs,
+    RestartReady,
     Max
 };
 
@@ -32,5 +33,10 @@ struct InputsMessage
     uint32_t GameInputMasks[];
 };
 
+struct RestartReadyMessage
+{
+    MessageHeader Header =
+        { .Type = MessageType::RestartReady, .MessageSize = sizeof(RestartReadyMessage) };
+};
 
 // TODO: checksum?
