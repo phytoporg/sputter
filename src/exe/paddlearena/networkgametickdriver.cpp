@@ -52,7 +52,7 @@ struct NetworkGameTickDriver::InputStorage
             return 0;
         }
 
-        if (frame > latestValidFrame)
+        if (frame > latestValidFrame && playerIndex == RemotePlayerIndex)
         {
             // Provide a predicted result if we're ahead of the last valid input frame
             RELEASE_CHECK(
@@ -110,8 +110,9 @@ void NetworkGameTickDriver::Initialize()
     // Initialize the first m_delay frames with 0 from both players
     for (int i = 0; i < m_inputDelay; ++i)
     {
-        m_pInputStorage->PlayerInputSources[0]->SetInputState(0, i);
-        m_pInputStorage->PlayerInputSources[1]->SetInputState(0, i);
+        const uint32_t ClearInputState = 0;
+        m_pInputStorage->PlayerInputSources[0]->SetInputState(ClearInputState, i);
+        m_pInputStorage->PlayerInputSources[1]->SetInputState(ClearInputState, i);
     }
     m_serializer.SaveFrame(m_inputDelay - 1);
     m_pInputStorage->LastConfirmedFrame = m_inputDelay - 1;
@@ -139,31 +140,8 @@ void NetworkGameTickDriver::Tick(sputter::math::FixedPoint dt)
         return;
     }
 
-    bool receivedRemotePlayerMessage = false;
-    int32_t rollbackStartFrame = CurrentFrame;
-    while (ReadNextRemotePlayerMessage(m_pSendMessage))
-    {
-        rollbackStartFrame =
-            std::min(ProcessRemoteInputsMessage(m_pSendMessage), rollbackStartFrame);
-        receivedRemotePlayerMessage = true;
-    }
+    ProcessRollbacks(dt);
 
-    if (!receivedRemotePlayerMessage)
-    {
-        RELEASE_LOGLINE_VERBOSE(LOG_GAME, "Did not read any remote input");
-        // TODO: something more. Are we disconnected?
-    }
-
-    if (!receivedRemotePlayerMessage || CurrentFrame < m_inputDelay)
-    {
-        TickOneFrame(
-            dt,
-            m_pInputStorage->GetInputMaskForFrame(0, CurrentFrame),
-            m_pInputStorage->GetInputMaskForFrame(1, CurrentFrame));
-        return;
-    }
-
-    DoRollbacks(dt, rollbackStartFrame);
     TickOneFrame(
         dt,
         m_pInputStorage->GetInputMaskForFrame(0, CurrentFrame),
@@ -190,13 +168,19 @@ bool NetworkGameTickDriver::ReadNextRemotePlayerMessage(InputsMessage *pInputMes
 
     const size_t MaxMessageLen = InputsMessage::GetExpectedSize(kNumInputsToSend);
     const ssize_t ReadSize =
-        m_pReliableUDPSession->TryReadData(
+        m_pReliableUDPSession->Read(
             reinterpret_cast<char *>(pInputMessage),
             MaxMessageLen);
-    if (!ReadSize) { return false; }
+    if (ReadSize <= 0) { return false; }
     if (pInputMessage->Header.MessageSize != InputsMessage::GetExpectedSize(pInputMessage->NumFrames))
     {
         RELEASE_LOGLINE_WARNING(LOG_GAME, "Read unexpected number of bytes for inputs message");
+        return false;
+    }
+
+    if (pInputMessage->Header.Type != MessageType::Inputs)
+    {
+        RELEASE_LOGLINE_WARNING(LOG_GAME, "Unexpectedly read non-inputs message");
         return false;
     }
 
@@ -234,8 +218,8 @@ bool NetworkGameTickDriver::SendNextInputMessage() const
     const size_t SendMessageSize = InputsMessage::GetExpectedSize(kNumInputsToSend);
     m_pSendMessage->Header.MessageSize = InputsMessage::GetExpectedSize(m_pSendMessage->NumFrames);
 
-    const size_t SentBytes = m_pReliableUDPSession->EnqueueSendData(
-        reinterpret_cast<char*>(m_pSendMessage), SendMessageSize);
+    const size_t SentBytes = m_pReliableUDPSession->Send(
+        reinterpret_cast<char *>(m_pSendMessage), SendMessageSize);
     if (SentBytes != SendMessageSize)
     {
         RELEASE_LOGLINE_ERROR(LOG_GAME, "Failed to inputs message");
@@ -310,6 +294,36 @@ NetworkGameTickDriver::ProcessRemoteInputsMessage(InputsMessage *pInputMessage)
 
     RELEASE_LOGLINE_VERYVERBOSE(LOG_GAME, "ProcessMessage--");
     return startFrame;
+}
+
+void 
+NetworkGameTickDriver::ProcessRollbacks(sputter::math::FixedPoint dt)
+{
+    bool receivedRemotePlayerMessage = ReadNextRemotePlayerMessage(m_pSendMessage);
+    const uint32_t CurrentFrame = m_pGameInstance->GetFrame();
+    int32_t rollbackStartFrame = CurrentFrame;
+    if (receivedRemotePlayerMessage)
+    {
+        rollbackStartFrame =
+            std::min(ProcessRemoteInputsMessage(m_pSendMessage), rollbackStartFrame);
+        receivedRemotePlayerMessage = true;
+    }
+    else
+    {
+        RELEASE_LOGLINE_VERBOSE(LOG_GAME, "Did not read any remote input");
+        // TODO: something more. Are we disconnected?
+    }
+
+    if (!receivedRemotePlayerMessage || CurrentFrame < m_inputDelay)
+    {
+        TickOneFrame(
+            dt,
+            m_pInputStorage->GetInputMaskForFrame(0, CurrentFrame),
+            m_pInputStorage->GetInputMaskForFrame(1, CurrentFrame));
+        return;
+    }
+
+    DoRollbacks(dt, rollbackStartFrame);
 }
 
 void

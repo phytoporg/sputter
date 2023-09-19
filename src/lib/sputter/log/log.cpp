@@ -29,6 +29,7 @@ namespace
             "Render",
             "Net",
             "FrameState",
+            "Serializer",
         };
 
         static_assert(sizeof(LUT) / sizeof(LUT[0]) == static_cast<int>(LogZone::Max), "Log zone LUT size does not match enum");

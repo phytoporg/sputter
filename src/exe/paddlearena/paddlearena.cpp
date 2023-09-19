@@ -117,13 +117,13 @@ PaddleArena::~PaddleArena()
 
 void PaddleArena::Tick(math::FixedPoint dt)
 {
+    m_timerSystem.Tick(/* TODO: dt */);
+    m_pSceneStack->Tick(dt);
+
     if (m_pReliableUDPSession)
     {
         m_pReliableUDPSession->Tick();
     }
-
-    m_timerSystem.Tick(/* TODO: dt */);
-    m_pSceneStack->Tick(dt);
 }
 
 void PaddleArena::Draw()

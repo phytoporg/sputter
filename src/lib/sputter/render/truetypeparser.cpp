@@ -174,13 +174,13 @@ namespace {
         {
             for (int16_t x = 0; x < width; ++x)
             {
-                DEBUG_LOG_VERBOSE(LOG_FONT, "%s", (pPixelGlyph[y * width + x] & 1 ? "1" : "0"));
+                DEBUG_LOG_VERYVERBOSE(LOG_FONT, "%s", (pPixelGlyph[y * width + x] & 1 ? "1" : "0"));
             }
-            DEBUG_LOG_VERBOSE(LOG_FONT, "\n");
+            DEBUG_LOG_VERYVERBOSE(LOG_FONT, "\n");
         }
 
         // Flush?
-        DEBUG_LOG_VERBOSE(LOG_FONT, "\n");
+        DEBUG_LOG_VERYVERBOSE(LOG_FONT, "\n");
 #endif
     }
 }

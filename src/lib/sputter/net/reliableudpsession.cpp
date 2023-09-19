@@ -6,6 +6,7 @@
 #include <kcp/ikcp.h>
 
 #include <vector>
+#include <netinet/in.h>
 
 using namespace sputter;
 using namespace sputter::net;
@@ -16,7 +17,7 @@ struct ReliableUDPSession::PImpl
         : SessionId(sessionId), Port(localPort), Address(address), RemotePortNumber(remotePortNumber) {}
 
     PImpl(uint32_t sessionId, const UDPPort& port, const std::string& address, int remotePortNumber)
-            : SessionId(sessionId), Port(port), Address(address), RemotePortNumber(remotePortNumber) {}
+        : SessionId(sessionId), Port(port), Address(address), RemotePortNumber(remotePortNumber) {}
 
     static const uint32_t kInvalidSessionId = 0xFFFFFFFF;
     uint32_t SessionId = kInvalidSessionId;
@@ -86,7 +87,16 @@ void ReliableUDPSession::Tick()
     ikcp_update(m_spPimpl->pIkcpCb, system::GetTimeMs());
 }
 
-size_t ReliableUDPSession::EnqueueSendData(const char* pBuffer, size_t length)
+size_t ReliableUDPSession::Send(const char *pBuffer, size_t length)
+{
+    return m_spPimpl->Port.send(
+        pBuffer,
+        length,
+        m_spPimpl->Address,
+        m_spPimpl->RemotePortNumber);
+}
+
+size_t ReliableUDPSession::SendReliable(const char* pBuffer, size_t length)
 {
     if (ikcp_send(m_spPimpl->pIkcpCb, pBuffer, length) == 0)
     {
@@ -96,7 +106,23 @@ size_t ReliableUDPSession::EnqueueSendData(const char* pBuffer, size_t length)
     return 0;
 }
 
-size_t ReliableUDPSession::TryReadData(char* pBuffer, size_t maxLength)
+size_t ReliableUDPSession::Read(char* pBuffer, size_t maxLength)
+{
+    std::string sourceAddress;
+    const size_t BytesRead =
+        m_spPimpl->Port.receive(
+            pBuffer,
+            maxLength,
+            &sourceAddress);
+    if (sourceAddress != m_spPimpl->Address)
+    {
+        return -1;
+    }
+
+    return BytesRead;
+}
+
+size_t ReliableUDPSession::ReadReliable(char* pBuffer, size_t maxLength)
 {
     const int ReturnValue = ikcp_recv(m_spPimpl->pIkcpCb, pBuffer, maxLength);
     if (ReturnValue < 0)

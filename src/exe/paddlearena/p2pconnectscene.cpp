@@ -139,9 +139,9 @@ bool P2PConnectScene::TickClient()
 
         HelloMessage hello;
         std::string address;
-        const int Received = m_pUdpSession->TryReadData(
-            reinterpret_cast<char *>(&hello),
-            sizeof(hello));
+        const int Received = m_pUdpSession->ReadReliable(
+                reinterpret_cast<char *>(&hello),
+                sizeof(hello));
         if (!Received)
         {
             RELEASE_LOGLINE_VERYVERBOSE(LOG_NET, "Nothing receives in client tick this frame");
@@ -247,8 +247,8 @@ bool P2PConnectScene::TickServer()
     {
         static MessageHeader s_hello =
             { .Type = MessageType::Hello, .MessageSize = sizeof(HelloMessage) };
-        const int Sent = m_pUdpSession->EnqueueSendData(
-                reinterpret_cast<char*>(&s_hello),
+        const int Sent = m_pUdpSession->SendReliable(
+                reinterpret_cast<char *>(&s_hello),
                 sizeof(s_hello));
         if (Sent != sizeof(s_hello))
         {

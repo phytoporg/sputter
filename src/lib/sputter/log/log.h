@@ -25,6 +25,7 @@ namespace sputter { namespace log {
         Render,
         Net,
         FrameState,
+        Serializer,
         Max
     };
 
@@ -120,3 +121,4 @@ namespace sputter { namespace log {
 #define LOG_RENDER sputter::log::LogZone::Render
 #define LOG_NET sputter::log::LogZone::Net
 #define LOG_FRAMESTATE sputter::log::LogZone::FrameState
+#define LOG_SERIALIZER sputter::log::LogZone::Serializer

@@ -40,6 +40,7 @@ private:
     bool SendNextInputMessage() const;
 
     int32_t ProcessRemoteInputsMessage(InputsMessage* pInputMessage);
+    void ProcessRollbacks(sputter::math::FixedPoint dt);
     void DoRollbacks(
         sputter::math::FixedPoint dt,
         int32_t startFrame);

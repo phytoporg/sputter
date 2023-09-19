@@ -36,7 +36,7 @@ TEST(session_send_receive, udpsession_tests)
     net::ReliableUDPSession serverSession(SessionId, ServerPort, "127.0.0.1", ClientPort);
 
     const char pDataToSend[] = "hey sup";
-    const size_t Sent = clientSession.EnqueueSendData(pDataToSend, sizeof(pDataToSend));
+    const size_t Sent = clientSession.SendReliable(pDataToSend, sizeof(pDataToSend));
     EXPECT_EQ(Sent, sizeof(pDataToSend));
 
     system::SleepMs(16);
@@ -44,7 +44,7 @@ TEST(session_send_receive, udpsession_tests)
     serverSession.Tick();
 
     char pReadBuffer[256] = {};
-    const size_t Received = serverSession.TryReadData(pReadBuffer, sizeof(pReadBuffer));
+    const size_t Received = serverSession.ReadReliable(pReadBuffer, sizeof(pReadBuffer));
     EXPECT_EQ(Received, sizeof(pDataToSend));
     EXPECT_EQ(memcmp(pDataToSend, pReadBuffer, sizeof(pDataToSend)), 0);
 }
@@ -62,7 +62,7 @@ TEST(session_echo, udpsession_tests)
     net::ReliableUDPSession serverSession(SessionId, ServerPort, "127.0.0.1", ClientPort);
 
     const char pDataToSend[] = "hey sup";
-    const size_t ClientSent = clientSession.EnqueueSendData(pDataToSend, sizeof(pDataToSend));
+    const size_t ClientSent = clientSession.SendReliable(pDataToSend, sizeof(pDataToSend));
     EXPECT_EQ(ClientSent, sizeof(pDataToSend));
 
     system::SleepMs(16);
@@ -70,11 +70,12 @@ TEST(session_echo, udpsession_tests)
     serverSession.Tick();
 
     char pServerReadBuffer[256] = {};
-    const size_t ServerReceived = serverSession.TryReadData(pServerReadBuffer, sizeof(pServerReadBuffer));
+    const size_t ServerReceived = serverSession.ReadReliable(pServerReadBuffer,
+                                                             sizeof(pServerReadBuffer));
     EXPECT_EQ(ServerReceived, sizeof(pDataToSend));
     EXPECT_EQ(memcmp(pDataToSend, pServerReadBuffer, sizeof(pDataToSend)), 0);
 
-    const size_t ServerSent = serverSession.EnqueueSendData(pServerReadBuffer, ServerReceived);
+    const size_t ServerSent = serverSession.SendReliable(pServerReadBuffer, ServerReceived);
     EXPECT_EQ(ServerSent, ServerReceived);
 
     system::SleepMs(16);
@@ -82,7 +83,8 @@ TEST(session_echo, udpsession_tests)
     clientSession.Tick();
 
     char pClientReceiveBuffer[256] = {};
-    const size_t ClientReceived = clientSession.TryReadData(pClientReceiveBuffer, sizeof(pClientReceiveBuffer));
+    const size_t ClientReceived = clientSession.ReadReliable(pClientReceiveBuffer,
+                                                             sizeof(pClientReceiveBuffer));
     EXPECT_EQ(ClientReceived, ServerSent);
     EXPECT_EQ(memcmp(pClientReceiveBuffer, pDataToSend, sizeof(pDataToSend)), 0);
 }

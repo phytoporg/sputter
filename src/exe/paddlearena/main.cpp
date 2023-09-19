@@ -24,7 +24,10 @@ int main(int argc, char** argv)
 {
     system::InitializeLogging(argv[0]);
     log::EnableZone(log::LogZone::Game);
-    // log::EnableZone(log::LogZone::Net);
+    log::DisableZone(log::LogZone::Font);
+    log::DisableZone(log::LogZone::Mesh);
+    log::EnableZone(log::LogZone::Net);
+    log::EnableZone(log::LogZone::Serializer);
 
     if (argc < 2)
     {

@@ -3,6 +3,7 @@
 #include "check.h"
 
 #include <sputter/log/framestatelogger.h>
+#include <sputter/log/log.h>
 
 #include <cstring>
 
@@ -71,6 +72,7 @@ bool Serializer::SaveFrame(uint32_t frame)
     SerializedFrameInfo* pFrameInfo = m_frameStorage.GetOrCreateFrame(frame);
     if (!pFrameInfo)
     {
+        RELEASE_LOGLINE_ERROR(LOG_SERIALIZER, "Failed to get frame %u from storage", frame);
         return false;
     }
 
@@ -88,6 +90,10 @@ bool Serializer::SaveFrame(uint32_t frame)
     pFrameInfo->ComputeChecksum();
 
     FrameStateLogger::EndFrame(pFrameInfo->Checksum);
+    RELEASE_LOGLINE_VERBOSE(
+        LOG_SERIALIZER,
+        "Wrote frame %u, Checksum = %u",
+        frame, pFrameInfo->Checksum);
     return true;
 }
 
@@ -104,6 +110,10 @@ bool Serializer::LoadFrame(uint32_t frame)
     if (Success)
     {
         RELEASE_CHECK(bytesRead == pFrameInfo->Size, "Size mismatch when loading serialized frame");
+        RELEASE_LOGLINE_VERYVERBOSE(
+            LOG_SERIALIZER,
+            "Loaded frame %u, Checksum = %u",
+            frame, pFrameInfo->Checksum);
     }
 
     return Success;

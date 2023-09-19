@@ -10,6 +10,7 @@
 struct IKCPCB;
 
 namespace sputter { namespace net {
+    class UDPPort;
     class ReliableUDPSession
     {
     public:
@@ -20,10 +21,12 @@ namespace sputter { namespace net {
         void Tick();
 
         // Queues data to be sent next tick
-        size_t EnqueueSendData(const char* pBuffer, size_t length);
+        size_t Send(const char* pBuffer, size_t length);
+        size_t SendReliable(const char* pBuffer, size_t length);
 
         // Returns the number of bytes actually read
-        size_t TryReadData(char* pBuffer, size_t maxLength);
+        size_t Read(char* pBuffer, size_t maxLength);
+        size_t ReadReliable(char* pBuffer, size_t maxLength);
 
         // Query the size of the next packet
         size_t PeekSize() const;

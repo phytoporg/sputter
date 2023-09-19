@@ -27,11 +27,11 @@ void SerializedFrameInfo::ComputeChecksum()
     for (size_t i = 0; i < Size; ++i)
     {
         sum += pByte[i];
-        DEBUG_LOGLINE_VERBOSE(LOG_DEFAULT, "%llu: SUM = %u", i, sum);
+        DEBUG_LOGLINE_VERYVERBOSE(LOG_DEFAULT, "%llu: SUM = %u", i, sum);
     }
 
     Checksum = ~sum;
-    DEBUG_LOGLINE_VERBOSE(LOG_DEFAULT, "CHECKSUM: %llu", Checksum);
+    DEBUG_LOGLINE_VERYVERBOSE(LOG_DEFAULT, "CHECKSUM: %llu", Checksum);
 }
 
 SerializedFrameStorage::SerializedFrameStorage(FixedMemoryAllocator &allocator, size_t frameSize)
@@ -55,6 +55,10 @@ SerializedFrameInfo* SerializedFrameStorage::GetOrCreateFrame(uint32_t frameInde
         RELEASE_CHECK(m_pFramePointers[FrameArrayIndex], "Frame pointer is unexpectedly null");
 
         SerializedFrameInfo& frameInfo = m_frameInfos[FrameArrayIndex];
+        DEBUG_LOGLINE_VERBOSE(
+            LOG_SERIALIZER,
+            "GetOrCreateFrame: Resetting frame ID %u for %u",
+            frameInfo.FrameID, frameIndex);
         frameInfo.Reset(m_pFramePointers[FrameArrayIndex], frameIndex);
 
         return &frameInfo;
@@ -69,10 +73,15 @@ SerializedFrameInfo* SerializedFrameStorage::GetOrCreateFrame(uint32_t frameInde
         SerializedFrameInfo& frameInfo = m_frameInfos[FrameArrayIndex];
         RELEASE_CHECK(frameIndex == frameInfo.FrameID, "Retrieved wrong frame from serializer");
 
+        DEBUG_LOGLINE_VERBOSE(
+                LOG_SERIALIZER,
+                "GetOrCreateFrame: Got existing frame %u",
+                frameIndex);
         return &frameInfo;
     }
     else
     {
+        RELEASE_CHECK(false, "Unexpected code path");
         return nullptr; // Appease the compiler
     }
 }

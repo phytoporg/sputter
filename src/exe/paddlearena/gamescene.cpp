@@ -319,13 +319,13 @@ void GameScene::Tick(sputter::math::FixedPoint dt)
         {
             char garbage[256];
             RELEASE_CHECK(peekSize < sizeof(garbage), "Garbage buffer is too small");
-            pSession->TryReadData(garbage, peekSize);
+            pSession->ReadReliable(garbage, peekSize);
             peekSize = pSession->PeekSize();
         }
 
         const size_t BytesRead =
-            pSession->TryReadData(
-                reinterpret_cast<char *>(&messageHeader), sizeof(messageHeader));
+                pSession->ReadReliable(
+                        reinterpret_cast<char *>(&messageHeader), sizeof(messageHeader));
         if (!BytesRead) { return; }
         if (BytesRead < 0)
         {
@@ -374,9 +374,9 @@ void GameScene::HandleRoundResetNonLocal()
     }
 
     static const RestartReadyMessage s_RestartReady;
-    const size_t BytesSent = pSession->EnqueueSendData(
-        reinterpret_cast<const char *>(&s_RestartReady),
-        sizeof(s_RestartReady));
+    const size_t BytesSent = pSession->SendReliable(
+            reinterpret_cast<const char *>(&s_RestartReady),
+            sizeof(s_RestartReady));
     if (BytesSent != sizeof(s_RestartReady))
     {
         RELEASE_LOGLINE_ERROR(LOG_GAME, "Failed to send restart ready message");
