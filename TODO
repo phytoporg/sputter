@@ -1,0 +1,4 @@
+TODO:
+- Create a network protocol layer to simplify the network game tick driver
+- UdpPort -> more direct socket abstraction?
+- Reevaluate reliable UDP session ifc (explicit client & server?), ditch kcp
