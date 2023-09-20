@@ -6,9 +6,6 @@
 #include <memory>
 #include <string>
 
-// Forward declaration
-struct IKCPCB;
-
 namespace sputter { namespace net {
     class UDPPort;
     class ReliableUDPSession
@@ -20,11 +17,9 @@ namespace sputter { namespace net {
 
         void Tick();
 
-        // Queues data to be sent next tick
         size_t Send(const char* pBuffer, size_t length);
         size_t SendReliable(const char* pBuffer, size_t length);
 
-        // Returns the number of bytes actually read
         size_t Read(char* pBuffer, size_t maxLength);
         size_t ReadReliable(char* pBuffer, size_t maxLength);
 
@@ -36,8 +31,6 @@ namespace sputter { namespace net {
         int GetPort() const;
 
     private:
-        static int SendDataCallback(const char* pBuffer, int length, struct IKCPCB* pKcp, void* pUser);
-
         struct PImpl;
         std::unique_ptr<PImpl> m_spPimpl;
     };
