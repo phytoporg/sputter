@@ -2,7 +2,7 @@
 
 #include <sputter/game/tickdriver.h>
 #include <sputter/core/serializer.h>
-#include "protocol.h"
+#include <sputter/net/messageprotocol.h>
 
 namespace sputter { namespace input {
     class InputSubsystem;

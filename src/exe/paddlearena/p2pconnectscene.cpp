@@ -1,7 +1,6 @@
 #include "p2pconnectscene.h"
 #include "gamemode.h"
 #include "paddlearena.h"
-#include "protocol.h"
 
 #include <sputter/log/log.h>
 #include <sputter/net/port.h>

@@ -1,6 +1,5 @@
 #include "networkgametickdriver.h"
 #include "gameinstance.h"
-#include "protocol.h"
 
 #include <sputter/memory/fixedmemoryallocator.h>
 #include <sputter/input/inputdevice.h>

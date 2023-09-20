@@ -1,4 +1,4 @@
-#include "protocol.h"
+#include "messageprotocol.h"
 
 size_t InputsMessage::GetExpectedSize(size_t numInputMasks)
 {
