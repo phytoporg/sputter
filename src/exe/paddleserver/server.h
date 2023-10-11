@@ -16,8 +16,8 @@ public:
     static constexpr ClientHandle kInvalidHandle = -1;
     using ClientConnectionCallback = std::function<void(Server*, ClientHandle)>;
 
-    static constexpr int kDefaultServerPort = 5000;
-    static constexpr int kDefaultClientPort = 5001;
+    static constexpr int kDefaultServerPort = 7001;
+    static constexpr int kDefaultClientPort = 7000;
     Server(ClientConnectionCallback connectionCallbackFn, int port = kDefaultServerPort);
 
     bool Listen();

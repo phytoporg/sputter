@@ -147,19 +147,40 @@ bool PaddleArena::StartGame()
     // Set up the scene stack
     if (m_gameMode == GameMode::Local)
     {
-        m_pMainMenuScene = new MainMenuScene(m_pWindow, this, m_pTextRenderer, &m_camera, &m_orthoMatrix);
-        m_pGameScene = new GameScene(m_pWindow, this, &m_camera, &m_orthoMatrix, m_pTextRenderer, &m_storageProvider);
+        m_pMainMenuScene = 
+            new MainMenuScene(
+                m_pWindow,
+                this,
+                m_pTextRenderer,
+                &m_camera,
+                &m_orthoMatrix);
+        m_pGameScene = 
+            new GameScene(
+                m_pWindow,
+                this,
+                &m_camera,
+                &m_orthoMatrix,
+                m_pTextRenderer,
+                &m_storageProvider);
         game::IScene* ppScenes[] = { m_pMainMenuScene, m_pGameScene };
-        m_pSceneStack = new game::SceneStack(ppScenes, sizeof(ppScenes) / sizeof(ppScenes[0]));
+        m_pSceneStack = 
+            new game::SceneStack(ppScenes, sizeof(ppScenes) / sizeof(ppScenes[0]));
     }
     else
     {
         // Skip the main menu for server/client games
-        // TODO: use p2pconnectscene !!
-        m_pGameScene = new GameScene(m_pWindow, this, &m_camera, &m_orthoMatrix, m_pTextRenderer, &m_storageProvider);
-        m_pP2PScene = new P2PConnectScene(m_pWindow, this);
+        m_pGameScene = 
+            new GameScene(
+                m_pWindow,
+                this,
+                &m_camera,
+                &m_orthoMatrix,
+                m_pTextRenderer,
+                &m_storageProvider);
+        m_pP2PScene = new P2PConnectScene(m_pWindow, this, "client");
         game::IScene* ppScenes[] = { m_pP2PScene, m_pGameScene };
-        m_pSceneStack = new game::SceneStack(ppScenes, sizeof(ppScenes) / sizeof(ppScenes[0]));
+        m_pSceneStack = 
+            new game::SceneStack(ppScenes, sizeof(ppScenes) / sizeof(ppScenes[0]));
     }
 
     m_pSceneStack->Initialize();

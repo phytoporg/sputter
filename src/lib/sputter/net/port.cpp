@@ -107,12 +107,23 @@ int UDPPort::send(const void *data, int dataSize, const std::string& address, in
 {
     RELEASE_CHECK(m_socketHandle >= 0, "Socket is not open");
 
+    std::string addressToUse = address;
+    if (address.empty()) 
+    {
+        addressToUse = m_remoteAddress;
+    }
+
+    if (port < 0)
+    {
+        port = m_remotePort;
+    }
+
     sockaddr_in dest = {};
     dest.sin_family = AF_INET;
     dest.sin_port = htons(port);
-    if (inet_pton(AF_INET, address.c_str(), &dest.sin_addr) <= 0)
+    if (inet_pton(AF_INET, addressToUse.c_str(), &dest.sin_addr) <= 0)
     {
-        RELEASE_LOGLINE_WARNING(LOG_NET, "Failed to convert address to binary (address = %s)", address.data());
+        RELEASE_LOGLINE_WARNING(LOG_NET, "Failed to convert address to binary (address = %s)", addressToUse.data());
         return -1;
     }
 

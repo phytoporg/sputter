@@ -151,9 +151,10 @@ Server::HandleReceiveHello(
     {
         RELEASE_LOGLINE_WARNING(
             LOG_NET,
-            "Unexpected 'Hello' message size: %u != %u",
+            "Unexpected 'Hello' message size: %u != %u (name = %s)",
             pHelloMessage->Header.MessageSize,
-            ExpectedSize);
+            ExpectedSize, 
+            pHelloMessage->Name);
         return false;
     }
 

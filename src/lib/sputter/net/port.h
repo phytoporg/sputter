@@ -2,6 +2,7 @@
 
 #include <string>
 #include <cstdint>
+#include <memory>
 
 namespace sputter { namespace net { 
     class UDPPort
@@ -31,4 +32,6 @@ namespace sputter { namespace net {
         std::string m_remoteAddress;
         int         m_remotePort = -1;
     };
+
+    using UDPPortPtr = std::shared_ptr<UDPPort>;
 }}

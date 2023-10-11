@@ -24,7 +24,8 @@ class P2PConnectScene : public sputter::game::IScene
 public:
     P2PConnectScene(
         sputter::render::Window* pWindow,
-        PaddleArena* pPaddleArena);
+        PaddleArena* pPaddleArena,
+        const char* pClientName);
 
     virtual ~P2PConnectScene();
 
@@ -35,9 +36,8 @@ public:
     virtual void Draw() override;
 
 private:
-    sputter::net::ReliableUDPSession*         m_pUdpSession = nullptr;
-    sputter::net::UDPPort                     m_port;
-
-    sputter::render::Window*                  m_pWindow = nullptr;
-    PaddleArena*                              m_pPaddleArena = nullptr;
+    sputter::net::UDPPortPtr  m_spPort = nullptr;
+    sputter::render::Window*  m_pWindow = nullptr;
+    PaddleArena*              m_pPaddleArena = nullptr;
+    const char*               m_pClientName = nullptr;
 };
