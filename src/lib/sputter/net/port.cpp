@@ -136,7 +136,7 @@ int UDPPort::send(const void *data, int dataSize, const std::string& address, in
     }
 }
 
-int UDPPort::receive(void *data, int dataSize, std::string* pAddressOut) const
+int UDPPort::receive(void *data, int dataSize, std::string* pAddressOut, int* pPortOut) const
 {
     RELEASE_CHECK(m_socketHandle >= 0, "Socket is not open");
 
@@ -179,6 +179,11 @@ int UDPPort::receive(void *data, int dataSize, std::string* pAddressOut) const
             return -1;
         }
         *pAddressOut = addressBuffer;
+    }
+
+    if (pPortOut)
+    {
+        *pPortOut = htons(src.sin_port);
     }
 
     return received;

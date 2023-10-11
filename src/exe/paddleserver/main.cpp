@@ -5,9 +5,20 @@
 
 using namespace sputter;
 
-void OnClientConnected(Server::ClientHandle clientHandle)
+void OnClientConnected(Server* pServer, Server::ClientHandle clientHandle)
 {
-    RELEASE_LOGLINE_INFO(LOG_NET, "NEW CONNECTION! Handle = %u", clientHandle);
+    std::string address;
+    pServer->GetClientAddress(clientHandle, address);
+
+    int port;
+    pServer->GetClientPort(clientHandle, port);
+
+    RELEASE_LOGLINE_INFO(
+        LOG_NET,
+        "NEW CONNECTION! Handle = %u, Address = %s:%d",
+        clientHandle,
+        address.c_str(),
+        port);
 }
 
 int main(int argc, char** argv)

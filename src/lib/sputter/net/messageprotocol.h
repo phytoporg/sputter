@@ -7,8 +7,10 @@ enum class MessageType
 {
     Invalid = 0,
     Hello,
+    StartGame,
     Inputs,
     RestartReady,
+    Goodbye,
     Max
 };
 
@@ -20,7 +22,20 @@ struct MessageHeader
 
 struct HelloMessage
 {
-    MessageHeader Header = { .Type = MessageType::Hello, .MessageSize = sizeof(HelloMessage) };
+    static size_t GetExpectedSize(const char* pName, uint8_t nameSize);
+
+    MessageHeader Header;
+    uint8_t NameSize;
+    char Name[256];
+};
+bool CreateHelloMessage(const char* pName, uint8_t nameSize, HelloMessage& messageOut);
+
+struct StartGameMessage
+{
+    static size_t GetExpectedSize(size_t numInputMasks);
+
+    MessageHeader Header;
+    uint32_t GameID;
 };
 
 struct InputsMessage
