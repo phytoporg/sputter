@@ -7,6 +7,7 @@
 #include <string>
 
 #include <sputter/net/port.h>
+#include <sputter/net/protocol.h>
 #include <sputter/net/messageprotocol.h>
 
 class Server
@@ -46,8 +47,8 @@ private:
     ClientConnectionCallback m_connectionCallback;
     bool m_shouldTerminate = false;
 
-    using PortPtr = std::shared_ptr<sputter::net::UDPPort>;
-    PortPtr m_spListenPort = nullptr;
+    sputter::net::UDPPortPtr  m_spListenPort = nullptr;
+    sputter::net::ProtocolPtr m_spProtocol = nullptr;
 
     struct ClientConnection
     {

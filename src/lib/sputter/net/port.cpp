@@ -58,9 +58,15 @@ bool UDPPort::bind()
     bindAddress.sin_family = AF_INET;
     bindAddress.sin_addr.s_addr = htonl(INADDR_ANY);
     bindAddress.sin_port = htons(m_port);
-    if (::bind(m_socketHandle, reinterpret_cast<sockaddr *>(&bindAddress), sizeof(bindAddress)) < 0)
+
+    sockaddr* pBindAddress = reinterpret_cast<sockaddr *>(&bindAddress);
+    if (::bind(m_socketHandle, pBindAddress, sizeof(bindAddress)) < 0)
     {
-        RELEASE_LOGLINE_ERROR(LOG_NET, "Failed to bind to socket: %d (%s)", m_port, strerror(errno));
+        RELEASE_LOGLINE_ERROR(
+            LOG_NET,
+            "Failed to bind to socket: %d (%s)",
+            m_port,
+            strerror(errno));
         return false;
     }
 
@@ -123,7 +129,10 @@ int UDPPort::send(const void *data, int dataSize, const std::string& address, in
     dest.sin_port = htons(port);
     if (inet_pton(AF_INET, addressToUse.c_str(), &dest.sin_addr) <= 0)
     {
-        RELEASE_LOGLINE_WARNING(LOG_NET, "Failed to convert address to binary (address = %s)", addressToUse.data());
+        RELEASE_LOGLINE_WARNING(
+            LOG_NET,
+            "Failed to convert address to binary (address = %s)",
+            addressToUse.data());
         return -1;
     }
 
@@ -134,7 +143,14 @@ int UDPPort::send(const void *data, int dataSize, const std::string& address, in
     DEBUG_LOGLINE_VERBOSE(LOG_NET, "Sending to %s: %d", addressBuffer, port);
 #endif
 
-    const int sent = sendto(m_socketHandle, data, dataSize, 0, reinterpret_cast<sockaddr *>(&dest), sizeof(dest));
+    const int sent = 
+        sendto(
+            m_socketHandle,
+            data,
+            dataSize,
+            0,
+            reinterpret_cast<sockaddr *>(&dest),
+            sizeof(dest));
     if (sent < 0) 
     {
         RELEASE_LOGLINE_WARNING(LOG_NET, "Failed to send data: %s", strerror(errno));
@@ -147,7 +163,12 @@ int UDPPort::send(const void *data, int dataSize, const std::string& address, in
     }
 }
 
-int UDPPort::receive(void *data, int dataSize, std::string* pAddressOut, int* pPortOut) const
+int 
+UDPPort::receive(
+    void *data,
+    int dataSize,
+    std::string* pAddressOut,
+    int* pPortOut) const
 {
     RELEASE_CHECK(m_socketHandle >= 0, "Socket is not open");
 

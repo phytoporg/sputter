@@ -14,8 +14,18 @@ namespace sputter { namespace net {
 
         bool connect(const std::string& address, int remotePort);
         bool bind();
-        int send(const void *data, int dataSize, const std::string& address = "", int port = -1) const;
-        int receive(void *data, int dataSize, std::string *pAddressOut = nullptr, int* pPortOut = nullptr) const;
+        int 
+        send(
+            const void *data,
+            int dataSize,
+            const std::string& address = "",
+            int port = -1) const;
+        int 
+        receive(
+            void *data,
+            int dataSize,
+            std::string *pAddressOut = nullptr,
+            int* pPortOut = nullptr) const;
 
         int GetSocket() const;
         int GetPort() const;

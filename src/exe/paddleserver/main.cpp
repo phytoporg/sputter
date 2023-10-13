@@ -25,7 +25,7 @@ int main(int argc, char** argv)
 {
     system::InitializeLogging(argv[0]);
     log::EnableZone(log::LogZone::Net);
-    log::SetLogVerbosity(log::LogVerbosity::Info);
+    log::SetLogVerbosity(log::LogVerbosity::Verbose);
 
     Server server(OnClientConnected);
     if (!server.Listen())
@@ -36,6 +36,8 @@ int main(int argc, char** argv)
             server.GetPort());
         return -1;
     }
+
+    RELEASE_LOGLINE_INFO(LOG_NET, "Server is listening on port %d", server.GetPort());
 
     bool shouldLoop = true;
     while (shouldLoop)

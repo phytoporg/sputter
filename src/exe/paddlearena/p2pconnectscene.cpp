@@ -6,7 +6,7 @@
 
 #include <sputter/log/log.h>
 #include <sputter/net/port.h>
-#include <sputter/net/messageprotocol.h>
+#include <sputter/net/protocol.h>
 #include <sputter/net/reliableudpsession.h>
 
 static constexpr int kClientPort = 7000;
@@ -37,35 +37,8 @@ P2PConnectScene::~P2PConnectScene()
 
 void P2PConnectScene::Initialize()
 {
+    m_state = ConnectionSceneState::Initializing;
     m_spPort.reset(new UDPPort(kClientPort));
-
-    // TODO: parameterize this, send "hello" in tick once we have a robust transport
-    if (!m_spPort->connect("127.0.0.1", kServerPort))
-    {
-        RELEASE_LOGLINE_ERROR(LOG_NET, "Failed to connect to localhost server");
-    }
-
-    // Send a hello now
-    HelloMessage helloMessage;
-    if (!CreateHelloMessage("client", strlen("client"), helloMessage))
-    {
-        RELEASE_LOGLINE_ERROR(
-            LOG_NET,
-            "Failed to create hello message to send to new client");
-        return;
-    }
-
-    const size_t ExpectedSize = 
-        HelloMessage::GetExpectedSize("client", sizeof("client"));
-    const int sent = m_spPort->send(&helloMessage, ExpectedSize);
-    if (sent != ExpectedSize)
-    {
-        RELEASE_LOGLINE_ERROR(
-            LOG_NET,
-            "Failed to send Hello to server. Sent %u, not %u",
-            sent, ExpectedSize);
-        return;
-    }
 }
 
 void P2PConnectScene::Uninitialize()
@@ -76,18 +49,96 @@ void P2PConnectScene::Uninitialize()
 void P2PConnectScene::Tick(sputter::math::FixedPoint dt)
 {
     // TODO: retry logic for connecting
-    MessageHeader header;
-    const int NumReceived = m_spPort->receive(&header, sizeof(header));
-    if (NumReceived > 0)
+    if (m_state == ConnectionSceneState::Initializing)
     {
-        if (header.Type == MessageType::Hello)
+        m_state = ConnectionSceneState::Connecting;
+        m_numConnectionRetries = 0;
+    }
+    else if (m_state == ConnectionSceneState::Connecting)
+    {
+        // TODO: Protocol should handle transport reliability
+        if (m_numTicks % kConnectRetryTicks == 0 || !m_numConnectionRetries)
         {
-            RELEASE_LOGLINE_INFO(LOG_NET, "Got hello from server!");
+            if (m_spPort->connect("127.0.0.1", kServerPort))
+            {
+                m_spProtocol.reset(new Protocol(m_spPort));
+                m_state = ConnectionSceneState::Identifying;
+                m_sentIdentity = false;
+                m_receivedServerIdentity = false;
+
+                RELEASE_LOGLINE_INFO(LOG_NET, "Connected to server!");
+            }
+            else
+            {
+                m_numConnectionRetries++;
+                if (m_numConnectionRetries >= kMaxConnectionRetries)
+                {
+                    RELEASE_LOGLINE_INFO(
+                        LOG_NET,
+                        "Connecting failed, leaving p2p scene");
+                    PopSceneStack();
+                }
+
+                RELEASE_LOGLINE_INFO(
+                    LOG_NET,
+                    "Connection attempt failed (%d/%d)",
+                    m_numConnectionRetries,
+                    kMaxConnectionRetries);
+            }
         }
     }
+    else if (m_state == ConnectionSceneState::Identifying)
+    {
+        // TODO: Protocol should handle transport reliability
+        if (m_numTicks % kIdentifyRetryTicks == 0 || !m_numIdentifyRetries)
+        {
+            // TODO: Plumb through an actual name
+            if (!m_sentIdentity)
+            {
+                const std::string Name = "client";
+                m_sentIdentity = m_spProtocol->SendHelloMessage(Name);
+                if (m_sentIdentity)
+                {
+                    RELEASE_LOGLINE_INFO(LOG_NET, "Sent hello to server!");
+                }
+            }
+            else if (!m_receivedServerIdentity)
+            {
+                HelloMessage helloMessage;
+                if (m_spProtocol->ReceiveHelloMessage(&helloMessage))
+                {
+                    const std::string receivedName(
+                        helloMessage.Name, helloMessage.NameSize);
+                    m_receivedServerIdentity = (receivedName == "Server");
+                    if (m_receivedServerIdentity)
+                    {
+                        RELEASE_LOGLINE_INFO(LOG_NET, "Got hello from server!");
+                        m_state = ConnectionSceneState::Connected;
+                    }
+                    else
+                    {
+                        RELEASE_LOGLINE_INFO(
+                            LOG_NET,
+                            "Got hello from %s...?",
+                            receivedName.c_str());
+                    }
+                }
+            }
+        }
+    }
+    else if (m_state == ConnectionSceneState::Connected)
+    {
+    }
+
+    ++m_numTicks;
 }
 
 void P2PConnectScene::Draw()
 {
     // TODO
+}
+
+void P2PConnectScene::PopSceneStack()
+{
+    // TODO: pop back out to the previous scene
 }

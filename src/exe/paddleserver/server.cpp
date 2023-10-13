@@ -9,14 +9,28 @@ Server::Server(ClientConnectionCallback connectionCallbackFn, int port)
 
 bool Server::Listen()
 {
-    if (m_spListenPort)
+    if (m_spListenPort && m_spListenPort->IsBound() && m_spProtocol)
     {
         // We're already listening
         return false;
     }
 
-    m_spListenPort.reset(new sputter::net::UDPPort(m_listenPort));
-    return m_spListenPort->bind();
+    if (!m_spListenPort)
+    {
+        m_spListenPort.reset(new sputter::net::UDPPort(m_listenPort));
+    }
+
+    // TODO: IsBound() doesn't do what I expect, fix this
+    //if (!m_spListenPort->IsBound())
+    {
+        if (!m_spListenPort->bind())
+        {
+            return false;
+        }
+    }
+
+    m_spProtocol.reset(new sputter::net::Protocol(m_spListenPort));
+    return m_spProtocol != nullptr && m_spListenPort->IsBound();
 }
 
 void Server::Tick()
@@ -69,42 +83,33 @@ bool Server::GetClientPort(ClientHandle handle, int& portOut) const
 
 void Server::ReceiveMessages()
 {
-    int receivingPort;
     std::string receivingAddress;
-    MessageHeader header;
-    const int NumReceived =
-        m_spListenPort->receive(
-            &header, sizeof(header), &receivingAddress, &receivingPort);
-    if (NumReceived <= 0)
+    int receivingPort;
+    MessageHeader* pMessage = nullptr;
+    const bool Success = 
+        m_spProtocol->ReceiveNextMessage(
+            &pMessage,
+            &receivingAddress,
+            &receivingPort);
+    if (!Success)
     {
-        RELEASE_LOGLINE_VERYVERBOSE(LOG_NET, "No network data received this frame.");
-        return;
-    }
-
-    if (NumReceived > 0 && NumReceived != sizeof(header))
-    {
-        RELEASE_LOGLINE_ERROR(
-            LOG_NET,
-            "Malformed message received. Received %d bytes, expecting %u",
-            NumReceived,
-            sizeof(header));
-        SetShouldTerminate();
         return;
     }
 
     RELEASE_LOGLINE_INFO(LOG_NET, "New client attempting connection");
 
-    if (header.Type == MessageType::Hello)
+    if (pMessage->Type == MessageType::Hello)
     {
-        auto pHelloMessage = reinterpret_cast<HelloMessage*>(&header);
+        auto pHelloMessage = reinterpret_cast<HelloMessage*>(pMessage);
         HandleReceiveHello(pHelloMessage, receivingAddress, receivingPort);
+        delete pHelloMessage;
     }
     else
     {
         RELEASE_LOGLINE_WARNING(
             LOG_NET,
             "Unexpected message type: 0x%08X",
-            header.Type);
+            pMessage->Type);
     }
 }
 
