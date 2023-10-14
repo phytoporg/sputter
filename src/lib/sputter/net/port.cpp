@@ -109,30 +109,27 @@ bool UDPPort::connect(const std::string &address, int remotePort)
     return true;
 }
 
-int UDPPort::send(const void *data, int dataSize, const std::string& address, int port) const
+int 
+UDPPort::send(
+    const void *data,
+    int dataSize,
+    const std::string* pAddress,
+    const int* pPort) const
 {
     RELEASE_CHECK(m_socketHandle >= 0, "Socket is not open");
 
-    std::string addressToUse = address;
-    if (address.empty()) 
-    {
-        addressToUse = m_remoteAddress;
-    }
-
-    if (port < 0)
-    {
-        port = m_remotePort;
-    }
+    const std::string AddressToUse = pAddress ? *pAddress : m_remoteAddress;
+    const int Port = pPort ? *pPort : m_remotePort;
 
     sockaddr_in dest = {};
     dest.sin_family = AF_INET;
-    dest.sin_port = htons(port);
-    if (inet_pton(AF_INET, addressToUse.c_str(), &dest.sin_addr) <= 0)
+    dest.sin_port = htons(Port);
+    if (inet_pton(AF_INET, AddressToUse.c_str(), &dest.sin_addr) <= 0)
     {
         RELEASE_LOGLINE_WARNING(
             LOG_NET,
             "Failed to convert address to binary (address = %s)",
-            addressToUse.data());
+            AddressToUse.data());
         return -1;
     }
 
@@ -140,7 +137,7 @@ int UDPPort::send(const void *data, int dataSize, const std::string& address, in
     // Print the address and port we're sending to
     char addressBuffer[INET_ADDRSTRLEN];
     inet_ntop(AF_INET, &dest.sin_addr, addressBuffer, sizeof(addressBuffer));
-    DEBUG_LOGLINE_VERBOSE(LOG_NET, "Sending to %s: %d", addressBuffer, port);
+    DEBUG_LOGLINE_VERBOSE(LOG_NET, "Sending to %s: %d", addressBuffer, Port);
 #endif
 
     const int sent = 

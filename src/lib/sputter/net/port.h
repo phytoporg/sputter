@@ -18,8 +18,8 @@ namespace sputter { namespace net {
         send(
             const void *data,
             int dataSize,
-            const std::string& address = "",
-            int port = -1) const;
+            const std::string* pAddress = nullptr,
+            const int* pPort = nullptr) const;
         int 
         receive(
             void *data,

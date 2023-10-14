@@ -119,15 +119,6 @@ Server::HandleReceiveHello(
     const std::string& address,
     int port)
 {
-    if (pHelloMessage->Header.MessageSize < sizeof(MessageHeader))
-    {
-        RELEASE_LOGLINE_WARNING(
-            LOG_NET,
-            "Hello message has unexpected size: %d",
-            pHelloMessage->Header.MessageSize);
-        return false;
-    }
-
     // Are we already connected to this client?
     const std::string ClientName(pHelloMessage->Name, pHelloMessage->NameSize);
     if (FindClient(ClientName, address, port))
@@ -150,39 +141,9 @@ Server::HandleReceiveHello(
         return false;
     }
 
-    const size_t ExpectedSize = 
-        HelloMessage::GetExpectedSize(pHelloMessage->Name, pHelloMessage->NameSize);
-    if (pHelloMessage->Header.MessageSize != ExpectedSize)
+    if (!m_spProtocol->SendHelloMessage("Server", &address, &port))
     {
-        RELEASE_LOGLINE_WARNING(
-            LOG_NET,
-            "Unexpected 'Hello' message size: %u != %u (name = %s)",
-            pHelloMessage->Header.MessageSize,
-            ExpectedSize, 
-            pHelloMessage->Name);
-        return false;
-    }
-
-    // Return the favor-- hello, new client!
-    HelloMessage helloMessage;
-    const char* pServerName = "Server";
-    if (!CreateHelloMessage(pServerName, strlen(pServerName), helloMessage))
-    {
-        RELEASE_LOGLINE_ERROR(
-            LOG_NET,
-            "Failed to create hello message to send to new client");
-        return false;
-    }
-
-    const int sent = m_spListenPort->send(
-        &helloMessage, sizeof(helloMessage), address, kDefaultClientPort);
-    if (sent != sizeof(helloMessage))
-    {
-        RELEASE_LOGLINE_ERROR(
-            LOG_NET,
-            "Failed to send Hello to client at %s:%d",
-            address.c_str(),
-            port);
+        RELEASE_LOGLINE_ERROR(LOG_NET, "Failed to send reciprocal 'Hello' message!");
         return false;
     }
 

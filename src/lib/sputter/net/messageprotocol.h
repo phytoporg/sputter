@@ -51,7 +51,23 @@ struct InputsMessage
 struct RestartReadyMessage
 {
     MessageHeader Header =
-        { .Type = MessageType::RestartReady, .MessageSize = sizeof(RestartReadyMessage) };
+    { 
+        .Type = MessageType::RestartReady,
+        .MessageSize = sizeof(RestartReadyMessage) 
+    };
 };
 
-// TODO: checksum?
+constexpr size_t SizeMax(size_t a, size_t b)
+{
+    return a > b ? a : b;
+}
+
+constexpr size_t GetMaxMessageSize() 
+{
+    size_t maxSize = sizeof(MessageHeader);
+    maxSize = SizeMax(maxSize, sizeof(HelloMessage));
+    maxSize = SizeMax(maxSize, sizeof(StartGameMessage));
+    maxSize = SizeMax(maxSize, sizeof(InputsMessage));
+    maxSize = SizeMax(maxSize, sizeof(RestartReadyMessage));
+    return maxSize;
+}

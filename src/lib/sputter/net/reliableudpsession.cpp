@@ -52,8 +52,8 @@ size_t ReliableUDPSession::Send(const char *pBuffer, size_t length)
     return m_spPimpl->Port.send(
         pBuffer,
         length,
-        m_spPimpl->Address,
-        m_spPimpl->RemotePortNumber);
+        &m_spPimpl->Address,
+        &m_spPimpl->RemotePortNumber);
 }
 
 size_t ReliableUDPSession::SendReliable(const char* pBuffer, size_t length)

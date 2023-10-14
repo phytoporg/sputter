@@ -15,7 +15,11 @@ Protocol::Protocol(UDPPortPtr spPort)
     RELEASE_CHECK(m_spPort != nullptr, "Invalid port provided to protocol");
 }
 
-bool Protocol::SendHelloMessage(const std::string& name)
+bool 
+Protocol::SendHelloMessage(
+    const std::string& name,
+    const std::string* pAddress,
+    const int* pPort)
 {
     HelloMessage helloMessage;
     if (!CreateHelloMessage(name.c_str(), name.size(), helloMessage))
@@ -24,9 +28,8 @@ bool Protocol::SendHelloMessage(const std::string& name)
         return false;
     }
 
-    const size_t ExpectedSize = 
-        HelloMessage::GetExpectedSize(name.c_str(), name.size());
-    const int sent = m_spPort->send(&helloMessage, ExpectedSize);
+    const size_t ExpectedSize = helloMessage.Header.MessageSize;
+    const int sent = m_spPort->send(&helloMessage, ExpectedSize, pAddress, pPort);
     if (sent != ExpectedSize)
     {
         RELEASE_LOGLINE_ERROR(
@@ -49,16 +52,32 @@ Protocol::ReceiveHelloMessage(
     RELEASE_CHECK(pHelloMessageOut, "Invalid pHelloMessageOut parameter");
     int numReceived = 
         m_spPort->receive(
-            &pHelloMessageOut,
-            sizeof(MessageHeader),
+            pHelloMessageOut,
+            sizeof(HelloMessage),
             pAddressOut,
             pPortOut);
-    if (numReceived != sizeof(MessageHeader))
+    if (numReceived <= 0)
     {
         return false;
     }
+
+    if (numReceived != pHelloMessageOut->Header.MessageSize)
+    {
+        RELEASE_LOGLINE_WARNING(
+            LOG_NET,
+            "ReceiveHelloMessage() - unexpected size: %d != %d",
+            numReceived,
+            pHelloMessageOut->Header.MessageSize);
+        return false;
+    }
+
+    RELEASE_LOGLINE_INFO(
+        LOG_NET,
+        "Received 'Hello' message from %s:%d",
+        (pAddressOut ? pAddressOut->c_str() : "<null_address>"),
+        (pPortOut ? *pPortOut : -1));
      
-    return ReceiveHelloMessageBody(pHelloMessageOut);
+    return true;
 }
 
 bool 
@@ -69,82 +88,53 @@ Protocol::ReceiveNextMessage(
 {
     RELEASE_CHECK(ppMessageOut, "Invalid ppMessageOut parameter");
 
+    // TODO: use a message pool!
+    char buffer[GetMaxMessageSize()];
+
     *ppMessageOut = nullptr;
-    MessageHeader header;
     int numReceived = 
-        m_spPort->receive(&header, sizeof(header), pAddressOut, pPortOut);
+        m_spPort->receive(buffer, sizeof(buffer), pAddressOut, pPortOut);
     if (numReceived <= 0)
     {
         return false;
     }
 
-    if (numReceived != sizeof(header) || header.Type == MessageType::Invalid)
+    auto pHeader = reinterpret_cast<MessageHeader*>(buffer);
+    if (pHeader->Type == MessageType::Invalid)
+    {
+        RELEASE_LOGLINE_WARNING(
+            LOG_NET,
+            "ReceiveNextMessage() - received invalid message");
+        return false;
+    }
+
+    if (numReceived != pHeader->MessageSize)
     {
         RELEASE_LOGLINE_WARNING(
             LOG_NET,
             "ReceiveNextMessage() - unexpected size: %d != %d",
             numReceived,
-            sizeof(header));
+            pHeader->MessageSize);
         return false;
     }
 
-    if (header.Type == MessageType::Hello)
+    if (pHeader->Type == MessageType::Hello)
     {
         RELEASE_LOGLINE_INFO(
             LOG_NET,
             "Received 'Hello' message from %s:%d",
-            (pAddressOut ? pAddressOut->c_str() : "NA"),
+            (pAddressOut ? pAddressOut->c_str() : "<null_address>"),
             (pPortOut ? *pPortOut : -1));
 
-        // TODO: use a pool?
+        // TODO: (again) use a message pool
         HelloMessage* pMessage = new HelloMessage;
-        memcpy(&pMessage->Header, &header, sizeof(header));
-        if (!ReceiveHelloMessageBody(pMessage))
-        {
-            RELEASE_LOGLINE_WARNING(LOG_NET, "Failed to parse hello message body");
-            delete pMessage;
-            return false;
-        }
-
+        memcpy(pMessage, buffer, pHeader->MessageSize);
         *ppMessageOut = reinterpret_cast<MessageHeader*>(pMessage);
     }
     else
     {
         // TODO: Support other message types
         RELEASE_LOGLINE_WARNING(LOG_NET, "Received unexpected message type");
-        return false;
-    }
-
-    return true;
-}
-
-bool Protocol::ReceiveHelloMessageBody(HelloMessage* pHelloMessageOut)
-{
-    if (pHelloMessageOut->Header.Type != MessageType::Hello)
-    {
-        RELEASE_LOGLINE_ERROR(LOG_NET, "Unexpected header type");
-        return false;
-    }
-
-    int numReceived =
-        m_spPort->receive(
-            &pHelloMessageOut->NameSize, sizeof(pHelloMessageOut->NameSize));
-    if (numReceived <= 0)
-    {
-        return false;
-    }
-
-    if (pHelloMessageOut->NameSize == 0)
-    {
-        RELEASE_LOGLINE_ERROR(LOG_NET, "Hello message has no name");
-        return false;
-    }
-
-    memset(pHelloMessageOut->Name, 0, sizeof(pHelloMessageOut->Name));
-    numReceived = m_spPort->receive(pHelloMessageOut->Name, pHelloMessageOut->NameSize);
-    if (numReceived != pHelloMessageOut->NameSize)
-    {
-        RELEASE_LOGLINE_ERROR(LOG_NET, "Failed to read name from Hello message");
         return false;
     }
 
