@@ -2,7 +2,7 @@
 echo "Setting up sputter aliases"
 
 # Building
-alias bsput="pushd $SPUTTER_ROOT > /dev/null; ./scripts/build_linux.sh; popd > /dev/null"
+alias bsput="pushd $SPUTTER_ROOT &> /dev/null; ./scripts/build_linux.sh; popd &> /dev/null"
 
 # Executing
 alias egame="pushd $SPUTTER_ROOT > /dev/null; ./build/src/exe/paddlearena/paddlearena $PADDLE_ARENA_ASSETS_ROOT; popd > /dev/null"
