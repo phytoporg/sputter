@@ -1,4 +1,10 @@
 TODO:
-- Create a network protocol layer to simplify the network game tick driver
-- UdpPort -> more direct socket abstraction?
-- Reevaluate reliable UDP session ifc (explicit client & server?), ditch kcp
+
+Last thing that was done: got the game to start in client/server setting. We now want to accept input packets so that the game can do stuff! This'll take:
+- Support on the server end/protocol for receiving input messages
+-- Server can just start by forwarding inputs along
+
+NEXT (I think):
+- Rest of the game loop (reset, goodbye, etc)
+
+NEXT NEXT, robust transport and time sync
