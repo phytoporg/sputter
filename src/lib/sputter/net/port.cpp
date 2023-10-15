@@ -193,7 +193,10 @@ UDPPort::receive(
     const int received = recvfrom(m_socketHandle, data, dataSize, 0, reinterpret_cast<sockaddr *>(&src), &srcLength);
     if (received < 0) 
     {
-        RELEASE_LOGLINE_WARNING(LOG_NET, "Failed to receive data");
+        RELEASE_LOGLINE_WARNING(
+            LOG_NET,
+            "Failed to receive data (%s)",
+            strerror(errno));
         return -1;
     }
     RELEASE_LOGLINE_VERBOSE(LOG_NET, "Received %d bytes", received);

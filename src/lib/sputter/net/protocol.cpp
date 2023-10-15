@@ -10,7 +10,8 @@ using namespace sputter;
 using namespace sputter::net;
 
 Protocol::Protocol(UDPPortPtr spPort)
-    : m_spPort(spPort) 
+    : m_spPort(spPort),
+      m_messagePool(32)
 {
     RELEASE_CHECK(m_spPort != nullptr, "Invalid port provided to protocol");
 }
@@ -88,56 +89,59 @@ Protocol::ReceiveNextMessage(
 {
     RELEASE_CHECK(ppMessageOut, "Invalid ppMessageOut parameter");
 
-    // TODO: use a message pool!
-    char buffer[GetMaxMessageSize()];
+    MessageHeader* pMessage = m_messagePool.NewMessage();
+    RELEASE_CHECK(pMessage, "Could not allocate new message");
 
     *ppMessageOut = nullptr;
     int numReceived = 
-        m_spPort->receive(buffer, sizeof(buffer), pAddressOut, pPortOut);
+        m_spPort->receive(pMessage, GetMaxMessageSize(), pAddressOut, pPortOut);
     if (numReceived <= 0)
     {
+        FreeMessage(pMessage);
         return false;
     }
 
-    auto pHeader = reinterpret_cast<MessageHeader*>(buffer);
-    if (pHeader->Type == MessageType::Invalid)
+    if (pMessage->Type == MessageType::Invalid)
     {
         RELEASE_LOGLINE_WARNING(
             LOG_NET,
             "ReceiveNextMessage() - received invalid message");
+        FreeMessage(pMessage);
         return false;
     }
 
-    if (numReceived != pHeader->MessageSize)
+    if (numReceived != pMessage->MessageSize)
     {
         RELEASE_LOGLINE_WARNING(
             LOG_NET,
             "ReceiveNextMessage() - unexpected size: %d != %d",
             numReceived,
-            pHeader->MessageSize);
+            pMessage->MessageSize);
+        FreeMessage(pMessage);
         return false;
     }
 
-    if (pHeader->Type == MessageType::Hello)
+    if (pMessage->Type == MessageType::Hello)
     {
         RELEASE_LOGLINE_INFO(
             LOG_NET,
             "Received 'Hello' message from %s:%d",
             (pAddressOut ? pAddressOut->c_str() : "<null_address>"),
             (pPortOut ? *pPortOut : -1));
-
-        // TODO: (again) use a message pool
-        HelloMessage* pMessage = new HelloMessage;
-        memcpy(pMessage, buffer, pHeader->MessageSize);
-        *ppMessageOut = reinterpret_cast<MessageHeader*>(pMessage);
+        *ppMessageOut = pMessage;
     }
     else
     {
         // TODO: Support other message types
         RELEASE_LOGLINE_WARNING(LOG_NET, "Received unexpected message type");
+        FreeMessage(pMessage);
         return false;
     }
 
     return true;
 }
 
+void Protocol::FreeMessage(void* pMessage)
+{
+    m_messagePool.FreeMessage(static_cast<MessageHeader*>(pMessage));
+}

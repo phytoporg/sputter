@@ -4,6 +4,7 @@
 #include <string>
 
 #include <sputter/net/messageprotocol.h>
+#include <sputter/net/messagepool.h>
 
 namespace sputter { namespace net {
     class UDPPort;
@@ -31,8 +32,11 @@ namespace sputter { namespace net {
             std::string* pAddressOut = nullptr,
             int* pPortOut = nullptr);
 
+        void FreeMessage(void* pMessage);
+
     private:
-        UDPPortPtr m_spPort = nullptr;
+        UDPPortPtr  m_spPort = nullptr;
+        MessagePool m_messagePool;
     };
 
     using ProtocolPtr = std::shared_ptr<Protocol>;

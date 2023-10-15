@@ -4,7 +4,8 @@
 #include <sputter/log/log.h>
 
 Server::Server(ClientConnectionCallback connectionCallbackFn, int port)
-    : m_listenPort(port), m_connectionCallback(connectionCallbackFn)
+    : m_listenPort(port),
+      m_connectionCallback(connectionCallbackFn)
 {}
 
 bool Server::Listen()
@@ -28,6 +29,8 @@ bool Server::Listen()
             return false;
         }
     }
+
+    m_state = ServerState::PreGame;
 
     m_spProtocol.reset(new sputter::net::Protocol(m_spListenPort));
     return m_spProtocol != nullptr && m_spListenPort->IsBound();
@@ -96,13 +99,11 @@ void Server::ReceiveMessages()
         return;
     }
 
-    RELEASE_LOGLINE_INFO(LOG_NET, "New client attempting connection");
-
     if (pMessage->Type == MessageType::Hello)
     {
+        RELEASE_LOGLINE_INFO(LOG_NET, "Hello message received");
         auto pHelloMessage = reinterpret_cast<HelloMessage*>(pMessage);
         HandleReceiveHello(pHelloMessage, receivingAddress, receivingPort);
-        delete pHelloMessage;
     }
     else
     {
@@ -111,6 +112,7 @@ void Server::ReceiveMessages()
             "Unexpected message type: 0x%08X",
             pMessage->Type);
     }
+    m_spProtocol->FreeMessage(pMessage);
 }
 
 bool 
@@ -119,6 +121,14 @@ Server::HandleReceiveHello(
     const std::string& address,
     int port)
 {
+    if (m_state != ServerState::PreGame)
+    {
+        RELEASE_LOGLINE_WARNING(
+            LOG_NET,
+            "Received 'Hello' message outside of pregame state. Ignoring");
+        return false;
+    }
+
     // Are we already connected to this client?
     const std::string ClientName(pHelloMessage->Name, pHelloMessage->NameSize);
     if (FindClient(ClientName, address, port))
@@ -129,6 +139,7 @@ Server::HandleReceiveHello(
             ClientName.c_str(),
             address.c_str(),
             port);
+
         return false;
     }
 
