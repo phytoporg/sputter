@@ -15,7 +15,11 @@
 
 #include <sputter/ui/modalpopup.h>
 
+#include <sputter/net/protocol.h>
+
 #include <GLFW/glfw3.h>
+
+#include <memory>
 
 using namespace sputter;
 
@@ -89,8 +93,7 @@ void GameScene::Initialize()
                 m_pInputSources[1]);
 }
 
-    const GameMode GameMode = m_pPaddleArena->GetGameMode();
-    if (GameMode == GameMode::Local && !m_pGameTickDriver)
+    if (IsLocalGame() && !m_pGameTickDriver)
     {
         m_pGameTickDriver =
             m_fixedAllocator.Create<LocalGameTickDriver>(
@@ -98,7 +101,7 @@ void GameScene::Initialize()
                 m_pInputSubsystem,
                 m_pGameInstance);
     }
-    else if ((GameMode == GameMode::Client || GameMode == GameMode::Server) || !m_pGameTickDriver)
+    else if (!IsLocalGame() || !m_pGameTickDriver)
     {
         m_pGameTickDriver =
             m_fixedAllocator.Create<NetworkGameTickDriver>(
@@ -106,6 +109,7 @@ void GameScene::Initialize()
                 m_pInputSubsystem,
                 m_pPaddleArena->GetUDPSession(),
                 m_pGameInstance);
+        m_waitingForGameStart = true;
     }
 
     if (!m_pScreen)
@@ -141,6 +145,8 @@ void GameScene::Initialize()
     });
     m_enableTickDriverTick = true;
     m_waitingForRestartReady = false;
+    m_sentClientReady = false;
+    m_waitingForGameStart = false;
     m_sentRestartReady = false;
 }
 
@@ -169,8 +175,7 @@ bool GameScene::CreateInputSubsystem()
             InputMapping(GLFW_KEY_J, PaddleArenaInput::INPUT_DASH),
     };
 
-    const GameMode GameMode = m_pPaddleArena->GetGameMode();
-    if (GameMode == GameMode::Local)
+    if (IsLocalGame())
     {
         inputSubsystemSettings.PlayerDevices[0] = input::DeviceType::KeyboardInputDevice;
         inputSubsystemSettings.PlayerDevices[1] = input::DeviceType::None;
@@ -183,6 +188,9 @@ bool GameScene::CreateInputSubsystem()
     }
     else
     {
+        const GameMode GameMode = m_pPaddleArena->GetGameMode();
+
+        // TODO: Assign player slots some other way
         uint32_t localIndex;
         uint32_t remoteIndex;
         if (GameMode == GameMode::Client)
@@ -252,17 +260,17 @@ void GameScene::CreateEndOfGameModalPopup()
         (const char**)ppButtonTextEntries, NumModalButtons);
 
     using namespace sputter::ui;
-    m_pModalPopup->SetModalPopupOptionSelectedCallback([this](ModalPopup::ModalPopupSelection selection){
+    m_pModalPopup->SetModalPopupOptionSelectedCallback(
+        [this](ModalPopup::ModalPopupSelection selection){
         m_pModalPopup->SetVisibility(false);
 
         if (selection == ModalPopup::ModalPopupSelection::Selection_0)
         {
-            const GameMode GameMode = m_pPaddleArena->GetGameMode();
-            if (GameMode == GameMode::Local)
+            if (IsLocalGame())
             {
                 HandleRoundResetAsLocalPlayer();
             }
-            else if (GameMode == GameMode::Server || GameMode == GameMode::Client)
+            else
             {
                 HandleRoundResetNonLocal();
             }
@@ -273,8 +281,7 @@ void GameScene::CreateEndOfGameModalPopup()
         }
     });
 
-    const GameMode GameMode = m_pPaddleArena->GetGameMode();
-    if (GameMode == GameMode::Server || GameMode == GameMode::Client)
+    if (!IsLocalGame())
     {
         m_waitingForRestartReady = true;
         m_sentRestartReady = false;
@@ -306,45 +313,24 @@ void GameScene::Tick(sputter::math::FixedPoint dt)
 
     m_pScreen->Tick((float)dt);
 
-    if (m_waitingForRestartReady)
+    if (!m_sentClientReady)
     {
-        net::ReliableUDPSession* pSession = m_pPaddleArena->GetUDPSession();
-
-        // TODO:
-        // lol this sucks, need to reconsider protocol structure. In the meantime, drain all
-        // unwanted traffic
-        MessageHeader messageHeader;
-        int peekSize = pSession->PeekSize();
-        while (peekSize != sizeof(messageHeader) && peekSize > 0)
+        sputter::net::ProtocolPtr spProtocol = m_pPaddleArena->GetProtocol();
+        if (spProtocol->SendClientReadyMessage(m_pPaddleArena->GetClientId()))
         {
-            char garbage[256];
-            RELEASE_CHECK(peekSize < sizeof(garbage), "Garbage buffer is too small");
-            pSession->ReadReliable(garbage, peekSize);
-            peekSize = pSession->PeekSize();
+            m_sentClientReady = true;
+            m_waitingForGameStart = true;
         }
-
-        const size_t BytesRead =
-                pSession->ReadReliable(
-                        reinterpret_cast<char *>(&messageHeader), sizeof(messageHeader));
-        if (!BytesRead) { return; }
-        if (BytesRead < 0)
-        {
-            RELEASE_LOGLINE_ERROR(LOG_GAME, "Failed to read restart ready message");
-        }
-        else if (BytesRead != sizeof(messageHeader))
-        {
-            RELEASE_LOGLINE_ERROR(LOG_GAME, "Unexpected number of bytes read: %llu", BytesRead);
-        }
-        else if (messageHeader.Type == MessageType::RestartReady &&
-                 messageHeader.MessageSize == sizeof(messageHeader))
-        {
-            RELEASE_LOGLINE_INFO(LOG_GAME, "Received restart ready message");
-            m_waitingForRestartReady = false;
-        }
-        else
-        {
-            RELEASE_LOGLINE_ERROR(LOG_GAME, "HRRMRMM");
-        }
+    }
+    if (m_waitingForGameStart)
+    {
+        RELEASE_CHECK(false, "NOT READY YET");
+        // if (spProtocol->ReceiveGameStartMessage())
+        // {
+        // }
+    } else if (m_waitingForRestartReady)
+    {
+        // TODO
     }
     else if (!m_waitingForRestartReady && m_sentRestartReady)
     {
@@ -387,4 +373,9 @@ void GameScene::HandleRoundResetNonLocal()
     pSession->Flush();
     m_sentRestartReady = true;
     RELEASE_LOGLINE_INFO(LOG_GAME, "Sent restart ready message");
+}
+
+bool GameScene::IsLocalGame() const
+{
+    return m_pPaddleArena->GetGameMode() == GameMode::Local;
 }

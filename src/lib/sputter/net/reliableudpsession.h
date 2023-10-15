@@ -13,6 +13,7 @@ namespace sputter { namespace net {
     public:
         ReliableUDPSession(uint32_t sessionId, int localPort, const std::string& address, int remotePort);
         ReliableUDPSession(uint32_t sessionId, const UDPPort& port, const std::string& address, int remotePort);
+        ReliableUDPSession(uint32_t sessionId, const UDPPort& port);
         ~ReliableUDPSession();
 
         void Tick();
@@ -34,4 +35,6 @@ namespace sputter { namespace net {
         struct PImpl;
         std::unique_ptr<PImpl> m_spPimpl;
     };
+
+    using ReliableUDPSessionPtr = std::shared_ptr<ReliableUDPSession>;
 }}

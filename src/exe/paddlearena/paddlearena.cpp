@@ -242,3 +242,24 @@ void PaddleArena::SetUDPSession(sputter::net::ReliableUDPSession *pSession)
 {
     m_pReliableUDPSession = pSession;
 }
+
+sputter::net::ProtocolPtr PaddleArena::GetProtocol() const
+{
+    return m_spProtocol;
+}
+
+void PaddleArena::SetProtocol(sputter::net::ProtocolPtr spProtocol)
+{
+    m_spProtocol = spProtocol;
+}
+
+uint8_t PaddleArena::GetClientId() const
+{
+    // Should we encode an invalid client ID??
+    return m_clientId;
+}
+
+void PaddleArena::SetClientId(uint8_t clientId) 
+{
+    m_clientId = clientId;
+}

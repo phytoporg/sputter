@@ -34,6 +34,8 @@ namespace sputter
     namespace net
     {
         class ReliableUDPSession;
+        class Protocol;
+        using ProtocolPtr = std::shared_ptr<Protocol>;
     }
 }
 
@@ -75,6 +77,12 @@ public:
     sputter::net::ReliableUDPSession* GetUDPSession() const;
     void SetUDPSession(sputter::net::ReliableUDPSession* pSession);
 
+    sputter::net::ProtocolPtr GetProtocol() const;
+    void SetProtocol(sputter::net::ProtocolPtr spProtocol);
+
+    uint8_t GetClientId() const;
+    void SetClientId(uint8_t clientId); 
+
 private:
     PaddleArena() = delete;
     PaddleArena(const PaddleArena& other) = delete;
@@ -82,6 +90,7 @@ private:
     GameMode                                 m_gameMode = GameMode::Local;
     const std::string                        m_remoteServerAddress;
     const int32_t                            m_remoteServerPort;
+    uint8_t                                  m_clientId = 0;
 
     sputter::game::IScene*                   m_pMainMenuScene = nullptr;
     sputter::game::IScene*                   m_pGameScene = nullptr;
@@ -89,6 +98,7 @@ private:
     sputter::game::SceneStack*               m_pSceneStack = nullptr;
 
     sputter::net::ReliableUDPSession*        m_pReliableUDPSession = nullptr;
+    sputter::net::ProtocolPtr                m_spProtocol = nullptr;
 
     sputter::game::TimerSystem               m_timerSystem;
 

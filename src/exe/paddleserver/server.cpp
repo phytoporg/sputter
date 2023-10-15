@@ -239,6 +239,40 @@ Server::HandleReceiveClientReady(
     m_clientConnections[pClientReadyMessage->ClientId].IsReady = true;
 
     // TODO: Send StartGame if all clients are ready
+    bool foundUnreadyClient = false;
+    for (const ClientConnection& Connection : m_clientConnections)
+    {
+        if (!Connection.IsReady)
+        {
+            foundUnreadyClient = true;
+            break;
+        }
+    }
+
+    if (!foundUnreadyClient)
+    {
+        bool failedAnyStartGameSends = false;
+        for (const ClientConnection& Connection : m_clientConnections)
+        {
+            const uint32_t GameId = 0; // For now!! TODO: UUIDs
+            if (m_spProtocol->SendStartGameMessage(
+                    GameId, &Connection.Address, &Connection.Port))
+            {
+                RELEASE_LOGLINE_ERROR(
+                    LOG_NET,
+                    "Failed to send start game message to %s:%d",
+                    Connection.Address.c_str(),
+                    Connection.Port);
+                failedAnyStartGameSends = true;
+                break;
+            }
+        }
+
+        if (!failedAnyStartGameSends)
+        {
+            m_state = ServerState::InGame;
+        }
+    }
 
     return true;
 }

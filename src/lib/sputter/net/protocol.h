@@ -58,6 +58,20 @@ namespace sputter { namespace net {
             int* pPortOut = nullptr);
 
         //
+        // StartGame
+        //
+        bool
+        SendStartGameMessage(
+            uint32_t GameID,
+            const std::string* pAddress = nullptr,
+            const int* pPort = nullptr);
+        bool 
+        ReceiveGameStartMessage(
+            StartGameMessage* pStartGameMessage,
+            std::string* pAddressOut = nullptr,
+            int* pPortOut = nullptr);
+
+        //
         // General
         //
         bool
@@ -65,6 +79,8 @@ namespace sputter { namespace net {
             MessageHeader** ppMessageOut,
             std::string* pAddressOut = nullptr,
             int* pPortOut = nullptr);
+
+        UDPPortPtr GetUDPPort() const;
 
         void FreeMessage(void* pMessage);
 

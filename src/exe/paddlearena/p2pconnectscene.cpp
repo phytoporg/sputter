@@ -113,13 +113,20 @@ void P2PConnectScene::Tick(sputter::math::FixedPoint dt)
                         "Received client ID: %hhu",
                         assignClientIdMessage.ClientId);
                     m_receivedId = true;
+                    m_pPaddleArena->SetClientId(assignClientIdMessage.ClientId);
+                    m_state = ConnectionSceneState::Connected;
                 }
             }
         }
     }
     else if (m_state == ConnectionSceneState::Connected)
     {
-        // TODO: Start the game?
+        constexpr uint32_t kSessionId = 0; // Not needed??
+        ReliableUDPSession* pSession =
+            new ReliableUDPSession(kSessionId, *m_spProtocol->GetUDPPort());
+        m_pPaddleArena->SetProtocol(m_spProtocol);
+        m_pPaddleArena->SetUDPSession(pSession);
+        m_pPaddleArena->NextSceneFromP2PScreen();
     }
 
     ++m_numTicks;

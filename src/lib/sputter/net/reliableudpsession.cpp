@@ -40,6 +40,12 @@ ReliableUDPSession::ReliableUDPSession(uint32_t sessionId, const UDPPort& port, 
     m_spPimpl->Port.connect(address, remotePortNumber);
 }
 
+ReliableUDPSession::ReliableUDPSession(uint32_t sessionId, const UDPPort& port)
+    : m_spPimpl(new ReliableUDPSession::PImpl(sessionId, port, port.GetRemoteAddress(), port.GetRemotePort()))
+{
+    // In this case, the port should already be bound and connected
+}
+
 ReliableUDPSession::~ReliableUDPSession() {}
 
 void ReliableUDPSession::Tick()

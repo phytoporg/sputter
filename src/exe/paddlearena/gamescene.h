@@ -93,6 +93,8 @@ private:
     void HandleRoundResetAsLocalPlayer();
     void HandleRoundResetNonLocal();
 
+    bool IsLocalGame() const;
+
     sputter::memory::ReservedRegion           m_reservedRegion;
     sputter::memory::FixedMemoryAllocator     m_fixedAllocator;
 
@@ -121,6 +123,8 @@ private:
 
     bool                                      m_enableTickDriverTick = false;
     bool                                      m_waitingForRestartReady = false;
+    bool                                      m_sentClientReady = false;
+    bool                                      m_waitingForGameStart = false;
     bool                                      m_sentRestartReady = false;
 
     bool CreateInputSubsystem();

@@ -155,13 +155,79 @@ Protocol::SendClientReadyMessage(
     const std::string* pAddress,
     const int* pPort)
 {
-    // TODO
-    return false;
+    ClientReadyMessage clientReadyMessage;
+    if (!CreateClientReadyMessage(clientId, clientReadyMessage))
+    {
+        RELEASE_LOGLINE_ERROR(LOG_NET, "Failed to create client ready id message");
+        return false;
+    }
+
+    const size_t ExpectedSize = clientReadyMessage.Header.MessageSize;
+    const int sent = 
+        m_spPort->send(&clientReadyMessage, ExpectedSize, pAddress, pPort);
+    if (sent != ExpectedSize)
+    {
+        RELEASE_LOGLINE_ERROR(
+            LOG_NET,
+            "Failed to send ClientReady message. Sent %u, not %u",
+            sent, ExpectedSize);
+        return false;
+    }
+
+    RELEASE_LOGLINE_INFO(LOG_NET, "Sent ClientReady message, size = %u", sent);
+    return true;
 }
 
 bool 
 Protocol::ReceiveClientReadyMessage(
     ClientReadyMessage* pMessageOut,
+    std::string* pAddressOut,
+    int* pPortOut)
+{
+    RELEASE_CHECK(pMessageOut, "Invalid pMessageOut parameter");
+    int numReceived = 
+        m_spPort->receive(
+            pMessageOut,
+            sizeof(ClientReadyMessage),
+            pAddressOut,
+            pPortOut);
+    if (numReceived <= 0)
+    {
+        return false;
+    }
+
+    if (numReceived != pMessageOut->Header.MessageSize)
+    {
+        RELEASE_LOGLINE_WARNING(
+            LOG_NET,
+            "ReceiveClientReadyMessage() - unexpected size: %d != %d",
+            numReceived,
+            pMessageOut->Header.MessageSize);
+        return false;
+    }
+
+    RELEASE_LOGLINE_INFO(
+        LOG_NET,
+        "Received 'ClientReady' message from %s:%d",
+        (pAddressOut ? pAddressOut->c_str() : "<null_address>"),
+        (pPortOut ? *pPortOut : -1));
+     
+    return true;
+}
+
+bool
+Protocol::SendStartGameMessage(
+    uint32_t GameID,
+    const std::string* pAddress,
+    const int* pPort)
+{
+    // TODO
+    return false;
+}
+
+bool 
+Protocol::ReceiveGameStartMessage(
+    StartGameMessage* pStartGameMessage,
     std::string* pAddressOut,
     int* pPortOut)
 {
@@ -227,6 +293,11 @@ Protocol::ReceiveNextMessage(
     }
 
     return true;
+}
+
+UDPPortPtr Protocol::GetUDPPort() const
+{
+    return m_spPort;
 }
 
 void Protocol::FreeMessage(void* pMessage)
