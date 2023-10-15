@@ -32,9 +32,13 @@ public:
 
     bool GetClientAddress(ClientHandle handle, std::string& addressOut) const;
     bool GetClientPort(ClientHandle handle, int& portOut) const;
+    bool GetClientName(ClientHandle handle, std::string& nameOut) const;
+    bool GetClientId(ClientHandle handle, uint8_t& idOut) const;
 
 private:
     Server() = delete;
+
+    bool IsValidHandle(ClientHandle handle) const;
 
     //
     // Private helpers
@@ -44,8 +48,13 @@ private:
         HelloMessage* pHelloMessage,
         const std::string& address,
         int port);
+    bool HandleReceiveClientReady(
+        ClientReadyMessage* pClientReadyMessage,
+        const std::string& address,
+        int port);
 
     bool FindClient(const std::string& name, const std::string& address, int port);
+    bool FindClient(uint32_t clientId, const std::string& address, int port);
 
     //
     // General state variables
@@ -64,6 +73,8 @@ private:
     {
         std::string Name;
         std::string Address;
+        bool IsReady = false;
+        bool GotStartGame = false;
         int Port = -1;
     };
     std::vector<ClientConnection> m_clientConnections;
@@ -78,9 +89,6 @@ private:
 
         // Accepting initial client connections
         PreGame,
-
-        // Waiting for all clients to send StartGame
-        ReadyForGame,
 
         // Accepting inputs from clients
         InGame,

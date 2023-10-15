@@ -15,6 +15,9 @@ namespace sputter { namespace net {
     public:
         Protocol(UDPPortPtr spPort);
 
+        //
+        // Hello
+        //
         bool 
         SendHelloMessage(
             const std::string& name,
@@ -26,6 +29,37 @@ namespace sputter { namespace net {
             std::string* pAddressOut = nullptr,
             int* pPortOut = nullptr);
 
+        //
+        // AssignClientId
+        //
+        bool
+        SendAssignClientIdMessage(
+            uint8_t clientId,
+            const std::string* pAddress = nullptr,
+            const int* pPort = nullptr);
+        bool 
+        ReceiveAssignClientIdMessage(
+            AssignClientIdMessage* pAssignClientIdMessageOut,
+            std::string* pAddressOut = nullptr,
+            int* pPortOut = nullptr);
+
+        //
+        // ClientReady
+        //
+        bool
+        SendClientReadyMessage(
+            uint8_t clientId,
+            const std::string* pAddress = nullptr,
+            const int* pPort = nullptr);
+        bool 
+        ReceiveClientReadyMessage(
+            ClientReadyMessage* pClientReadyMessageOut,
+            std::string* pAddressOut = nullptr,
+            int* pPortOut = nullptr);
+
+        //
+        // General
+        //
         bool
         ReceiveNextMessage(
             MessageHeader** ppMessageOut,

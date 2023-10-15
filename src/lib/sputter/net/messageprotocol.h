@@ -7,6 +7,8 @@ enum class MessageType
 {
     Invalid = 0,
     Hello,
+    AssignClientId,
+    ClientReady,
     StartGame,
     Inputs,
     RestartReady,
@@ -20,6 +22,9 @@ struct MessageHeader
     size_t MessageSize = 0;
 };
 
+//
+// HelloMessage
+//
 struct HelloMessage
 {
     static size_t GetExpectedSize(const char* pName, uint8_t nameSize);
@@ -30,6 +35,33 @@ struct HelloMessage
 };
 bool CreateHelloMessage(const char* pName, uint8_t nameSize, HelloMessage& messageOut);
 
+//
+// AssignClientId
+//
+struct AssignClientIdMessage
+{
+    static size_t GetExpectedSize();
+
+    MessageHeader Header;
+    uint8_t ClientId = 0;
+};
+bool CreateAssignClientIdMessage(uint8_t ClientId, AssignClientIdMessage& messageOut);
+
+//
+// ClientReady
+//
+struct ClientReadyMessage
+{
+    static size_t GetExpectedSize();
+
+    MessageHeader Header;
+    uint8_t ClientId;
+};
+bool CreateClientReadyMessage(uint8_t clientId, ClientReadyMessage& messageOut);
+
+//
+// StartGame
+//
 struct StartGameMessage
 {
     static size_t GetExpectedSize(size_t numInputMasks);
@@ -38,6 +70,9 @@ struct StartGameMessage
     uint32_t GameID;
 };
 
+//
+// InputsMessage
+//
 struct InputsMessage
 {
     static size_t GetExpectedSize(size_t numInputMasks);
@@ -66,6 +101,7 @@ constexpr size_t GetMaxMessageSize()
 {
     size_t maxSize = sizeof(MessageHeader);
     maxSize = SizeMax(maxSize, sizeof(HelloMessage));
+    maxSize = SizeMax(maxSize, sizeof(AssignClientIdMessage));
     maxSize = SizeMax(maxSize, sizeof(StartGameMessage));
     maxSize = SizeMax(maxSize, sizeof(InputsMessage));
     maxSize = SizeMax(maxSize, sizeof(RestartReadyMessage));

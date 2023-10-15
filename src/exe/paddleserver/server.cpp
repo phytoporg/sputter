@@ -64,12 +64,12 @@ int Server::GetPort() const
 
 bool Server::GetClientAddress(ClientHandle handle, std::string& addressOut) const
 {
-    if (handle < 0 || handle > m_clientConnections.size())
+    if (IsValidHandle(handle))
     {
         return false;
     }
 
-    addressOut = m_clientConnections[handle - 1].Address;
+    addressOut = m_clientConnections[handle].Address;
     return true;
 }
 
@@ -80,8 +80,35 @@ bool Server::GetClientPort(ClientHandle handle, int& portOut) const
         return false;
     }
 
-    portOut = m_clientConnections[handle - 1].Port;
+    portOut = m_clientConnections[handle].Port;
     return true;
+}
+
+bool Server::GetClientName(ClientHandle handle, std::string& nameOut) const
+{
+    if (IsValidHandle(handle))
+    {
+        return false;
+    }
+
+    nameOut = m_clientConnections[handle].Name;
+    return true;
+}
+
+bool Server::GetClientId(ClientHandle handle, uint8_t& idOut) const
+{
+    if (IsValidHandle(handle))
+    {
+        return false;
+    }
+
+    idOut = static_cast<uint8_t>(handle);
+    return true;
+}
+
+bool Server::IsValidHandle(ClientHandle handle) const
+{
+    return (handle < 0 || handle > m_clientConnections.size());
 }
 
 void Server::ReceiveMessages()
@@ -104,6 +131,12 @@ void Server::ReceiveMessages()
         RELEASE_LOGLINE_INFO(LOG_NET, "Hello message received");
         auto pHelloMessage = reinterpret_cast<HelloMessage*>(pMessage);
         HandleReceiveHello(pHelloMessage, receivingAddress, receivingPort);
+    }
+    else if (pMessage->Type == MessageType::ClientReady)
+    {
+        RELEASE_LOGLINE_INFO(LOG_NET, "ClientReady message received");
+        auto pClientReadyMessage = reinterpret_cast<ClientReadyMessage*>(pMessage);
+        HandleReceiveClientReady(pClientReadyMessage, receivingAddress, receivingPort);
     }
     else
     {
@@ -152,13 +185,12 @@ Server::HandleReceiveHello(
         return false;
     }
 
-    if (!m_spProtocol->SendHelloMessage("Server", &address, &port))
+    const size_t NextClientId = m_clientConnections.size();
+    if (!m_spProtocol->SendAssignClientIdMessage(NextClientId, &address, &port))
     {
-        RELEASE_LOGLINE_ERROR(LOG_NET, "Failed to send reciprocal 'Hello' message!");
+        RELEASE_LOGLINE_ERROR(LOG_NET, "Failed to assign new client ID.");
         return false;
     }
-
-    RELEASE_LOGLINE_INFO(LOG_NET, "Sent 'Hello' to new client");
 
     // Register the connection and invoke a callback
     ClientConnection connection {
@@ -167,12 +199,47 @@ Server::HandleReceiveHello(
         .Port = port };
     m_clientConnections.emplace_back(connection);
 
-    const ClientHandle newClientHandle = m_clientConnections.size();
+    const ClientHandle newClientHandle = NextClientId;
     if (m_connectionCallback)
     {
         m_connectionCallback(this, newClientHandle);
     }
+
     RELEASE_LOGLINE_INFO(LOG_NET, "Added new client (%u)", newClientHandle);
+    return true;
+}
+
+bool 
+Server::HandleReceiveClientReady(
+    ClientReadyMessage* pClientReadyMessage,
+    const std::string& address,
+    int port)
+{
+    if (m_state != ServerState::PreGame)
+    {
+        RELEASE_LOGLINE_WARNING(
+            LOG_NET,
+            "Received 'ClientReady' message outside of pregame state. Ignoring");
+        return false;
+    }
+
+    // Are we already connected to this client? Bail if not.
+    if (FindClient(pClientReadyMessage->ClientId, address, port))
+    {
+        RELEASE_LOGLINE_INFO(
+            LOG_NET,
+            "Received 'ClientReady' from unrecognized client: %hhu @ %s:%d",
+            pClientReadyMessage->ClientId,
+            address.c_str(),
+            port);
+
+        return false;
+    }
+
+    m_clientConnections[pClientReadyMessage->ClientId].IsReady = true;
+
+    // TODO: Send StartGame if all clients are ready
+
     return true;
 }
 
@@ -193,4 +260,20 @@ Server::FindClient(
     }
 
     return false;
+}
+
+bool 
+Server::FindClient(
+    uint32_t clientId,
+    const std::string& address,
+    int port)
+{
+    if (clientId >= m_clientConnections.size())
+    {
+        RELEASE_LOGLINE_VERBOSE(LOG_NET, "Invalid client ID: %u", clientId);
+        return false;
+    }
+
+    const ClientConnection& Connection = m_clientConnections[clientId];
+    return Connection.Address == address && Connection.Port == port;
 }

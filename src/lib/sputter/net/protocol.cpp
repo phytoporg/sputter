@@ -81,6 +81,94 @@ Protocol::ReceiveHelloMessage(
     return true;
 }
 
+bool
+Protocol::SendAssignClientIdMessage(
+    uint8_t clientId,
+    const std::string* pAddress,
+    const int* pPort)
+{
+    AssignClientIdMessage assignClientIdMessage;
+    if (!CreateAssignClientIdMessage(clientId, assignClientIdMessage))
+    {
+        RELEASE_LOGLINE_ERROR(LOG_NET, "Failed to create assign client id message");
+        return false;
+    }
+
+    const size_t ExpectedSize = assignClientIdMessage.Header.MessageSize;
+    const int sent = 
+        m_spPort->send(&assignClientIdMessage, ExpectedSize, pAddress, pPort);
+    if (sent != ExpectedSize)
+    {
+        RELEASE_LOGLINE_ERROR(
+            LOG_NET,
+            "Failed to send AssignClientId message. Sent %u, not %u",
+            sent, ExpectedSize);
+        return false;
+    }
+
+    RELEASE_LOGLINE_INFO(LOG_NET, "Sent AssignClientId message, size = %u", sent);
+    return true;
+}
+
+bool 
+Protocol::ReceiveAssignClientIdMessage(
+    AssignClientIdMessage* pAssignClientIdMessageOut,
+    std::string* pAddressOut,
+    int* pPortOut)
+{
+    RELEASE_CHECK(
+        pAssignClientIdMessageOut,
+        "Invalid pAssignClientIdMessageOut parameter");
+    int numReceived = 
+        m_spPort->receive(
+            pAssignClientIdMessageOut,
+            sizeof(AssignClientIdMessage),
+            pAddressOut,
+            pPortOut);
+    if (numReceived <= 0)
+    {
+        return false;
+    }
+
+    if (numReceived != pAssignClientIdMessageOut->Header.MessageSize)
+    {
+        RELEASE_LOGLINE_WARNING(
+            LOG_NET,
+            "ReceiveAssignClientIdMessage() - unexpected size: %d != %d",
+            numReceived,
+            pAssignClientIdMessageOut->Header.MessageSize);
+        return false;
+    }
+
+    RELEASE_LOGLINE_INFO(
+        LOG_NET,
+        "Received 'AssignClientId' message from %s:%d",
+        (pAddressOut ? pAddressOut->c_str() : "<null_address>"),
+        (pPortOut ? *pPortOut : -1));
+     
+    return true;
+}
+
+bool 
+Protocol::SendClientReadyMessage(
+    uint8_t clientId,
+    const std::string* pAddress,
+    const int* pPort)
+{
+    // TODO
+    return false;
+}
+
+bool 
+Protocol::ReceiveClientReadyMessage(
+    ClientReadyMessage* pMessageOut,
+    std::string* pAddressOut,
+    int* pPortOut)
+{
+    // TODO
+    return false;
+}
+
 bool 
 Protocol::ReceiveNextMessage(
     MessageHeader** ppMessageOut,

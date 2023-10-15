@@ -63,7 +63,7 @@ private:
     uint32_t                  m_numIdentifyRetries = 0;
 
     bool                      m_sentIdentity = false;
-    bool                      m_receivedServerIdentity = false;
+    bool                      m_receivedId = false;
 
     ConnectionSceneState      m_state = ConnectionSceneState::Initializing;
     uint32_t                  m_numTicks = 0;

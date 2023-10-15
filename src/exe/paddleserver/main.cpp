@@ -13,12 +13,20 @@ void OnClientConnected(Server* pServer, Server::ClientHandle clientHandle)
     int port;
     pServer->GetClientPort(clientHandle, port);
 
+    uint8_t id;
+    pServer->GetClientId(clientHandle, id);
+
+    std::string name;
+    pServer->GetClientName(clientHandle, name);
+
     RELEASE_LOGLINE_INFO(
         LOG_NET,
-        "NEW CONNECTION! Handle = %u, Address = %s:%d",
+        "NEW CONNECTION! Handle = %u, Name = %s, Address = %s:%d, Id = %hhu",
         clientHandle,
+        name.c_str(),
         address.c_str(),
-        port);
+        port,
+        id);
 }
 
 int main(int argc, char** argv)

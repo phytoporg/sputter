@@ -64,7 +64,7 @@ void P2PConnectScene::Tick(sputter::math::FixedPoint dt)
                 m_spProtocol.reset(new Protocol(m_spPort));
                 m_state = ConnectionSceneState::Identifying;
                 m_sentIdentity = false;
-                m_receivedServerIdentity = false;
+                m_receivedId = false;
 
                 RELEASE_LOGLINE_INFO(LOG_NET, "Connected to server!");
             }
@@ -102,32 +102,24 @@ void P2PConnectScene::Tick(sputter::math::FixedPoint dt)
                     RELEASE_LOGLINE_INFO(LOG_NET, "Sent hello to server!");
                 }
             }
-            else if (!m_receivedServerIdentity)
+            else if (!m_receivedId)
             {
-                HelloMessage helloMessage;
-                if (m_spProtocol->ReceiveHelloMessage(&helloMessage))
+                AssignClientIdMessage assignClientIdMessage;
+                if (m_spProtocol->ReceiveAssignClientIdMessage(
+                        &assignClientIdMessage))
                 {
-                    const std::string receivedName(
-                        helloMessage.Name, helloMessage.NameSize);
-                    m_receivedServerIdentity = (receivedName == "Server");
-                    if (m_receivedServerIdentity)
-                    {
-                        RELEASE_LOGLINE_INFO(LOG_NET, "Got hello from server!");
-                        m_state = ConnectionSceneState::Connected;
-                    }
-                    else
-                    {
-                        RELEASE_LOGLINE_INFO(
-                            LOG_NET,
-                            "Got hello from %s...?",
-                            receivedName.c_str());
-                    }
+                    RELEASE_LOGLINE_INFO(
+                        LOG_NET,
+                        "Received client ID: %hhu",
+                        assignClientIdMessage.ClientId);
+                    m_receivedId = true;
                 }
             }
         }
     }
     else if (m_state == ConnectionSceneState::Connected)
     {
+        // TODO: Start the game?
     }
 
     ++m_numTicks;
