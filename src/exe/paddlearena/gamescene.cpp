@@ -109,7 +109,6 @@ void GameScene::Initialize()
                 m_pInputSubsystem,
                 m_pPaddleArena->GetUDPSession(),
                 m_pGameInstance);
-        m_waitingForGameStart = true;
     }
 
     if (!m_pScreen)
@@ -145,8 +144,6 @@ void GameScene::Initialize()
     });
     m_enableTickDriverTick = true;
     m_waitingForRestartReady = false;
-    m_sentClientReady = false;
-    m_waitingForGameStart = false;
     m_sentRestartReady = false;
 }
 
@@ -313,22 +310,7 @@ void GameScene::Tick(sputter::math::FixedPoint dt)
 
     m_pScreen->Tick((float)dt);
 
-    if (!m_sentClientReady)
-    {
-        sputter::net::ProtocolPtr spProtocol = m_pPaddleArena->GetProtocol();
-        if (spProtocol->SendClientReadyMessage(m_pPaddleArena->GetClientId()))
-        {
-            m_sentClientReady = true;
-            m_waitingForGameStart = true;
-        }
-    }
-    if (m_waitingForGameStart)
-    {
-        RELEASE_CHECK(false, "NOT READY YET");
-        // if (spProtocol->ReceiveGameStartMessage())
-        // {
-        // }
-    } else if (m_waitingForRestartReady)
+    if (m_waitingForRestartReady)
     {
         // TODO
     }

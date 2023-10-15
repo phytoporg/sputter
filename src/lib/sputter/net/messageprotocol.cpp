@@ -53,6 +53,24 @@ bool CreateClientReadyMessage(uint8_t clientId, ClientReadyMessage& messageOut)
 }
 
 //
+// StartGame
+//
+
+size_t StartGameMessage::GetExpectedSize()
+{
+    return sizeof(StartGameMessage);
+}
+
+bool CreateStartGameMessage(uint32_t gameID, StartGameMessage& messageOut)
+{
+    messageOut.Header.Type = MessageType::StartGame;
+    messageOut.Header.MessageSize = StartGameMessage::GetExpectedSize();
+
+    messageOut.GameID = gameID;
+    return true;
+}
+
+//
 // InputsMessage
 //
 size_t InputsMessage::GetExpectedSize(size_t numInputMasks)

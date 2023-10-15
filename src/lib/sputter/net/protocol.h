@@ -62,11 +62,11 @@ namespace sputter { namespace net {
         //
         bool
         SendStartGameMessage(
-            uint32_t GameID,
+            uint32_t gameID,
             const std::string* pAddress = nullptr,
             const int* pPort = nullptr);
         bool 
-        ReceiveGameStartMessage(
+        ReceiveStartGameMessage(
             StartGameMessage* pStartGameMessage,
             std::string* pAddressOut = nullptr,
             int* pPortOut = nullptr);

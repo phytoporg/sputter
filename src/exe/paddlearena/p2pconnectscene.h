@@ -51,7 +51,8 @@ private:
         Initializing = 0,
         Connecting,
         Identifying,
-        Connected
+        Connected,
+        Ready
     };
 
     static constexpr uint32_t kConnectRetryTicks = 60;

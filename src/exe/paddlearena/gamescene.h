@@ -123,8 +123,6 @@ private:
 
     bool                                      m_enableTickDriverTick = false;
     bool                                      m_waitingForRestartReady = false;
-    bool                                      m_sentClientReady = false;
-    bool                                      m_waitingForGameStart = false;
     bool                                      m_sentRestartReady = false;
 
     bool CreateInputSubsystem();

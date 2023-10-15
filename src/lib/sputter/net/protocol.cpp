@@ -72,6 +72,15 @@ Protocol::ReceiveHelloMessage(
         return false;
     }
 
+    if (pHelloMessageOut->Header.Type != MessageType::Hello)
+    {
+        RELEASE_LOGLINE_WARNING(
+            LOG_NET,
+            "ReceiveHelloMessage() - unexpected message type");
+        return false;
+    }
+
+
     RELEASE_LOGLINE_INFO(
         LOG_NET,
         "Received 'Hello' message from %s:%d",
@@ -137,6 +146,14 @@ Protocol::ReceiveAssignClientIdMessage(
             "ReceiveAssignClientIdMessage() - unexpected size: %d != %d",
             numReceived,
             pAssignClientIdMessageOut->Header.MessageSize);
+        return false;
+    }
+
+    if (pAssignClientIdMessageOut->Header.Type != MessageType::AssignClientId)
+    {
+        RELEASE_LOGLINE_WARNING(
+            LOG_NET,
+            "ReceiveAssignClientIdMessage() - unexpected message type");
         return false;
     }
 
@@ -206,6 +223,14 @@ Protocol::ReceiveClientReadyMessage(
         return false;
     }
 
+    if (pMessageOut->Header.Type != MessageType::ClientReady)
+    {
+        RELEASE_LOGLINE_WARNING(
+            LOG_NET,
+            "ReceiveClientReadyMessage() - unexpected message type");
+        return false;
+    }
+
     RELEASE_LOGLINE_INFO(
         LOG_NET,
         "Received 'ClientReady' message from %s:%d",
@@ -217,22 +242,76 @@ Protocol::ReceiveClientReadyMessage(
 
 bool
 Protocol::SendStartGameMessage(
-    uint32_t GameID,
+    uint32_t gameID,
     const std::string* pAddress,
     const int* pPort)
 {
-    // TODO
-    return false;
+    StartGameMessage startGameMessage;
+    if (!CreateStartGameMessage(gameID, startGameMessage))
+    {
+        RELEASE_LOGLINE_ERROR(LOG_NET, "Failed to create start game message");
+        return false;
+    }
+
+    const size_t ExpectedSize = startGameMessage.Header.MessageSize;
+    const int sent = 
+        m_spPort->send(&startGameMessage, ExpectedSize, pAddress, pPort);
+    if (sent != ExpectedSize)
+    {
+        RELEASE_LOGLINE_ERROR(
+            LOG_NET,
+            "Failed to send StartGame message. Sent %u, not %u",
+            sent, ExpectedSize);
+        return false;
+    }
+
+    RELEASE_LOGLINE_INFO(LOG_NET, "Sent StartGame message, size = %u", sent);
+    return true;
 }
 
 bool 
-Protocol::ReceiveGameStartMessage(
-    StartGameMessage* pStartGameMessage,
+Protocol::ReceiveStartGameMessage(
+    StartGameMessage* pStartGameMessageOut,
     std::string* pAddressOut,
     int* pPortOut)
 {
-    // TODO
-    return false;
+    RELEASE_CHECK(pStartGameMessageOut, "Invalid pMessageOut parameter");
+    int numReceived = 
+        m_spPort->receive(
+            pStartGameMessageOut,
+            sizeof(StartGameMessage),
+            pAddressOut,
+            pPortOut);
+    if (numReceived <= 0)
+    {
+        return false;
+    }
+
+    if (numReceived != pStartGameMessageOut->Header.MessageSize)
+    {
+        RELEASE_LOGLINE_WARNING(
+            LOG_NET,
+            "ReceiveStartGameMessage() - unexpected size: %d != %d",
+            numReceived,
+            pStartGameMessageOut->Header.MessageSize);
+        return false;
+    }
+
+    if (pStartGameMessageOut->Header.Type != MessageType::StartGame)
+    {
+        RELEASE_LOGLINE_WARNING(
+            LOG_NET,
+            "ReceiveStartGameMessage() - unexpected message type");
+        return false;
+    }
+
+    RELEASE_LOGLINE_INFO(
+        LOG_NET,
+        "Received 'StartGame' message from %s:%d",
+        (pAddressOut ? pAddressOut->c_str() : "<null_address>"),
+        (pPortOut ? *pPortOut : -1));
+     
+    return true;
 }
 
 bool 
@@ -280,6 +359,15 @@ Protocol::ReceiveNextMessage(
         RELEASE_LOGLINE_INFO(
             LOG_NET,
             "Received 'Hello' message from %s:%d",
+            (pAddressOut ? pAddressOut->c_str() : "<null_address>"),
+            (pPortOut ? *pPortOut : -1));
+        *ppMessageOut = pMessage;
+    }
+    else if (pMessage->Type == MessageType::ClientReady)
+    {
+        RELEASE_LOGLINE_INFO(
+            LOG_NET,
+            "Received 'ClientReady' message from %s:%d",
             (pAddressOut ? pAddressOut->c_str() : "<null_address>"),
             (pPortOut ? *pPortOut : -1));
         *ppMessageOut = pMessage;

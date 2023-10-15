@@ -126,7 +126,27 @@ void P2PConnectScene::Tick(sputter::math::FixedPoint dt)
             new ReliableUDPSession(kSessionId, *m_spProtocol->GetUDPPort());
         m_pPaddleArena->SetProtocol(m_spProtocol);
         m_pPaddleArena->SetUDPSession(pSession);
-        m_pPaddleArena->NextSceneFromP2PScreen();
+
+        if (!m_spProtocol->SendClientReadyMessage(m_pPaddleArena->GetClientId()))
+        {
+            // TODO: Robustification 
+            RELEASE_LOGLINE_ERROR(LOG_NET, "Failed to send client ready (%d/%d)");
+            PopSceneStack();
+        }
+        else
+        {
+            RELEASE_LOGLINE_ERROR(LOG_NET, "Client is ready to start game.");
+            m_state = ConnectionSceneState::Ready;
+        }
+    }
+    else if (m_state == ConnectionSceneState::Ready)
+    {
+        StartGameMessage startGameMessage;
+        if (m_spProtocol->ReceiveStartGameMessage(&startGameMessage))
+        {
+            RELEASE_LOGLINE_INFO(LOG_NET, "Received StartGame message, starting...");
+            m_pPaddleArena->NextSceneFromP2PScreen();
+        }
     }
 
     ++m_numTicks;

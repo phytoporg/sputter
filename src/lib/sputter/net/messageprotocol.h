@@ -64,11 +64,12 @@ bool CreateClientReadyMessage(uint8_t clientId, ClientReadyMessage& messageOut);
 //
 struct StartGameMessage
 {
-    static size_t GetExpectedSize(size_t numInputMasks);
+    static size_t GetExpectedSize();
 
     MessageHeader Header;
     uint32_t GameID;
 };
+bool CreateStartGameMessage(uint32_t gameID, StartGameMessage& messageOut);
 
 //
 // InputsMessage

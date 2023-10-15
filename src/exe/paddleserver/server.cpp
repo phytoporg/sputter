@@ -224,7 +224,7 @@ Server::HandleReceiveClientReady(
     }
 
     // Are we already connected to this client? Bail if not.
-    if (FindClient(pClientReadyMessage->ClientId, address, port))
+    if (!FindClient(pClientReadyMessage->ClientId, address, port))
     {
         RELEASE_LOGLINE_INFO(
             LOG_NET,
@@ -237,6 +237,11 @@ Server::HandleReceiveClientReady(
     }
 
     m_clientConnections[pClientReadyMessage->ClientId].IsReady = true;
+    if (m_clientConnections.size() < 2)
+    {
+        // Not enough connections to start a game, return early
+        return true;
+    }
 
     // TODO: Send StartGame if all clients are ready
     bool foundUnreadyClient = false;
@@ -255,7 +260,7 @@ Server::HandleReceiveClientReady(
         for (const ClientConnection& Connection : m_clientConnections)
         {
             const uint32_t GameId = 0; // For now!! TODO: UUIDs
-            if (m_spProtocol->SendStartGameMessage(
+            if (!m_spProtocol->SendStartGameMessage(
                     GameId, &Connection.Address, &Connection.Port))
             {
                 RELEASE_LOGLINE_ERROR(
@@ -271,6 +276,10 @@ Server::HandleReceiveClientReady(
         if (!failedAnyStartGameSends)
         {
             m_state = ServerState::InGame;
+        }
+        else
+        {
+            // TODO: Send "Goodbye" to all clients
         }
     }
 
