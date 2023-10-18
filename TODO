@@ -1,10 +1,14 @@
 TODO:
 
-Last thing that was done: got the game to start in client/server setting. We now want to accept input packets so that the game can do stuff! This'll take:
+Last thing implemented:
 - Support on the server end/protocol for receiving input messages
--- Server can just start by forwarding inputs along
+-- Server starting by forwarding inputs along
 
-NEXT (I think):
-- Rest of the game loop (reset, goodbye, etc)
+NEXT:
+- Time sync
+-- What goes into computing a target frame? May need:
+-- More compact protocol: chunks rather than individual messages for ping/RTT, status
 
-NEXT NEXT, robust transport and time sync
+NEXT NEXT,
+Rest of the game loop (reset, goodbye, etc)
+Robust transport and time sync
