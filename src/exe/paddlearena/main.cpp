@@ -19,6 +19,7 @@
 #include <iostream>
 
 using namespace sputter;
+using namespace sputter::core;
 
 int main(int argc, char** argv)
 {
@@ -41,18 +42,18 @@ int main(int argc, char** argv)
     }
 
     GameMode gameMode = GameMode::Local; // Game plays local by default
-    core::CommandLineArgumentParser parser(argc, argv);
-    if (const core::CommandLineArgument* pArgument = parser.FindArgument("log-path"))
+    CommandLineArgumentParser parser(argc, argv);
+    if (const CommandLineArgument* pArgument = parser.FindArgument("log-path"))
     {
         log::SetLogFile(pArgument->AsString().c_str());
     }
 
-    if (const core::CommandLineArgument* pArgument = parser.FindArgument("log-verbosity"))
+    if (const CommandLineArgument* pArgument = parser.FindArgument("log-verbosity"))
     {
         log::SetLogVerbosityFromString(pArgument->AsString().c_str());
     }
 
-    if (const core::CommandLineArgument* pArgument = parser.FindArgument("p2p-server"))
+    if (const CommandLineArgument* pArgument = parser.FindArgument("p2p-server"))
     {
         gameMode = GameMode::Server;
         RELEASE_LOGLINE_INFO(LOG_DEFAULT, "PaddleArena starting in server mode");
@@ -61,11 +62,12 @@ int main(int argc, char** argv)
     const int32_t kDefaultServerPort = 7001; // TODO: Put in some kinda server class
     std::string remoteServerAddress;
     int32_t remoteServerPort = kDefaultServerPort;
-    if (const core::CommandLineArgument* pArgument = parser.FindArgument("p2p-client"))
+    if (const CommandLineArgument* pArgument = parser.FindArgument("p2p-client"))
     {
         if (gameMode == GameMode::Server)
         {
-            RELEASE_LOGLINE_ERROR(LOG_DEFAULT, "p2p-client and p2p-server are mutually exclusive");
+            RELEASE_LOGLINE_ERROR(
+                LOG_DEFAULT, "p2p-client and p2p-server are mutually exclusive");
             return -1;
         }
         gameMode = GameMode::Client;
@@ -76,7 +78,8 @@ int main(int argc, char** argv)
         {
             if (ColonPosition == 0 || ColonPosition == (ArgValue.size() - 1))
             {
-                RELEASE_LOGLINE_ERROR(LOG_DEFAULT, "Malformed server address: %s", ArgValue.c_str());
+                RELEASE_LOGLINE_ERROR(
+                    LOG_DEFAULT, "Malformed server address: %s", ArgValue.c_str());
                 return -1;
             }
 
@@ -104,7 +107,8 @@ int main(int argc, char** argv)
             remoteServerAddress.c_str(), remoteServerPort);
     }
 
-    render::Window window("PADDLEARENA", gameconstants::OrthoWidth, gameconstants::OrthoHeight);
+    render::Window window(
+        "PADDLEARENA", gameconstants::OrthoWidth, gameconstants::OrthoHeight);
     PaddleArena game(&window, argv[1], gameMode, remoteServerAddress, remoteServerPort);
 
     game.StartGame();
@@ -112,25 +116,24 @@ int main(int argc, char** argv)
     window.EnableInputs();
 
     const math::FixedPoint DesiredFps  = math::FPSixty;
-    const math::FixedPoint FrameStepMs = math::FixedPoint(1000) / DesiredFps;
     const math::FixedPoint DeltaTime = math::FPOne / DesiredFps;
-    uint32_t nextTick = 
-        system::GetTickMilliseconds() + static_cast<uint32_t>(FrameStepMs);
+
+    const int32_t FrameStepMs =
+        static_cast<int32_t>(math::FixedPoint(1000) / DesiredFps);
+    int32_t lastUpdateTime = system::GetTickMilliseconds();
     while (!window.ShouldClose() && !window.GetKeyState(GLFW_KEY_ESCAPE))
     {
         window.Clear();
 
-        game.Tick(DeltaTime);
-        game.Draw();
-
-        window.Tick();
-
-        const uint32_t TimeMs = system::GetTickMilliseconds();
-        if (TimeMs < nextTick)
+        const int32_t TimeMs = system::GetTickMilliseconds();
+        while ((TimeMs - lastUpdateTime) > FrameStepMs)
         {
-            system::SleepMs(nextTick - TimeMs);
+            game.Tick(DeltaTime);
+            lastUpdateTime += FrameStepMs;
         }
-        nextTick = TimeMs + static_cast<uint32_t>(FrameStepMs);
+
+        game.Draw();
+        window.Tick();
     }
 
     return 0;

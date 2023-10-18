@@ -52,7 +52,8 @@ SerializedFrameInfo* SerializedFrameStorage::GetOrCreateFrame(uint32_t frameInde
     {
         m_lastFrame = frameIndex;
         const uint32_t FrameArrayIndex = m_lastFrame % kMaxSerializedFrames;
-        RELEASE_CHECK(m_pFramePointers[FrameArrayIndex], "Frame pointer is unexpectedly null");
+        RELEASE_CHECK(
+            m_pFramePointers[FrameArrayIndex], "Frame pointer is unexpectedly null");
 
         SerializedFrameInfo& frameInfo = m_frameInfos[FrameArrayIndex];
         DEBUG_LOGLINE_VERBOSE(
@@ -68,10 +69,12 @@ SerializedFrameInfo* SerializedFrameStorage::GetOrCreateFrame(uint32_t frameInde
               (frameIndex > (m_lastFrame - kMaxSerializedFrames))))
     {
         const uint32_t FrameArrayIndex = frameIndex % kMaxSerializedFrames;
-        RELEASE_CHECK(m_pFramePointers[FrameArrayIndex], "Frame pointer is unexpectedly null");
+        RELEASE_CHECK(
+            m_pFramePointers[FrameArrayIndex], "Frame pointer is unexpectedly null");
 
         SerializedFrameInfo& frameInfo = m_frameInfos[FrameArrayIndex];
-        RELEASE_CHECK(frameIndex == frameInfo.FrameID, "Retrieved wrong frame from serializer");
+        RELEASE_CHECK(
+            frameIndex == frameInfo.FrameID, "Retrieved wrong frame from serializer");
 
         DEBUG_LOGLINE_VERBOSE(
                 LOG_SERIALIZER,
@@ -81,6 +84,10 @@ SerializedFrameInfo* SerializedFrameStorage::GetOrCreateFrame(uint32_t frameInde
     }
     else
     {
+        RELEASE_LOGLINE_ERROR(
+            LOG_SERIALIZER,
+            "frameIndex = %u lastFrame = %u kMaxSerializedFrames = %u",
+            frameIndex, m_lastFrame, kMaxSerializedFrames);
         RELEASE_CHECK(false, "Unexpected code path");
         return nullptr; // Appease the compiler
     }
