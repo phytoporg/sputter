@@ -138,6 +138,12 @@ void Server::ReceiveMessages()
         auto pClientReadyMessage = reinterpret_cast<ClientReadyMessage*>(pMessage);
         HandleReceiveClientReady(pClientReadyMessage, receivingAddress, receivingPort);
     }
+    else if (pMessage->Type == MessageType::Inputs)
+    {
+        RELEASE_LOGLINE_VERBOSE(LOG_NET, "Inputs message received");
+        auto pInputsMessage = reinterpret_cast<InputsMessage*>(pMessage);
+        HandleReceiveInputs(pInputsMessage, receivingAddress, receivingPort);
+    }
     else
     {
         RELEASE_LOGLINE_WARNING(
@@ -280,6 +286,65 @@ Server::HandleReceiveClientReady(
         else
         {
             // TODO: Send "Goodbye" to all clients
+        }
+    }
+
+    return true;
+}
+
+bool 
+Server::HandleReceiveInputs(
+    InputsMessage* pInputsMessage,
+    const std::string& address,
+    int port)
+{
+    if (m_state != ServerState::InGame)
+    {
+        RELEASE_LOGLINE_WARNING(
+            LOG_NET,
+            "Received 'Inputs' message outside of InGame state. Ignoring");
+        return false;
+    }
+
+    // Are we already connected to this client? Bail if not.
+    if (!FindClient(pInputsMessage->ClientId, address, port))
+    {
+        RELEASE_LOGLINE_INFO(
+            LOG_NET,
+            "Received 'Inputs' from unrecognized client: %hhu @ %s:%d",
+            pInputsMessage->ClientId,
+            address.c_str(),
+            port);
+
+        return false;
+    }
+
+    // For now, just forward the inputs along to all other clients
+    for (uint8_t i = 0; i < m_clientConnections.size(); ++i)
+    {
+        if (i == pInputsMessage->ClientId)
+        {
+            continue;
+        }
+
+        const uint32_t ExpectedSize = pInputsMessage->Header.MessageSize;
+        const int Sent = 
+            m_spListenPort->send(
+                pInputsMessage,
+                ExpectedSize,
+                &m_clientConnections[i].Address,
+                &m_clientConnections[i].Port);
+        if (Sent != ExpectedSize)
+        {
+            RELEASE_LOGLINE_WARNING(
+                LOG_NET,
+                "Sent unexpected number of bytes when forwarding Inputs message. "
+                "%d != %d",
+                Sent,
+                ExpectedSize
+            );
+
+            // Don't consider this a failure
         }
     }
 

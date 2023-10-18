@@ -372,6 +372,15 @@ Protocol::ReceiveNextMessage(
             (pPortOut ? *pPortOut : -1));
         *ppMessageOut = pMessage;
     }
+    else if (pMessage->Type == MessageType::Inputs)
+    {
+        RELEASE_LOGLINE_INFO(
+            LOG_NET,
+            "Received 'Inputs' message from %s:%d",
+            (pAddressOut ? pAddressOut->c_str() : "<null_address>"),
+            (pPortOut ? *pPortOut : -1));
+        *ppMessageOut = pMessage;
+    }
     else
     {
         // TODO: Support other message types

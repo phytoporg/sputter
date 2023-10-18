@@ -79,6 +79,7 @@ struct InputsMessage
     static size_t GetExpectedSize(size_t numInputMasks);
 
     MessageHeader Header;
+    uint8_t ClientId;
     uint8_t NumFrames;
     int32_t StartFrame;
     uint32_t GameInputMasks[];

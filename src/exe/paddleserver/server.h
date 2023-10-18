@@ -52,6 +52,10 @@ private:
         ClientReadyMessage* pClientReadyMessage,
         const std::string& address,
         int port);
+    bool HandleReceiveInputs(
+        InputsMessage* pInputsMessage,
+        const std::string& address,
+        int port);
 
     bool FindClient(const std::string& name, const std::string& address, int port);
     bool FindClient(uint32_t clientId, const std::string& address, int port);
