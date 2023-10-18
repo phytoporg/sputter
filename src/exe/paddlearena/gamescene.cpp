@@ -108,7 +108,8 @@ void GameScene::Initialize()
                 m_fixedAllocator,
                 m_pInputSubsystem,
                 m_pPaddleArena->GetUDPSession(),
-                m_pGameInstance);
+                m_pGameInstance,
+                m_pPaddleArena->GetClientId());
     }
 
     if (!m_pScreen)
@@ -192,12 +193,14 @@ bool GameScene::CreateInputSubsystem()
         uint32_t remoteIndex;
         if (GameMode == GameMode::Client)
         {
-            localIndex = 1;
-            remoteIndex = 0;
-
+            // TODO: NOT THIS !!
+            const uint8_t ClientId = m_pPaddleArena->GetClientId();
+            localIndex = (ClientId == 0);
+            remoteIndex = (ClientId == 1);
         }
         else if (GameMode == GameMode::Server)
         {
+            // TODO: NOT THIS
             localIndex = 0;
             remoteIndex = 1;
         }

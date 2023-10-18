@@ -29,6 +29,12 @@ struct NetworkGameTickDriver::InputStorage
         LocalPlayerIndex = p1InputDevice->GetDeviceType() == DeviceType::Remote ? 1 : 0;
         RemotePlayerIndex = LocalPlayerIndex ^ 1;
 
+        RELEASE_LOGLINE_INFO(
+            LOG_GAME,
+            "Remote idx = %u Local idx = %u",
+            LocalPlayerIndex,
+            RemotePlayerIndex);
+
         PlayerInputSources[0] = pP1InputSource;
         PlayerInputSources[1] = pP2InputSource;
 
@@ -38,7 +44,9 @@ struct NetworkGameTickDriver::InputStorage
 
     uint32_t SampleLocalPlayerDevice() const
     {
-        RELEASE_CHECK(LocalPlayerIndex < 2, "Player index out of bound sampling player device");
+        RELEASE_CHECK(
+            LocalPlayerIndex < 2,
+            "Player index out of bound sampling player device");
         return PlayerInputDevices[LocalPlayerIndex]->SampleGameInputState();
     }
 
@@ -56,7 +64,8 @@ struct NetworkGameTickDriver::InputStorage
             // Provide a predicted result if we're ahead of the last valid input frame
             RELEASE_CHECK(
                 LastConfirmedFrame < latestValidFrame,
-                "Confirmed frame is larger than latest valid input frame for input source");
+                "Confirmed frame is larger than latest valid input frame for "
+                "input source");
             return PlayerInputSources[playerIndex]->GetInputState(latestValidFrame);
         }
 
@@ -83,8 +92,10 @@ NetworkGameTickDriver::NetworkGameTickDriver(
     memory::FixedMemoryAllocator& fixedAllocator,
     InputSubsystem *pInputSubsystem,
     sputter::net::ReliableUDPSession* pReliableUDPSession,
-    GameInstance *pGameInstance)
-    : m_pInputSubsystem(pInputSubsystem),
+    GameInstance *pGameInstance,
+    uint8_t clientId)
+    : m_clientId(clientId), 
+      m_pInputSubsystem(pInputSubsystem),
       m_pGameInstance(pGameInstance),
       m_pReliableUDPSession(pReliableUDPSession),
       m_serializer(fixedAllocator)
@@ -93,7 +104,8 @@ NetworkGameTickDriver::NetworkGameTickDriver(
     m_pInputStorage = fixedAllocator.Create<InputStorage>(
         m_pInputSubsystem->GetInputSource(0), m_pInputSubsystem->GetInputSource(1)
     );
-    RELEASE_CHECK(m_pInputStorage, "Failed to allocate input storage in LocalGameTickDriver");
+    RELEASE_CHECK(
+        m_pInputStorage, "Failed to allocate input storage in LocalGameTickDriver");
 
     const size_t SendMessageSize = InputsMessage::GetExpectedSize(kNumInputsToSend);
     m_pSendMessage =
@@ -161,7 +173,8 @@ bool NetworkGameTickDriver::ReadNextRemotePlayerMessage(InputsMessage *pInputMes
 {
     if (!m_pReliableUDPSession)
     {
-        RELEASE_LOGLINE_ERROR(LOG_GAME, "No valid remote session in network game tick driver");
+        RELEASE_LOGLINE_ERROR(
+            LOG_GAME, "No valid remote session in network game tick driver");
         return false;
     }
 
@@ -171,9 +184,13 @@ bool NetworkGameTickDriver::ReadNextRemotePlayerMessage(InputsMessage *pInputMes
             reinterpret_cast<char *>(pInputMessage),
             MaxMessageLen);
     if (ReadSize <= 0) { return false; }
-    if (pInputMessage->Header.MessageSize != InputsMessage::GetExpectedSize(pInputMessage->NumFrames))
+
+    const size_t ExpectedSize =
+        InputsMessage::GetExpectedSize(pInputMessage->NumFrames);
+    if (pInputMessage->Header.MessageSize != ExpectedSize)
     {
-        RELEASE_LOGLINE_WARNING(LOG_GAME, "Read unexpected number of bytes for inputs message");
+        RELEASE_LOGLINE_WARNING(
+            LOG_GAME, "Read unexpected number of bytes for inputs message");
         return false;
     }
 
@@ -198,10 +215,14 @@ bool NetworkGameTickDriver::SendNextInputMessage() const
     else
     {
         m_pSendMessage->NumFrames =
-            std::min(kNumInputsToSend, CurrentFrame - m_pInputStorage->LastConfirmedFrame);
+            std::min(
+                kNumInputsToSend,
+                CurrentFrame - m_pInputStorage->LastConfirmedFrame);
     }
-    RELEASE_CHECK(m_pSendMessage->NumFrames <= kNumInputsToSend, "Sending too many frames");
+    RELEASE_CHECK(
+        m_pSendMessage->NumFrames <= kNumInputsToSend, "Sending too many frames");
 
+    m_pSendMessage->ClientId = m_clientId;
     m_pSendMessage->StartFrame = CurrentFrame - m_pSendMessage->NumFrames + 1;
     RELEASE_LOGLINE_VERBOSE(
         LOG_GAME,
@@ -212,10 +233,12 @@ bool NetworkGameTickDriver::SendNextInputMessage() const
     for (uint32_t i = 0; i < m_pSendMessage->NumFrames; ++i)
     {
         m_pSendMessage->GameInputMasks[i] =
-            m_pInputStorage->GetInputMaskForFrame(LocalPlayerIndex, m_pSendMessage->StartFrame + i);
+            m_pInputStorage->GetInputMaskForFrame(
+                LocalPlayerIndex, m_pSendMessage->StartFrame + i);
     }
     const size_t SendMessageSize = InputsMessage::GetExpectedSize(kNumInputsToSend);
-    m_pSendMessage->Header.MessageSize = InputsMessage::GetExpectedSize(m_pSendMessage->NumFrames);
+    m_pSendMessage->Header.MessageSize =
+        InputsMessage::GetExpectedSize(m_pSendMessage->NumFrames);
 
     const size_t SentBytes = m_pReliableUDPSession->Send(
         reinterpret_cast<char *>(m_pSendMessage), SendMessageSize);
@@ -244,9 +267,10 @@ NetworkGameTickDriver::ProcessRemoteInputsMessage(InputsMessage *pInputMessage)
         const int32_t Frame = pInputMessage->StartFrame + i;
         if (Frame <= m_pInputStorage->LastConfirmedFrame)
         {
-            RELEASE_LOGLINE_VERBOSE(
+            RELEASE_LOGLINE_VERYVERBOSE(
                 LOG_GAME,
-                "Skipping frame which predates last confirmed frame: %d <= %d, mask = %u",
+                "Skipping frame which predates last confirmed frame:"
+                "%d <= %d, mask = %u",
                 Frame,
                 m_pInputStorage->LastConfirmedFrame,
                 pInputMessage->GameInputMasks[i]);
@@ -259,12 +283,13 @@ NetworkGameTickDriver::ProcessRemoteInputsMessage(InputsMessage *pInputMessage)
         {
             // Does the provided input differ from our predicted/stored input?
             const bool InputDiffers =
-                m_pInputStorage->GetInputMaskForFrame(RemotePlayerIndex, Frame) != RemoteInputForFrame;
+                m_pInputStorage->GetInputMaskForFrame(
+                    RemotePlayerIndex, Frame) != RemoteInputForFrame;
             if (InputDiffers && startFrame < 0)
             {
                 RELEASE_LOGLINE_VERBOSE(
                     LOG_GAME,
-                    "Initializing start frame to %u, mask = %u",
+                    "Input differs: initializing start frame to %u, mask = %u",
                     Frame,
                     pInputMessage->GameInputMasks[i]);
                 startFrame = Frame;
@@ -279,7 +304,8 @@ NetworkGameTickDriver::ProcessRemoteInputsMessage(InputsMessage *pInputMessage)
             }
         }
 
-        m_pInputStorage->SetInputMaskForFrame(RemotePlayerIndex, Frame, RemoteInputForFrame);
+        m_pInputStorage->SetInputMaskForFrame(
+            RemotePlayerIndex, Frame, RemoteInputForFrame);
     }
 
     if (newConfirmedFrame != m_pInputStorage->LastConfirmedFrame)
@@ -341,7 +367,8 @@ NetworkGameTickDriver::DoRollbacks(
     RELEASE_CHECK(startFrame >= 0, "Unexpected rollback start frame");
     if (startFrame < CurrentFrame)
     {
-        RELEASE_LOGLINE_VERBOSE(LOG_GAME, "Loading frame %d", m_pInputStorage->LastConfirmedFrame);
+        RELEASE_LOGLINE_VERBOSE(
+            LOG_GAME, "Loading frame %d", m_pInputStorage->LastConfirmedFrame);
         m_serializer.LoadFrame(m_pInputStorage->LastConfirmedFrame);
         RELEASE_CHECK(
             m_pGameInstance->GetFrame() == m_pInputStorage->LastConfirmedFrame,

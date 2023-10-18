@@ -25,7 +25,8 @@ public:
         sputter::memory::FixedMemoryAllocator& fixedAllocator,
         sputter::input::InputSubsystem* pInputSubsystem,
         sputter::net::ReliableUDPSession* pReliableUDPSession,
-        GameInstance* pGameInstance);
+        GameInstance* pGameInstance,
+        uint8_t clientId);
 
     virtual void Initialize() override;
     virtual void Tick(sputter::math::FixedPoint dt) override;
@@ -46,6 +47,7 @@ private:
         int32_t startFrame);
 
     uint32_t                          m_inputDelay = 3; // Hardcode for now
+    uint8_t                           m_clientId = 0;
 
     sputter::input::InputSubsystem*   m_pInputSubsystem = nullptr;
     GameInstance*                     m_pGameInstance = nullptr;
