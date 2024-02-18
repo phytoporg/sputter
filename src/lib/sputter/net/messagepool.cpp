@@ -44,3 +44,8 @@ void MessagePool::FreeMessage(MessageHeader* pMessageHeader)
     m_poolOccupancy[Index] = false;
     memset(&m_messagePoolEntries[Index], 0, sizeof(MessagePoolEntry));
 }
+
+size_t MessagePool::GetMessageSize() const
+{
+    return kMaxMessageSize;
+}

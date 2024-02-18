@@ -3,11 +3,15 @@ TODO:
 Last thing implemented:
 - Support on the server end/protocol for receiving input messages
 -- Server starting by forwarding inputs along
+- Starting on more compact protocol w/chunks. Starting on a Channel abstraction.
+-- Send buffer implemented, needs recv buffer. Nothing tested yet.
+-- Need to create "Message" chunk to wrap existing protocol messages, remove redundant chunks
 
 NEXT:
 - Time sync
 -- What goes into computing a target frame? May need:
 -- More compact protocol: chunks rather than individual messages for ping/RTT, status
+-- Introduce a "Channel" to abstract chunking within the protocol
 
 NEXT NEXT,
 Rest of the game loop (reset, goodbye, etc)

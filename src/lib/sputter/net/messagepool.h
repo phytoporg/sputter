@@ -15,6 +15,7 @@ namespace sputter { namespace net {
 
         MessageHeader* NewMessage();
         void FreeMessage(MessageHeader* pMesageHeader);
+        size_t GetMessageSize() const;
 
     private:
         static constexpr size_t kMaxMessagePoolSize = 124;

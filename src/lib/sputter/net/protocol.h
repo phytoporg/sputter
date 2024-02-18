@@ -44,7 +44,6 @@ namespace sputter { namespace net {
             int* pPortOut = nullptr);
 
         //
-        // ClientReady
         //
         bool
         SendClientReadyMessage(

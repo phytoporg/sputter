@@ -109,3 +109,13 @@ constexpr size_t GetMaxMessageSize()
     maxSize = SizeMax(maxSize, sizeof(RestartReadyMessage));
     return maxSize;
 }
+
+constexpr size_t GetMaxCumulativeMessageSize() 
+{
+    size_t sum = sizeof(HelloMessage);
+    sum += sizeof(AssignClientIdMessage);
+    sum += sizeof(StartGameMessage);
+    sum += sizeof(InputsMessage);
+    sum += sizeof(RestartReadyMessage);
+    return sum;
+}
