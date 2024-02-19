@@ -10,10 +10,28 @@ using namespace sputter;
 using namespace sputter::net;
 
 Protocol::Protocol(UDPPortPtr spPort)
-    : m_spPort(spPort),
-      m_messagePool(32)
+    : m_channel(spPort)
+{}
+
+void Protocol::Tick()
 {
-    RELEASE_CHECK(m_spPort != nullptr, "Invalid port provided to protocol");
+    m_channel.Tick();
+
+    std::string address;
+    int port;
+    MessageHeader* pMessageHeader = nullptr;
+    if (ReceiveNextMessage(&pMessageHeader, &address, &port))
+    {
+        if (m_messageCallback)
+        {
+            m_messageCallback(pMessageHeader, address, port);
+        }
+    }
+}
+
+void Protocol::SetMessageReceivedCallback(MessageReceivedCallback callback)
+{
+    m_messageCallback = callback;
 }
 
 bool 
@@ -30,63 +48,14 @@ Protocol::SendHelloMessage(
     }
 
     const size_t ExpectedSize = helloMessage.Header.MessageSize;
-    const int sent = m_spPort->send(&helloMessage, ExpectedSize, pAddress, pPort);
-    if (sent != ExpectedSize)
+    if (!m_channel.SendChunk(ChunkType::MESSAGE, &helloMessage, ExpectedSize))
     {
         RELEASE_LOGLINE_ERROR(
             LOG_NET,
-            "Failed to send Hello message. Sent %u, not %u",
-            sent, ExpectedSize);
+            "Failed to send Hello message in message chunk.");
         return false;
     }
 
-    RELEASE_LOGLINE_INFO(LOG_NET, "Sent Hello message, size = %u", sent);
-    return true;
-}
-
-bool 
-Protocol::ReceiveHelloMessage(
-    HelloMessage* pHelloMessageOut,
-    std::string* pAddressOut,
-    int* pPortOut)
-{
-    RELEASE_CHECK(pHelloMessageOut, "Invalid pHelloMessageOut parameter");
-    int numReceived = 
-        m_spPort->receive(
-            pHelloMessageOut,
-            sizeof(HelloMessage),
-            pAddressOut,
-            pPortOut);
-    if (numReceived <= 0)
-    {
-        return false;
-    }
-
-    if (numReceived != pHelloMessageOut->Header.MessageSize)
-    {
-        RELEASE_LOGLINE_WARNING(
-            LOG_NET,
-            "ReceiveHelloMessage() - unexpected size: %d != %d",
-            numReceived,
-            pHelloMessageOut->Header.MessageSize);
-        return false;
-    }
-
-    if (pHelloMessageOut->Header.Type != MessageType::Hello)
-    {
-        RELEASE_LOGLINE_WARNING(
-            LOG_NET,
-            "ReceiveHelloMessage() - unexpected message type");
-        return false;
-    }
-
-
-    RELEASE_LOGLINE_INFO(
-        LOG_NET,
-        "Received 'Hello' message from %s:%d",
-        (pAddressOut ? pAddressOut->c_str() : "<null_address>"),
-        (pPortOut ? *pPortOut : -1));
-     
     return true;
 }
 
@@ -104,65 +73,14 @@ Protocol::SendAssignClientIdMessage(
     }
 
     const size_t ExpectedSize = assignClientIdMessage.Header.MessageSize;
-    const int sent = 
-        m_spPort->send(&assignClientIdMessage, ExpectedSize, pAddress, pPort);
-    if (sent != ExpectedSize)
+    if (!m_channel.SendChunk(ChunkType::MESSAGE, &assignClientIdMessage, ExpectedSize))
     {
         RELEASE_LOGLINE_ERROR(
             LOG_NET,
-            "Failed to send AssignClientId message. Sent %u, not %u",
-            sent, ExpectedSize);
+            "Failed to send AssignClientId message in message chunk.");
         return false;
     }
 
-    RELEASE_LOGLINE_INFO(LOG_NET, "Sent AssignClientId message, size = %u", sent);
-    return true;
-}
-
-bool 
-Protocol::ReceiveAssignClientIdMessage(
-    AssignClientIdMessage* pAssignClientIdMessageOut,
-    std::string* pAddressOut,
-    int* pPortOut)
-{
-    RELEASE_CHECK(
-        pAssignClientIdMessageOut,
-        "Invalid pAssignClientIdMessageOut parameter");
-    int numReceived = 
-        m_spPort->receive(
-            pAssignClientIdMessageOut,
-            sizeof(AssignClientIdMessage),
-            pAddressOut,
-            pPortOut);
-    if (numReceived <= 0)
-    {
-        return false;
-    }
-
-    if (numReceived != pAssignClientIdMessageOut->Header.MessageSize)
-    {
-        RELEASE_LOGLINE_WARNING(
-            LOG_NET,
-            "ReceiveAssignClientIdMessage() - unexpected size: %d != %d",
-            numReceived,
-            pAssignClientIdMessageOut->Header.MessageSize);
-        return false;
-    }
-
-    if (pAssignClientIdMessageOut->Header.Type != MessageType::AssignClientId)
-    {
-        RELEASE_LOGLINE_WARNING(
-            LOG_NET,
-            "ReceiveAssignClientIdMessage() - unexpected message type");
-        return false;
-    }
-
-    RELEASE_LOGLINE_INFO(
-        LOG_NET,
-        "Received 'AssignClientId' message from %s:%d",
-        (pAddressOut ? pAddressOut->c_str() : "<null_address>"),
-        (pPortOut ? *pPortOut : -1));
-     
     return true;
 }
 
@@ -180,63 +98,14 @@ Protocol::SendClientReadyMessage(
     }
 
     const size_t ExpectedSize = clientReadyMessage.Header.MessageSize;
-    const int sent = 
-        m_spPort->send(&clientReadyMessage, ExpectedSize, pAddress, pPort);
-    if (sent != ExpectedSize)
+    if (!m_channel.SendChunk(ChunkType::MESSAGE, &clientReadyMessage, ExpectedSize))
     {
         RELEASE_LOGLINE_ERROR(
             LOG_NET,
-            "Failed to send ClientReady message. Sent %u, not %u",
-            sent, ExpectedSize);
+            "Failed to send ClientReadyMessage message in message chunk.");
         return false;
     }
 
-    RELEASE_LOGLINE_INFO(LOG_NET, "Sent ClientReady message, size = %u", sent);
-    return true;
-}
-
-bool 
-Protocol::ReceiveClientReadyMessage(
-    ClientReadyMessage* pMessageOut,
-    std::string* pAddressOut,
-    int* pPortOut)
-{
-    RELEASE_CHECK(pMessageOut, "Invalid pMessageOut parameter");
-    int numReceived = 
-        m_spPort->receive(
-            pMessageOut,
-            sizeof(ClientReadyMessage),
-            pAddressOut,
-            pPortOut);
-    if (numReceived <= 0)
-    {
-        return false;
-    }
-
-    if (numReceived != pMessageOut->Header.MessageSize)
-    {
-        RELEASE_LOGLINE_WARNING(
-            LOG_NET,
-            "ReceiveClientReadyMessage() - unexpected size: %d != %d",
-            numReceived,
-            pMessageOut->Header.MessageSize);
-        return false;
-    }
-
-    if (pMessageOut->Header.Type != MessageType::ClientReady)
-    {
-        RELEASE_LOGLINE_WARNING(
-            LOG_NET,
-            "ReceiveClientReadyMessage() - unexpected message type");
-        return false;
-    }
-
-    RELEASE_LOGLINE_INFO(
-        LOG_NET,
-        "Received 'ClientReady' message from %s:%d",
-        (pAddressOut ? pAddressOut->c_str() : "<null_address>"),
-        (pPortOut ? *pPortOut : -1));
-     
     return true;
 }
 
@@ -254,63 +123,14 @@ Protocol::SendStartGameMessage(
     }
 
     const size_t ExpectedSize = startGameMessage.Header.MessageSize;
-    const int sent = 
-        m_spPort->send(&startGameMessage, ExpectedSize, pAddress, pPort);
-    if (sent != ExpectedSize)
+    if (!m_channel.SendChunk(ChunkType::MESSAGE, &startGameMessage, ExpectedSize))
     {
         RELEASE_LOGLINE_ERROR(
             LOG_NET,
-            "Failed to send StartGame message. Sent %u, not %u",
-            sent, ExpectedSize);
+            "Failed to send StartGameMessage message in message chunk.");
         return false;
     }
 
-    RELEASE_LOGLINE_INFO(LOG_NET, "Sent StartGame message, size = %u", sent);
-    return true;
-}
-
-bool 
-Protocol::ReceiveStartGameMessage(
-    StartGameMessage* pStartGameMessageOut,
-    std::string* pAddressOut,
-    int* pPortOut)
-{
-    RELEASE_CHECK(pStartGameMessageOut, "Invalid pMessageOut parameter");
-    int numReceived = 
-        m_spPort->receive(
-            pStartGameMessageOut,
-            sizeof(StartGameMessage),
-            pAddressOut,
-            pPortOut);
-    if (numReceived <= 0)
-    {
-        return false;
-    }
-
-    if (numReceived != pStartGameMessageOut->Header.MessageSize)
-    {
-        RELEASE_LOGLINE_WARNING(
-            LOG_NET,
-            "ReceiveStartGameMessage() - unexpected size: %d != %d",
-            numReceived,
-            pStartGameMessageOut->Header.MessageSize);
-        return false;
-    }
-
-    if (pStartGameMessageOut->Header.Type != MessageType::StartGame)
-    {
-        RELEASE_LOGLINE_WARNING(
-            LOG_NET,
-            "ReceiveStartGameMessage() - unexpected message type");
-        return false;
-    }
-
-    RELEASE_LOGLINE_INFO(
-        LOG_NET,
-        "Received 'StartGame' message from %s:%d",
-        (pAddressOut ? pAddressOut->c_str() : "<null_address>"),
-        (pPortOut ? *pPortOut : -1));
-     
     return true;
 }
 
@@ -322,35 +142,34 @@ Protocol::ReceiveNextMessage(
 {
     RELEASE_CHECK(ppMessageOut, "Invalid ppMessageOut parameter");
 
-    MessageHeader* pMessage = m_messagePool.NewMessage();
-    RELEASE_CHECK(pMessage, "Could not allocate new message");
+    MessageHeader* pMessage = nullptr;
 
-    *ppMessageOut = nullptr;
-    int numReceived = 
-        m_spPort->receive(pMessage, GetMaxMessageSize(), pAddressOut, pPortOut);
-    if (numReceived <= 0)
+    size_t messageSize;
+    void* pData = nullptr;
+    if (!m_channel.ReceiveChunk(ChunkType::MESSAGE, &pData, &messageSize))
     {
-        FreeMessage(pMessage);
+        RELEASE_LOGLINE_VERBOSE(
+            LOG_NET,
+            "No message chunk is available.");
         return false;
     }
 
+    pMessage = static_cast<MessageHeader*>(pData);
     if (pMessage->Type == MessageType::Invalid)
     {
         RELEASE_LOGLINE_WARNING(
             LOG_NET,
             "ReceiveNextMessage() - received invalid message");
-        FreeMessage(pMessage);
         return false;
     }
 
-    if (numReceived != pMessage->MessageSize)
+    if (messageSize != pMessage->MessageSize)
     {
         RELEASE_LOGLINE_WARNING(
             LOG_NET,
             "ReceiveNextMessage() - unexpected size: %d != %d",
-            numReceived,
+            messageSize,
             pMessage->MessageSize);
-        FreeMessage(pMessage);
         return false;
     }
 
@@ -372,6 +191,24 @@ Protocol::ReceiveNextMessage(
             (pPortOut ? *pPortOut : -1));
         *ppMessageOut = pMessage;
     }
+    else if (pMessage->Type == MessageType::AssignClientId)
+    {
+        RELEASE_LOGLINE_INFO(
+            LOG_NET,
+            "Received 'AssignClientId' message from %s:%d",
+            (pAddressOut ? pAddressOut->c_str() : "<null_address>"),
+            (pPortOut ? *pPortOut : -1));
+        *ppMessageOut = pMessage;
+    }
+    else if (pMessage->Type == MessageType::StartGame)
+    {
+        RELEASE_LOGLINE_INFO(
+            LOG_NET,
+            "Received 'StartGame' message from %s:%d",
+            (pAddressOut ? pAddressOut->c_str() : "<null_address>"),
+            (pPortOut ? *pPortOut : -1));
+        *ppMessageOut = pMessage;
+    }
     else if (pMessage->Type == MessageType::Inputs)
     {
         RELEASE_LOGLINE_INFO(
@@ -385,7 +222,6 @@ Protocol::ReceiveNextMessage(
     {
         // TODO: Support other message types
         RELEASE_LOGLINE_WARNING(LOG_NET, "Received unexpected message type");
-        FreeMessage(pMessage);
         return false;
     }
 
@@ -394,10 +230,6 @@ Protocol::ReceiveNextMessage(
 
 UDPPortPtr Protocol::GetUDPPort() const
 {
-    return m_spPort;
+    return m_channel.GetUDPPort();
 }
 
-void Protocol::FreeMessage(void* pMessage)
-{
-    m_messagePool.FreeMessage(static_cast<MessageHeader*>(pMessage));
-}

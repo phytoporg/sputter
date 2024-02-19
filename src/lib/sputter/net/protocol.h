@@ -2,9 +2,10 @@
 
 #include <memory>
 #include <string>
+#include <functional>
 
+#include <sputter/net/channel.h>
 #include <sputter/net/messageprotocol.h>
-#include <sputter/net/messagepool.h>
 
 namespace sputter { namespace net {
     class UDPPort;
@@ -13,7 +14,13 @@ namespace sputter { namespace net {
     class Protocol
     {
     public:
+        using MessageReceivedCallback =
+            std::function<void(MessageHeader*, const std::string&, int)>;
+
         Protocol(UDPPortPtr spPort);
+
+        void Tick();
+        void SetMessageReceivedCallback(MessageReceivedCallback callback);
 
         //
         // Hello
@@ -23,11 +30,6 @@ namespace sputter { namespace net {
             const std::string& name,
             const std::string* pAddress = nullptr,
             const int* pPort = nullptr);
-        bool 
-        ReceiveHelloMessage(
-            HelloMessage* pHelloMessageOut,
-            std::string* pAddressOut = nullptr,
-            int* pPortOut = nullptr);
 
         //
         // AssignClientId
@@ -37,24 +39,15 @@ namespace sputter { namespace net {
             uint8_t clientId,
             const std::string* pAddress = nullptr,
             const int* pPort = nullptr);
-        bool 
-        ReceiveAssignClientIdMessage(
-            AssignClientIdMessage* pAssignClientIdMessageOut,
-            std::string* pAddressOut = nullptr,
-            int* pPortOut = nullptr);
 
         //
+        // ClientReady
         //
         bool
         SendClientReadyMessage(
             uint8_t clientId,
             const std::string* pAddress = nullptr,
             const int* pPort = nullptr);
-        bool 
-        ReceiveClientReadyMessage(
-            ClientReadyMessage* pClientReadyMessageOut,
-            std::string* pAddressOut = nullptr,
-            int* pPortOut = nullptr);
 
         //
         // StartGame
@@ -64,11 +57,6 @@ namespace sputter { namespace net {
             uint32_t gameID,
             const std::string* pAddress = nullptr,
             const int* pPort = nullptr);
-        bool 
-        ReceiveStartGameMessage(
-            StartGameMessage* pStartGameMessage,
-            std::string* pAddressOut = nullptr,
-            int* pPortOut = nullptr);
 
         //
         // General
@@ -81,11 +69,9 @@ namespace sputter { namespace net {
 
         UDPPortPtr GetUDPPort() const;
 
-        void FreeMessage(void* pMessage);
-
     private:
-        UDPPortPtr  m_spPort = nullptr;
-        MessagePool m_messagePool;
+        Channel                 m_channel;
+        MessageReceivedCallback m_messageCallback;
     };
 
     using ProtocolPtr = std::shared_ptr<Protocol>;

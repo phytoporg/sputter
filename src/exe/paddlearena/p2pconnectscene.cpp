@@ -48,6 +48,11 @@ void P2PConnectScene::Uninitialize()
 
 void P2PConnectScene::Tick(sputter::math::FixedPoint dt)
 {
+    if (m_spProtocol)
+    {
+        m_spProtocol->Tick();
+    }
+
     // TODO: retry logic for connecting
     if (m_state == ConnectionSceneState::Initializing)
     {
@@ -62,6 +67,11 @@ void P2PConnectScene::Tick(sputter::math::FixedPoint dt)
             if (m_spPort->connect("127.0.0.1", kServerPort))
             {
                 m_spProtocol.reset(new Protocol(m_spPort));
+                m_spProtocol->SetMessageReceivedCallback(
+                    [this](MessageHeader* pHeader, const std::string& address, int port)
+                    {
+                        OnMessageReceived(pHeader, address, port);
+                    });
                 m_state = ConnectionSceneState::Identifying;
                 m_sentIdentity = false;
                 m_receivedId = false;
@@ -102,21 +112,6 @@ void P2PConnectScene::Tick(sputter::math::FixedPoint dt)
                     RELEASE_LOGLINE_INFO(LOG_NET, "Sent hello to server!");
                 }
             }
-            else if (!m_receivedId)
-            {
-                AssignClientIdMessage assignClientIdMessage;
-                if (m_spProtocol->ReceiveAssignClientIdMessage(
-                        &assignClientIdMessage))
-                {
-                    RELEASE_LOGLINE_INFO(
-                        LOG_NET,
-                        "Received client ID: %hhu",
-                        assignClientIdMessage.ClientId);
-                    m_receivedId = true;
-                    m_pPaddleArena->SetClientId(assignClientIdMessage.ClientId);
-                    m_state = ConnectionSceneState::Connected;
-                }
-            }
         }
     }
     else if (m_state == ConnectionSceneState::Connected)
@@ -141,12 +136,7 @@ void P2PConnectScene::Tick(sputter::math::FixedPoint dt)
     }
     else if (m_state == ConnectionSceneState::Ready)
     {
-        StartGameMessage startGameMessage;
-        if (m_spProtocol->ReceiveStartGameMessage(&startGameMessage))
-        {
-            RELEASE_LOGLINE_INFO(LOG_NET, "Received StartGame message, starting...");
-            m_pPaddleArena->NextSceneFromP2PScreen();
-        }
+        RELEASE_LOGLINE_VERBOSE(LOG_NET, "Waiting for StartGame message...");
     }
 
     ++m_numTicks;
@@ -160,4 +150,67 @@ void P2PConnectScene::Draw()
 void P2PConnectScene::PopSceneStack()
 {
     // TODO: pop back out to the previous scene
+}
+
+void P2PConnectScene::OnMessageReceived(
+    MessageHeader* pMessage,
+    const std::string& address,
+    int port)
+{
+    if (pMessage->Type == MessageType::AssignClientId)
+    {
+        if (m_state != ConnectionSceneState::Identifying)
+        {
+            RELEASE_LOGLINE_WARNING(
+                LOG_NET, "Received AssignClientID outside of 'Identifying' state");
+            return;
+        }
+
+        if (m_receivedId)
+        {
+            RELEASE_LOGLINE_WARNING(
+                LOG_NET, "Received AssignClientID, but already have ID");
+            return;
+        }
+
+        AssignClientIdMessage* pAssignClientIdMessage = 
+            AssignClientIdFromHeader(pMessage);
+        if (!pAssignClientIdMessage)
+        {
+            RELEASE_LOGLINE_WARNING(LOG_NET, "Malformed AssignClientId message");
+            return;
+        }
+
+        m_receivedId = true;
+        m_pPaddleArena->SetClientId(pAssignClientIdMessage->ClientId);
+        m_state = ConnectionSceneState::Connected;
+
+        RELEASE_LOGLINE_INFO(
+            LOG_NET,
+            "Received client ID: %hhu",
+            pAssignClientIdMessage->ClientId);
+    }
+    else if (pMessage->Type == MessageType::StartGame)
+    {
+        if (m_state != ConnectionSceneState::Ready)
+        {
+            RELEASE_LOGLINE_WARNING(
+                LOG_NET, "Received StartGame message when not in Ready state");
+            return;
+        }
+
+        StartGameMessage* pStartGameMessage = StartGameFromHeader(pMessage);
+        if (!pStartGameMessage)
+        {
+            RELEASE_LOGLINE_WARNING(LOG_NET, "Malformed StartGame message");
+            return;
+        }
+
+        RELEASE_LOGLINE_INFO(LOG_NET, "Received StartGame message, starting...");
+        m_pPaddleArena->NextSceneFromP2PScreen();
+    }
+    else 
+    {
+        RELEASE_LOGLINE_INFO(LOG_NET, "Received unexpected message type");
+    }
 }

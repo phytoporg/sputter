@@ -8,6 +8,7 @@
 class PaddleArena;
 
 // Forward declarations
+struct MessageHeader;
 namespace sputter
 {
     namespace render
@@ -45,6 +46,10 @@ public:
 
 private:
     void PopSceneStack();
+    void OnMessageReceived(
+        MessageHeader* pMessage,
+        const std::string& address,
+        int port);
 
     enum class ConnectionSceneState
     {

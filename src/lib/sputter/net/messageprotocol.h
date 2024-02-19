@@ -41,11 +41,13 @@ bool CreateHelloMessage(const char* pName, uint8_t nameSize, HelloMessage& messa
 struct AssignClientIdMessage
 {
     static size_t GetExpectedSize();
+    static const MessageType Type = MessageType::AssignClientId;
 
     MessageHeader Header;
     uint8_t ClientId = 0;
 };
 bool CreateAssignClientIdMessage(uint8_t ClientId, AssignClientIdMessage& messageOut);
+AssignClientIdMessage* AssignClientIdFromHeader(MessageHeader* pHeader);
 
 //
 // ClientReady
@@ -65,11 +67,13 @@ bool CreateClientReadyMessage(uint8_t clientId, ClientReadyMessage& messageOut);
 struct StartGameMessage
 {
     static size_t GetExpectedSize();
+    static const MessageType Type = MessageType::StartGame;
 
     MessageHeader Header;
     uint32_t GameID;
 };
 bool CreateStartGameMessage(uint32_t gameID, StartGameMessage& messageOut);
+StartGameMessage* StartGameFromHeader(MessageHeader* pHeader);
 
 //
 // InputsMessage

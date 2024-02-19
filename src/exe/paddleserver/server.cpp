@@ -33,6 +33,11 @@ bool Server::Listen()
     m_state = ServerState::PreGame;
 
     m_spProtocol.reset(new sputter::net::Protocol(m_spListenPort));
+    m_spProtocol->SetMessageReceivedCallback(
+        [this] (MessageHeader* pHeader, const std::string& address, int port)
+        {
+            OnMessageReceived(pHeader, address, port);
+        });
     return m_spProtocol != nullptr && m_spListenPort->IsBound();
 }
 
@@ -44,7 +49,10 @@ void Server::Tick()
         return;
     }
 
-    ReceiveMessages();
+    if (m_spProtocol)
+    {
+        m_spProtocol->Tick();
+    }
 }
 
 void Server::SetShouldTerminate()
@@ -113,45 +121,6 @@ bool Server::IsValidHandle(ClientHandle handle) const
 
 void Server::ReceiveMessages()
 {
-    std::string receivingAddress;
-    int receivingPort;
-    MessageHeader* pMessage = nullptr;
-    const bool Success = 
-        m_spProtocol->ReceiveNextMessage(
-            &pMessage,
-            &receivingAddress,
-            &receivingPort);
-    if (!Success)
-    {
-        return;
-    }
-
-    if (pMessage->Type == MessageType::Hello)
-    {
-        RELEASE_LOGLINE_INFO(LOG_NET, "Hello message received");
-        auto pHelloMessage = reinterpret_cast<HelloMessage*>(pMessage);
-        HandleReceiveHello(pHelloMessage, receivingAddress, receivingPort);
-    }
-    else if (pMessage->Type == MessageType::ClientReady)
-    {
-        RELEASE_LOGLINE_INFO(LOG_NET, "ClientReady message received");
-        auto pClientReadyMessage = reinterpret_cast<ClientReadyMessage*>(pMessage);
-        HandleReceiveClientReady(pClientReadyMessage, receivingAddress, receivingPort);
-    }
-    else if (pMessage->Type == MessageType::Inputs)
-    {
-        RELEASE_LOGLINE_VERBOSE(LOG_NET, "Inputs message received");
-        auto pInputsMessage = reinterpret_cast<InputsMessage*>(pMessage);
-        HandleReceiveInputs(pInputsMessage, receivingAddress, receivingPort);
-    }
-    else
-    {
-        RELEASE_LOGLINE_WARNING(
-            LOG_NET,
-            "Unexpected message type: 0x%08X",
-            pMessage->Type);
-    }
-    m_spProtocol->FreeMessage(pMessage);
 }
 
 bool 
@@ -384,4 +353,34 @@ Server::FindClient(
 
     const ClientConnection& Connection = m_clientConnections[clientId];
     return Connection.Address == address && Connection.Port == port;
+}
+
+void
+Server::OnMessageReceived(MessageHeader* pMessage, const std::string& address, int port)
+{
+    if (pMessage->Type == MessageType::Hello)
+    {
+        RELEASE_LOGLINE_INFO(LOG_NET, "Hello message received");
+        auto pHelloMessage = reinterpret_cast<HelloMessage*>(pMessage);
+        HandleReceiveHello(pHelloMessage, address, port);
+    }
+    else if (pMessage->Type == MessageType::ClientReady)
+    {
+        RELEASE_LOGLINE_INFO(LOG_NET, "ClientReady message received");
+        auto pClientReadyMessage = reinterpret_cast<ClientReadyMessage*>(pMessage);
+        HandleReceiveClientReady(pClientReadyMessage, address, port);
+    }
+    else if (pMessage->Type == MessageType::Inputs)
+    {
+        RELEASE_LOGLINE_VERBOSE(LOG_NET, "Inputs message received");
+        auto pInputsMessage = reinterpret_cast<InputsMessage*>(pMessage);
+        HandleReceiveInputs(pInputsMessage, address, port);
+    }
+    else
+    {
+        RELEASE_LOGLINE_WARNING(
+            LOG_NET,
+            "Unexpected message type: 0x%08X",
+            pMessage->Type);
+    }
 }

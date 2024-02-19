@@ -12,14 +12,11 @@ namespace sputter { namespace net {
 
     enum class ChunkType : uint8_t
     {
-        HELLO            = 0,
-        ASSIGN_CLIENT_ID = 1,
-        CLIENT_READY     = 2,
-        GAME_START       = 3,
-        INPUTS           = 4,
-        CLIENT_STATUS    = 5,
-        SERVER_STATUS    = 6,
-        MAX_VALUE        = 7,
+        MESSAGE          = 0,
+        INPUTS           = 1,
+        CLIENT_STATUS    = 2,
+        SERVER_STATUS    = 3,
+        MAX_VALUE        = 4,
     };
     static uint8_t ChunkTypeToBitmask(ChunkType chunkType);
     static const char* ChunkTypeToString(ChunkType chunkType);
@@ -36,8 +33,15 @@ namespace sputter { namespace net {
         void Tick();
         void Flush();
 
+        // Call ahead of Tick/Flush, queue chunks for the next packet across the wire
         bool SendChunk(ChunkType chunkType, void* pData, size_t dataSize);
-        bool ReceiveChunk();
+
+        // Call *after* Tick to read chunks that have been received.
+        bool ReceiveNextChunk(
+            ChunkType* pChunkTypeOut, void** ppDataOut, size_t* pDataSizeOut);
+        bool ReceiveChunk(ChunkType chunkType, void** ppDataOut, size_t* pDataSizeOut);
+
+        UDPPortPtr GetUDPPort() const;
 
     private:
         struct Packet
@@ -49,6 +53,10 @@ namespace sputter { namespace net {
         Packet* m_pCurrentSendPacket = nullptr;
         uint8_t m_sendBufferData[net::kMTU];
         core::Buffer m_sendBuffer;
+
+        Packet* m_pCurrentRecvPacket = nullptr;
+        uint8_t m_recvBufferData[net::kMTU];
+        core::Buffer m_recvBuffer;
 
         UDPPortPtr  m_spPort = nullptr;
     };

@@ -1,6 +1,24 @@
 #include "messageprotocol.h"
 #include <cstring>
 
+namespace {
+    template <typename T>
+    T* FromHeaderHelper(MessageHeader* pHeader)
+    {
+        if (pHeader->Type != T::Type)
+        {
+            return nullptr;
+        }
+
+        if (pHeader->MessageSize != T::GetExpectedSize())
+        {
+            return nullptr;
+        }
+
+        return reinterpret_cast<T*>(pHeader);
+    }
+}
+
 //
 // HelloMessage
 //
@@ -33,6 +51,11 @@ bool CreateAssignClientIdMessage(uint8_t clientId, AssignClientIdMessage& messag
 
     messageOut.ClientId = clientId;
     return true;
+}
+
+AssignClientIdMessage* AssignClientIdFromHeader(MessageHeader* pHeader)
+{
+    return FromHeaderHelper<AssignClientIdMessage>(pHeader);
 }
 
 //
@@ -68,6 +91,10 @@ bool CreateStartGameMessage(uint32_t gameID, StartGameMessage& messageOut)
 
     messageOut.GameID = gameID;
     return true;
+}
+StartGameMessage* StartGameFromHeader(MessageHeader* pHeader)
+{
+    return FromHeaderHelper<StartGameMessage>(pHeader);
 }
 
 //

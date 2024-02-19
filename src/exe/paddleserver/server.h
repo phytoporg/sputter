@@ -38,6 +38,9 @@ public:
 private:
     Server() = delete;
 
+    void OnMessageReceived(
+        MessageHeader* pHeader, const std::string& address, int port);
+
     bool IsValidHandle(ClientHandle handle) const;
 
     //
