@@ -148,7 +148,7 @@ Protocol::ReceiveNextMessage(
     void* pData = nullptr;
     if (!m_channel.ReceiveChunk(ChunkType::MESSAGE, &pData, &messageSize))
     {
-        RELEASE_LOGLINE_VERBOSE(
+        DEBUG_LOGLINE_VERBOSE(
             LOG_NET,
             "No message chunk is available.");
         return false;
