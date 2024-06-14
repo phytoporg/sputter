@@ -1,5 +1,3 @@
-echo "Setting up sputter environment"
-
 # Environment prereqs
 if [ -z "$SPUTTER_ROOT" ]; then
     echo -e "SPUTTER_ROOT not defined"
