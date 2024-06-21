@@ -33,7 +33,7 @@ int main(int argc, char** argv)
 {
     system::InitializeLogging(argv[0]);
     log::EnableZone(log::LogZone::Net);
-    log::SetLogVerbosity(log::LogVerbosity::Verbose);
+    log::SetLogVerbosity(log::LogVerbosity::Info);
 
     Server server(OnClientConnected);
     if (!server.Listen())

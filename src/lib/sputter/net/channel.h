@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <string>
 
 #include <sputter/core/buffer.h>
 #include <sputter/net/net.h>
@@ -28,7 +29,7 @@ namespace sputter { namespace net {
     class Channel
     {
     public:
-        Channel(UDPPortPtr spPort);
+        Channel(UDPPortPtr spPort, const std::string& channelName);
 
         void Tick();
         void Flush();
@@ -43,22 +44,42 @@ namespace sputter { namespace net {
 
         UDPPortPtr GetUDPPort() const;
 
+        const std::string& GetLastReceivedAddress() const;
+        int GetLastReceivedPort() const;
+
     private:
+        bool ReceivePacket(
+            std::string* pAddressOut = nullptr, int* pPortOut = nullptr);
+
         struct Packet
         {
+            static const size_t HeaderSize() 
+            { 
+                return sizeof(ChunksMask) + sizeof(DataSize);
+            }
+
+            uint16_t GetSize()
+            {
+                return HeaderSize() + DataSize;
+            }
+
             uint8_t ChunksMask = 0;
+            uint16_t DataSize = 0;
             uint8_t Data[];
         };
 
-        Packet* m_pCurrentSendPacket = nullptr;
         uint8_t m_sendBufferData[net::kMTU];
         core::Buffer m_sendBuffer;
 
-        Packet* m_pCurrentRecvPacket = nullptr;
         uint8_t m_recvBufferData[net::kMTU];
         core::Buffer m_recvBuffer;
 
+        std::string m_lastReceivedAddress;
+        int         m_lastReceivedPort = -1;
+
         UDPPortPtr  m_spPort = nullptr;
+
+        std::string m_channelName = "unnamed";
     };
 }}
 

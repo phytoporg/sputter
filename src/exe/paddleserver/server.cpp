@@ -32,7 +32,8 @@ bool Server::Listen()
 
     m_state = ServerState::PreGame;
 
-    m_spProtocol.reset(new sputter::net::Protocol(m_spListenPort));
+    m_spProtocol.reset(
+        new sputter::net::Protocol(m_spListenPort, "DefaultServerChannel"));
     m_spProtocol->SetMessageReceivedCallback(
         [this] (MessageHeader* pHeader, const std::string& address, int port)
         {
@@ -52,6 +53,14 @@ void Server::Tick()
     if (m_spProtocol)
     {
         m_spProtocol->Tick();
+    }
+
+    for (const ClientConnection& Connection : m_clientConnections)
+    {
+        if (Connection.spClientProtocol)
+        {
+            Connection.spClientProtocol->Tick();
+        }
     }
 }
 
@@ -160,19 +169,51 @@ Server::HandleReceiveHello(
         return false;
     }
 
-    const size_t NextClientId = m_clientConnections.size();
-    if (!m_spProtocol->SendAssignClientIdMessage(NextClientId, &address, &port))
+    using sputter::net::Protocol;
+    using sputter::net::ProtocolPtr;
+    using sputter::net::UDPPort;
+    using sputter::net::UDPPortPtr;
+    using std::string;
+
+    // Register the connection and invoke a callback
+    UDPPortPtr spClientPort = std::make_shared<UDPPort>(*m_spProtocol->GetUDPPort());
+    const string clientName = string(pHelloMessage->Name, pHelloMessage->NameSize);
+    ClientConnection connection {
+        .Name = clientName,
+        .Address = address,
+        .Port = port,
+        .spClientPort = spClientPort,
+        .spClientProtocol = std::make_shared<Protocol>(spClientPort, clientName) 
+    };
+
+    if (!connection.spClientPort || !connection.spClientProtocol)
+    {
+        RELEASE_LOGLINE_ERROR(
+            LOG_NET,
+            "Failed to create port and protocol for new client."
+        );
+        return false;
+    }
+
+    spClientPort->SetRemoteAddress(address);
+    spClientPort->SetRemotePort(port);
+
+    connection.spClientProtocol->SetMessageReceivedCallback(
+        [this] (MessageHeader* pHeader, const std::string& address, int port)
+        {
+            OnMessageReceived(pHeader, address, port);
+        });
+
+    m_clientConnections.emplace_back(connection);
+
+    const ClientConnection& AddedConnection = m_clientConnections.back();
+    const size_t NextClientId = m_clientConnections.size() - 1;
+    if (!connection.spClientProtocol->SendAssignClientIdMessage(
+            NextClientId, &AddedConnection.Address, &AddedConnection.Port))
     {
         RELEASE_LOGLINE_ERROR(LOG_NET, "Failed to assign new client ID.");
         return false;
     }
-
-    // Register the connection and invoke a callback
-    ClientConnection connection {
-        .Name = std::string(pHelloMessage->Name, pHelloMessage->NameSize),
-        .Address = address,
-        .Port = port };
-    m_clientConnections.emplace_back(connection);
 
     const ClientHandle newClientHandle = NextClientId;
     if (m_connectionCallback)
@@ -235,7 +276,7 @@ Server::HandleReceiveClientReady(
         for (const ClientConnection& Connection : m_clientConnections)
         {
             const uint32_t GameId = 0; // For now!! TODO: UUIDs
-            if (!m_spProtocol->SendStartGameMessage(
+            if (!Connection.spClientProtocol->SendStartGameMessage(
                     GameId, &Connection.Address, &Connection.Port))
             {
                 RELEASE_LOGLINE_ERROR(

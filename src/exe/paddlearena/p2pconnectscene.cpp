@@ -66,7 +66,7 @@ void P2PConnectScene::Tick(sputter::math::FixedPoint dt)
         {
             if (m_spPort->connect("127.0.0.1", kServerPort))
             {
-                m_spProtocol.reset(new Protocol(m_spPort));
+                m_spProtocol.reset(new Protocol(m_spPort, "ToServerChannel"));
                 m_spProtocol->SetMessageReceivedCallback(
                     [this](MessageHeader* pHeader, const std::string& address, int port)
                     {
@@ -157,6 +157,7 @@ void P2PConnectScene::OnMessageReceived(
     const std::string& address,
     int port)
 {
+    RELEASE_LOGLINE_INFO(LOG_NET, "Received message from server");
     if (pMessage->Type == MessageType::AssignClientId)
     {
         if (m_state != ConnectionSceneState::Identifying)

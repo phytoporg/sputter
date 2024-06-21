@@ -50,7 +50,8 @@ namespace sputter { namespace log {
 // Log macros
 
 // Debug
-#if defined(DEBUG)
+// #if defined(DEBUG) // TODO: why doesn't a debug build set this?
+#if 1
     #define ENABLE_LOG_FRAMES 1
 
     #define DEBUG_LOG_ERROR(Zone, String, ...) \

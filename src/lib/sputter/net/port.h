@@ -35,6 +35,9 @@ namespace sputter { namespace net {
 
         bool IsBound() const;
 
+        void SetRemoteAddress(const std::string& address);
+        void SetRemotePort(int port);
+
     private:
         int m_socketHandle = -1;
         int m_port = -1;

@@ -9,8 +9,8 @@
 using namespace sputter;
 using namespace sputter::net;
 
-Protocol::Protocol(UDPPortPtr spPort)
-    : m_channel(spPort)
+Protocol::Protocol(UDPPortPtr spPort, const std::string& channelName)
+    : m_channel(spPort, channelName)
 {}
 
 void Protocol::Tick()
@@ -148,11 +148,14 @@ Protocol::ReceiveNextMessage(
     void* pData = nullptr;
     if (!m_channel.ReceiveChunk(ChunkType::MESSAGE, &pData, &messageSize))
     {
-        DEBUG_LOGLINE_VERBOSE(
+        DEBUG_LOGLINE_VERYVERBOSE(
             LOG_NET,
             "No message chunk is available.");
         return false;
     }
+
+    *pAddressOut = m_channel.GetLastReceivedAddress();
+    *pPortOut = m_channel.GetLastReceivedPort();
 
     pMessage = static_cast<MessageHeader*>(pData);
     if (pMessage->Type == MessageType::Invalid)
@@ -167,7 +170,7 @@ Protocol::ReceiveNextMessage(
     {
         RELEASE_LOGLINE_WARNING(
             LOG_NET,
-            "ReceiveNextMessage() - unexpected size: %d != %d",
+            "ReceiveNextMessage() - unexpected size: %u != %u",
             messageSize,
             pMessage->MessageSize);
         return false;

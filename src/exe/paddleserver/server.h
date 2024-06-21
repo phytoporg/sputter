@@ -83,6 +83,8 @@ private:
         bool IsReady = false;
         bool GotStartGame = false;
         int Port = -1;
+        sputter::net::UDPPortPtr spClientPort;
+        sputter::net::ProtocolPtr spClientProtocol;
     };
     std::vector<ClientConnection> m_clientConnections;
 

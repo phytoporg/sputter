@@ -246,3 +246,13 @@ bool UDPPort::IsBound() const
     return m_socketHandle >= 0 && m_port >= 0;
 }
 
+void UDPPort::SetRemoteAddress(const std::string& address)
+{
+    m_remoteAddress = address;
+}
+
+void UDPPort::SetRemotePort(int port)
+{
+    m_remotePort = port;
+}
+

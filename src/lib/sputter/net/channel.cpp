@@ -65,10 +65,11 @@ void BitmaskToChunkTypes(
     }
 }
 
-Channel::Channel(UDPPortPtr spPort) 
+Channel::Channel(UDPPortPtr spPort, const std::string& channelName) 
     : m_spPort(spPort),
       m_sendBuffer(m_sendBufferData, sizeof(m_sendBufferData)),
-      m_recvBuffer(m_recvBufferData, sizeof(m_recvBufferData))
+      m_recvBuffer(m_recvBufferData, sizeof(m_recvBufferData)),
+      m_channelName(channelName)
 {
     RELEASE_CHECK(spPort != nullptr, "Invalid port provided to channel");
 }
@@ -77,12 +78,12 @@ void Channel::Tick()
 {
     Flush();
 
-    m_recvBuffer.Seek(0);
-    const int Received = m_spPort->receive(m_recvBufferData, sizeof(m_recvBufferData));
-    if (Received > 0)
+    if (!ReceivePacket(&m_lastReceivedAddress, &m_lastReceivedPort))
     {
-        DEBUG_LOGLINE_VERBOSE(LOG_NET, "Received %d bytes in channel tick", Received);
-        m_recvBuffer.Seek(Received);
+        RELEASE_LOGLINE_ERROR(
+            LOG_NET,
+            "Failed to receive packet in channel %s",
+            m_channelName.c_str());
     }
 }    
 
@@ -90,6 +91,9 @@ void Channel::Flush()
 {
     if (m_sendBuffer.GetPosition() > 0)
     {
+        Packet* pPacket = reinterpret_cast<Packet*>(m_sendBuffer.GetData());
+        pPacket->DataSize = m_sendBuffer.GetPosition() - Packet::HeaderSize();
+
         // Send everything we've got!
         const int Sent = 
             m_spPort->send(m_sendBuffer.GetData(), m_sendBuffer.GetPosition());
@@ -100,11 +104,70 @@ void Channel::Flush()
                 "Sent unexpected number of bytes: %d != %u",
                 Sent, m_sendBuffer.GetPosition());
         }
+        else
+        {
+            DEBUG_LOGLINE_VERBOSE(
+                LOG_NET, "Sent %d bytes in channel flush, packet size = %d, pos = %d",
+                Sent, 
+                pPacket->DataSize,
+                m_sendBuffer.GetPosition());
+        }
 
         // Reset the send buffer state
         m_sendBuffer.Seek(0);
     }
 
+}
+
+bool Channel::ReceivePacket(std::string* pAddressOut, int* pPortOut)
+{
+    // Reset the receive buffer
+    m_recvBuffer.Seek(0);
+
+    // Wait until we receive all expected bits (TODO: handle timeout)
+    uint8_t buffer[net::kMTU];
+    int totalReceived = 0;
+    const int Received =
+        m_spPort->receive(buffer, sizeof(buffer), pAddressOut, pPortOut);
+    if (Received > 0)
+    {
+        DEBUG_LOGLINE_VERBOSE(
+            LOG_NET, "Received %d bytes in channel ReceivePacket", Received);
+        if (!m_recvBuffer.WriteBytes(buffer, Received))
+        {
+            RELEASE_LOGLINE_ERROR(
+                LOG_NET,
+                "Could not store all received bytes (Received = %u)",
+                Received);
+            return false;
+        }
+
+        Packet* pPacket = reinterpret_cast<Packet*>(m_recvBuffer.GetData());
+        if (!pPacket->ChunksMask)
+        {
+            RELEASE_LOGLINE_ERROR(
+                LOG_NET,
+                "Received packet with no chunks");
+            return false;
+        }
+
+        const int ExpectedDataSize = Received - Packet::HeaderSize();
+        if (pPacket->DataSize != ExpectedDataSize)
+        {
+            RELEASE_LOGLINE_ERROR(
+                LOG_NET,
+                "Received packet with unexpected size (%u != %u)",
+                pPacket->DataSize,
+                ExpectedDataSize);
+            return false;
+        }
+    }
+    else if (Received < 0)
+    {
+        return false;
+    }
+
+    return true;
 }
 
 bool Channel::SendChunk(ChunkType chunkType, void* pData, size_t dataSize)
@@ -124,7 +187,10 @@ bool Channel::SendChunk(ChunkType chunkType, void* pData, size_t dataSize)
     Packet* pPacket = reinterpret_cast<Packet*>(m_sendBuffer.GetData());
     if (!m_sendBuffer.GetPosition())
     {
+        // Initialize and make room for the packet header
         pPacket->ChunksMask = 0;
+        pPacket->DataSize = 0;
+        m_sendBuffer.Skip(Packet::HeaderSize());
     }
 
     const uint8_t ChunkMask = ChunkTypeToBitmask(chunkType);
@@ -156,6 +222,13 @@ bool Channel::SendChunk(ChunkType chunkType, void* pData, size_t dataSize)
     if (!m_sendBuffer.WriteBytes(pData, dataSize)) { return false; }
 
     pPacket->ChunksMask |= ChunkMask;
+
+    DEBUG_LOGLINE_VERBOSE(
+        LOG_NET,
+        "Sending %s chunk",
+        ChunkTypeToString(chunkType)
+    );
+
     return true;
 }
 
@@ -168,9 +241,9 @@ bool Channel::ReceiveNextChunk(ChunkType* pChunkTypeOut, void** ppDataOut, size_
 
     if (!m_recvBuffer.GetPosition())
     {
-        DEBUG_LOGLINE_VERBOSE(
-            LOG_NET,
-            "Attempted to receive chunk, but no packet is pending");
+        // DEBUG_LOGLINE_VERBOSE(
+        //     LOG_NET,
+        //     "Attempted to receive chunk, but no packet is pending");
         return false;
     }
 
@@ -198,20 +271,19 @@ bool Channel::ReceiveChunk(ChunkType chunkType, void** ppDataOut, size_t* pDataS
 {
     if (!m_recvBuffer.GetPosition())
     {
-        DEBUG_LOGLINE_VERBOSE(
-            LOG_NET,
-            "Attempted to receive chunk, but no packet is pending");
+        // DEBUG_LOGLINE_VERBOSE(
+        //     LOG_NET,
+        //     "Attempted to receive chunk, but no packet is pending");
         return false;
     }
+
+    Packet* pPacket = reinterpret_cast<Packet*>(m_recvBuffer.GetData());
 
     core::Buffer readBuffer(
-        static_cast<uint8_t*>(m_recvBuffer.GetData()), m_recvBuffer.GetPosition());
+        static_cast<uint8_t*>(m_recvBuffer.GetData()), pPacket->GetSize());
+    readBuffer.Skip(Packet::HeaderSize());
 
-    uint8_t chunksMask;
-    if (!readBuffer.ReadU8(&chunksMask))
-    {
-        return false;
-    }
+    uint8_t chunksMask = pPacket->ChunksMask;
 
     const uint8_t ChunkTypeMask = ChunkTypeToBitmask(chunkType);
     if (!(chunksMask & ChunkTypeMask))
@@ -226,37 +298,70 @@ bool Channel::ReceiveChunk(ChunkType chunkType, void** ppDataOut, size_t* pDataS
     ChunkType nextChunkType;
     if (!ReadChunkType(readBuffer, &nextChunkType)) 
     { 
+        DEBUG_LOGLINE_VERBOSE(
+            LOG_NET,
+            "Could not read next chunk type in packet");
         return false; 
     }
 
+    // Skip each chunk until we find the one we're looking for
     while (nextChunkType != chunkType)
     {
         size_t chunkSize;
         if (!readBuffer.ReadSize(&chunkSize))
         {
+            DEBUG_LOGLINE_VERBOSE(
+                LOG_NET,
+                "Failed to read chunk size in packet");
             return false;
         }
 
         if (!readBuffer.Skip(chunkSize))
         {
+            DEBUG_LOGLINE_VERBOSE(
+                LOG_NET,
+                "Ran out of buffer space skipping %u bytes", chunkSize);
             return false;
         }
 
         if (!ReadChunkType(readBuffer, &nextChunkType)) 
         { 
+            DEBUG_LOGLINE_VERBOSE(
+                LOG_NET,
+                "Failed to read next chunk type in packet");
             return false; 
         }
     }
 
-    if (!readBuffer.ReadSize(pDataSizeOut))
+    size_t chunkSize;
+    if (!readBuffer.ReadSize(&chunkSize))
     {
+        DEBUG_LOGLINE_VERBOSE(
+            LOG_NET,
+            "Could not read last size value in packet (huh?)");
         return false;
     }
-    
+
+    DEBUG_LOGLINE_VERBOSE(
+        LOG_NET,
+        "Found chunk [type: %s, size: %u]",
+        ChunkTypeToString(nextChunkType),
+        chunkSize);
+
+    // Sanity check the chunk size
+    if (chunkSize >= pPacket->GetSize())
+    {
+        RELEASE_LOGLINE_INFO(
+            LOG_NET,
+            "Chunk size is too large: %u",
+            chunkSize);
+        return false;
+    }
+
+    *pDataSizeOut = chunkSize;
     *ppDataOut = readBuffer.GetDataAtPosition();
 
     // Remove the chunk bit corresponding to the chunk which was just read.
-    Packet* pPacket = reinterpret_cast<Packet*>(readBuffer.GetData());
     pPacket->ChunksMask &= ~ChunkTypeMask;
     return true;
 }
@@ -264,4 +369,14 @@ bool Channel::ReceiveChunk(ChunkType chunkType, void** ppDataOut, size_t* pDataS
 UDPPortPtr Channel::GetUDPPort() const
 {
     return m_spPort;
+}
+
+const std::string& Channel::GetLastReceivedAddress() const
+{
+    return m_lastReceivedAddress;
+}
+
+int Channel::GetLastReceivedPort() const
+{
+    return m_lastReceivedPort;
 }

@@ -17,7 +17,7 @@ namespace sputter { namespace net {
         using MessageReceivedCallback =
             std::function<void(MessageHeader*, const std::string&, int)>;
 
-        Protocol(UDPPortPtr spPort);
+        Protocol(UDPPortPtr spPort, const std::string& channelName);
 
         void Tick();
         void SetMessageReceivedCallback(MessageReceivedCallback callback);
