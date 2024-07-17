@@ -44,6 +44,8 @@ build/
 build-debug/
 Testing/
 .cache/
+cmake-build/
+cmake-build-debug/
 
 # vscode
 .vscode/
